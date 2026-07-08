@@ -45,7 +45,12 @@
         <div class="summary-panel">
             <div><div class="summary-value" id="total_dias">0</div>Dias</div>
             <div><div class="summary-value" id="total_horas">0h</div>Horas</div>
-            <div><div class="summary-value" id="total_ganho">0€</div><button onclick="exportarPDF()">PDF</button></div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div class="summary-value" id="total_ganho">0€</div>
+                <button onclick="exportarPDF()" style="margin-top: 8px; cursor: pointer; background: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; width: 80px;">
+                    EXPORTAR
+                </button>
+            </div>
         </div>
         <table><thead><tr><th>Data</th><th>Início</th><th>Fim</th><th>Valor</th><th>Ação</th></tr></thead><tbody id="tabela_registos"></tbody></table>
     </div>
