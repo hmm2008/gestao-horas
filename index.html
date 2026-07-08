@@ -133,8 +133,16 @@
             .summary-panel { grid-template-columns: 1fr; gap: 15px; }
             .summary-item { border-right: none; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
             .summary-item:last-child { border-bottom: none; padding-bottom: 0; }
-            #toast-container { top: auto; bottom: 20px; right: 50%; transform: translateX(50%); width: 90%; }
-            .toast { justify-content: center; transform: translateY(100%); }
+            
+            /* NOTIFICAÇÕES NO TOPO NO MOBILE */
+            #toast-container {
+                top: 20px; /* Alterado de bottom para top */
+                bottom: auto;
+                right: 50%;
+                transform: translateX(50%);
+                width: 90%;
+            }
+            .toast { justify-content: center; transform: translateY(-100%); } /* Entra vindo de cima */
             .toast.show { transform: translateY(0); }
         }
     </style>
