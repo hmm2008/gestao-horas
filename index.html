@@ -458,5 +458,39 @@
             carregarDadosDoGoogle();
         };
     </script>
+    async function exportarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const filtroMes = document.getElementById('filtro_mes').value;
+    
+    // Título do documento
+    doc.setFontSize(18);
+    doc.text(`Relatório de Horas - ${filtroMes || 'Geral'}`, 14, 22);
+    
+    // Preparar dados da tabela
+    const tabela = document.getElementById('tabela_registos');
+    const linhas = Array.from(tabela.querySelectorAll('tr'));
+    
+    const dadosPDF = linhas.map(tr => {
+        const celulas = Array.from(tr.querySelectorAll('td'));
+        // Apanhamos apenas as colunas relevantes (Data, Inicio, Fim, Duração, Taxa, Valor)
+        return [celulas[0].innerText, celulas[1].innerText, celulas[2].innerText, celulas[3].innerText, celulas[4].innerText, celulas[5].innerText];
+    });
+
+    // Gerar tabela no PDF
+    doc.autoTable({
+        head: [['Data', 'Início', 'Fim', 'Duração', 'Taxa/h', 'Valor']],
+        body: dadosPDF,
+        startY: 30,
+        theme: 'striped',
+        headStyles: { fillColor: [0, 0, 0] }
+    });
+    
+    // Adicionar Total
+    const finalY = doc.lastAutoTable.finalY || 30;
+    doc.text(`Total a Receber: ${document.getElementById('total_ganho').innerText}`, 14, finalY + 10);
+    
+    doc.save(`Relatorio_Horas_${filtroMes}.pdf`);
+}
 </body>
 </html>
