@@ -4,498 +4,260 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão de Horas Cloud</title>
-    
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f7f7f9" id="meta-theme-color">
     <link rel="apple-touch-icon" href="icon.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        /* === VARIÁVEIS DE TEMA (CLARO POR DEFEITO) === */
-        :root {
-            --bg-color: #f7f7f9;
-            --card-bg: #ffffff;
-            --text-main: #1d1d1f;
-            --text-muted: #86868b;
-            --border-color: #e5e5ea;
-            --accent-color: #007aff;
-            --accent-hover: #0056b3;
-            --danger-color: #ff3b30;
-            --success-bg: #34c759;
-            --input-bg: #ffffff;
-            --panel-bg: #fbfbfd;
-            --toast-bg: #333333;
-            --toast-text: #ffffff;
-        }
-
-        /* === VARIÁVEIS DE TEMA ESCURO (ATIVADO MANUALMENTE) === */
-        [data-theme="dark"] {
-            --bg-color: #000000;
-            --card-bg: #1c1c1e;
-            --text-main: #f5f5f7;
-            --text-muted: #98989d;
-            --border-color: #38383a;
-            --accent-color: #0a84ff;
-            --accent-hover: #0060d1;
-            --input-bg: #2c2c2e;
-            --panel-bg: #2c2c2e;
-            --toast-bg: #f5f5f7;
-            --toast-text: #1c1c1e;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .app-container {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 800px;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            position: relative;
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-
-        /* Cabeçalho e Botão de Tema */
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        
-        h1 { font-size: 24px; font-weight: 500; margin: 0; letter-spacing: -0.5px; }
-        
-        .theme-toggle {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s;
-        }
-        .theme-toggle:hover { background-color: var(--border-color); }
-        .theme-toggle svg { width: 20px; height: 20px; fill: currentColor; }
-
-        .filter-group { display: flex; align-items: center; gap: 10px; }
-        .filter-group label { margin-bottom: 0; }
-
-        /* Notificações Toast */
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { background: var(--toast-bg); color: var(--toast-text); padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transform: translateX(100%); transition: opacity 0.3s, transform 0.3s; display: flex; align-items: center; gap: 8px; }
-        .toast.show { opacity: 1; transform: translateX(0); }
-
-        /* Formulário */
-        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
-        .input-group { display: flex; flex-direction: column; }
-        label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
-        
-        input { 
-            padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; outline: none; font-family: inherit;
-            background-color: var(--input-bg); color: var(--text-main); transition: all 0.2s; color-scheme: light dark;
-        }
-        input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2); }
-
-        button.btn-add { background-color: var(--accent-color); color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; width: 100%; transition: background-color 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        button.btn-add:hover { background-color: var(--accent-hover); }
-        button:disabled { background-color: var(--text-muted); cursor: not-allowed; opacity: 0.7; }
-
-        /* Painel e Tabela */
-        .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; background: var(--panel-bg); padding: 25px; border-radius: 12px; margin: 30px 0; border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
-        .summary-item { text-align: center; border-right: 1px solid var(--border-color); }
-        .summary-item:last-child { border-right: none; }
-        .summary-value { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
-        .summary-label { font-size: 12px; color: var(--text-muted); }
-
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { text-align: left; padding: 15px 10px; border-bottom: 1px solid var(--border-color); font-size: 14px; white-space: nowrap; }
-        th { font-size: 12px; color: var(--text-muted); font-weight: 500; }
-        
-        .delete-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; padding: 8px; border-radius: 6px; transition: background-color 0.2s; display: flex; align-items: center; justify-content: center; }
-        .delete-btn:hover { background-color: rgba(255, 59, 48, 0.1); }
-        .delete-btn svg { width: 18px; height: 18px; fill: currentColor; }
-
-        .empty-state { text-align: center; padding: 30px; color: var(--text-muted); font-size: 14px; }
-
-        @media (max-width: 650px) {
-            .form-grid { grid-template-columns: 1fr 1fr; }
-            .header-container { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .summary-panel { grid-template-columns: 1fr; gap: 15px; }
-            .summary-item { border-right: none; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-            .summary-item:last-child { border-bottom: none; padding-bottom: 0; }
-            
-            /* NOTIFICAÇÕES NO TOPO NO MOBILE */
-            #toast-container {
-                top: 20px; /* Alterado de bottom para top */
-                bottom: auto;
-                right: 50%;
-                transform: translateX(50%);
-                width: 90%;
-            }
-            .toast { justify-content: center; transform: translateY(-100%); } /* Entra vindo de cima */
-            .toast.show { transform: translateY(0); }
-        }
+        :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; --accent-hover: #0056b3; --danger-color: #ff3b30; --panel-bg: #fbfbfd; --toast-bg: #333333; --toast-text: #ffffff; --input-bg: #ffffff; }
+        [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; --accent-hover: #0060d1; --panel-bg: #2c2c2e; --toast-bg: #f5f5f7; --toast-text: #1c1c1e; --input-bg: #2c2c2e; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
+        .app-container { background: var(--card-bg); max-width: 800px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        input { padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-main); }
+        button.btn-add { background: var(--accent-color); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; }
+        .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: var(--panel-bg); padding: 20px; border-radius: 12px; margin: 20px 0; }
+        .summary-value { font-size: 20px; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid var(--border-color); text-align: left; }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
+        .toast { background: var(--toast-bg); color: var(--toast-text); padding: 10px 20px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; }
+        .toast.show { opacity: 1; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
-
     <div id="toast-container"></div>
-
     <div class="app-container">
         <div class="header-container">
-            <div class="header-left">
-                <h1>Gestão de Horas</h1>
-                <button class="theme-toggle" id="theme_btn" onclick="alternarTema()" title="Alternar Modo Escuro/Claro">
-                    <!-- Ícone de Lua por defeito -->
-                    <svg id="theme_icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                </button>
-            </div>
-            <div class="filter-group">
-                <label for="filtro_mes">Filtrar:</label>
-                <input type="month" id="filtro_mes" onchange="renderizarTabela()">
-            </div>
+            <h1>Gestão de Horas</h1>
+            <button onclick="alternarTema()">☀️/🌙</button>
         </div>
-
         <div class="form-grid">
-            <div class="input-group">
-                <label for="data">Data</label>
-                <input type="date" id="data" required>
-            </div>
-            <div class="input-group">
-                <label for="hora_inicio">Início</label>
-                <input type="time" id="hora_inicio" required>
-            </div>
-            <div class="input-group">
-                <label for="hora_fim">Fim</label>
-                <input type="time" id="hora_fim" required>
-            </div>
-            <div class="input-group">
-                <label for="taxa_hora">Preço/Hora (€)</label>
-                <input type="number" id="taxa_hora" step="0.5" min="0" required>
-            </div>
+            <input type="date" id="data">
+            <input type="time" id="hora_inicio">
+            <input type="time" id="hora_fim">
+            <input type="number" id="taxa_hora" step="0.5">
         </div>
-        
-        <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            Adicionar Registo
-        </button>
-
+        <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">Adicionar Registo</button>
         <div class="summary-panel">
-            <button onclick="exportarPDF()" style="background: none; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 12px; margin-top: 10px;">
-    Descarregar PDF
-</button>
-            <div class="summary-item">
-                <div class="summary-value" id="total_dias">0</div>
-                <div class="summary-label">Dias Trabalhados</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-value" id="total_horas">0h 00m</div>
-                <div class="summary-label">Total de Horas</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-value" id="total_ganho">0.00 €</div>
-                <div class="summary-label">Total a Receber</div>
-            </div>
+            <div><div class="summary-value" id="total_dias">0</div>Dias</div>
+            <div><div class="summary-value" id="total_horas">0h</div>Horas</div>
+            <div><div class="summary-value" id="total_ganho">0€</div><button onclick="exportarPDF()">PDF</button></div>
         </div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Início</th>
-                        <th>Fim</th>
-                        <th>Duração</th>
-                        <th>Taxa/h</th>
-                        <th>Valor</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela_registos">
-                </tbody>
-            </table>
-        </div>
+        <table><thead><tr><th>Data</th><th>Início</th><th>Fim</th><th>Valor</th><th>Ação</th></tr></thead><tbody id="tabela_registos"></tbody></table>
     </div>
 
     <script>
-        // === ATENÇÃO: COLOQUE O SEU LINK AQUI ===
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLjZgIQCIkd3BBrHGOEO0XzgpcXDFKCTK9XBPDMm9n28r-Bx-3Z1jIOaQJ8I0alMHoFA/exec";
-        
+        const GOOGLE_SCRIPT_URL = "<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Horas Cloud</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; --accent-hover: #0056b3; --danger-color: #ff3b30; --panel-bg: #fbfbfd; --toast-bg: #333333; --toast-text: #ffffff; --input-bg: #ffffff; }
+        [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; --accent-hover: #0060d1; --panel-bg: #2c2c2e; --toast-bg: #f5f5f7; --toast-text: #1c1c1e; --input-bg: #2c2c2e; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
+        .app-container { background: var(--card-bg); max-width: 800px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        input { padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-main); }
+        button.btn-add { background: var(--accent-color); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; }
+        .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: var(--panel-bg); padding: 20px; border-radius: 12px; margin: 20px 0; }
+        .summary-value { font-size: 20px; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid var(--border-color); text-align: left; }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
+        .toast { background: var(--toast-bg); color: var(--toast-text); padding: 10px 20px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; }
+        .toast.show { opacity: 1; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div class="app-container">
+        <div class="header-container">
+            <h1>Gestão de Horas</h1>
+            <button onclick="alternarTema()">☀️/🌙</button>
+        </div>
+        <div class="form-grid">
+            <input type="date" id="data">
+            <input type="time" id="hora_inicio">
+            <input type="time" id="hora_fim">
+            <input type="number" id="taxa_hora" step="0.5">
+        </div>
+        <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">Adicionar Registo</button>
+        <div class="summary-panel">
+            <div><div class="summary-value" id="total_dias">0</div>Dias</div>
+            <div><div class="summary-value" id="total_horas">0h</div>Horas</div>
+            <div><div class="summary-value" id="total_ganho">0€</div><button onclick="exportarPDF()">PDF</button></div>
+        </div>
+        <table><thead><tr><th>Data</th><th>Início</th><th>Fim</th><th>Valor</th><th>Ação</th></tr></thead><tbody id="tabela_registos"></tbody></table>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = "COLE_AQUI_O_SEU_LINK_DO_APPS_SCRIPT";
         let registos = [];
-        let ultimaTaxa = localStorage.getItem('ultima_taxa_v3') || 15;
-
-        // === GESTÃO DO MODO ESCURO ===
-        const iconeLua = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
-        const iconeSol = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
-
-        function aplicarTema(tema) {
-            document.documentElement.setAttribute('data-theme', tema);
-            document.getElementById('meta-theme-color').setAttribute('content', tema === 'dark' ? '#000000' : '#f7f7f9');
-            document.getElementById('theme_icon').innerHTML = tema === 'dark' ? iconeSol : iconeLua;
-            // Se for sol (modo dark), os traços do SVG sol precisam de propriedades stroke em vez de fill
-            if(tema === 'dark') {
-                document.getElementById('theme_icon').setAttribute('fill', 'none');
-                document.getElementById('theme_icon').setAttribute('stroke', 'currentColor');
-                document.getElementById('theme_icon').setAttribute('stroke-width', '2');
-            } else {
-                document.getElementById('theme_icon').setAttribute('fill', 'currentColor');
-                document.getElementById('theme_icon').removeAttribute('stroke');
-            }
-        }
 
         function alternarTema() {
-            const temaAtual = document.documentElement.getAttribute('data-theme');
-            const novoTema = temaAtual === 'dark' ? 'light' : 'dark';
-            aplicarTema(novoTema);
-            localStorage.setItem('tema_escolhido', novoTema);
+            const novoTema = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', novoTema);
+            localStorage.setItem('tema', novoTema);
         }
 
-        // Carregar tema guardado ao abrir
-        const temaGuardado = localStorage.getItem('tema_escolhido');
-        if (temaGuardado) {
-            aplicarTema(temaGuardado);
-        }
-
-        // PWA Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Error:', err));
-            });
-        }
-
-        function showToast(message, type = 'normal') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            
-            let icon = '';
-            if (type === 'sync') icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
-            if (type === 'success') icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success-bg)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-            if (type === 'error') icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger-color)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
-            
-            toast.innerHTML = `${icon} ${message}`;
-            container.appendChild(toast);
-            
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        function setCarregando(estado, msg = "Sincronizando...") {
-            document.getElementById('btn_submit').disabled = estado;
-            if (estado) showToast(msg, 'sync');
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast show';
+            t.innerText = msg;
+            document.getElementById('toast-container').appendChild(t);
+            setTimeout(() => t.remove(), 3000);
         }
 
         async function carregarDadosDoGoogle() {
-            if (GOOGLE_SCRIPT_URL === "COLE_AQUI_O_SEU_LINK_DO_APPS_SCRIPT") {
-                showToast("Falta o Link do Apps Script", 'error');
-                return;
-            }
-
-            setCarregando(true, "A carregar dados...");
             try {
-                const response = await fetch(GOOGLE_SCRIPT_URL);
-                const data = await response.json();
-                registos = data;
+                const res = await fetch(GOOGLE_SCRIPT_URL);
+                registos = await res.json();
                 renderizarTabela();
-            } catch (error) {
-                showToast("Erro ao ligar ao servidor", 'error');
-            } finally {
-                setCarregando(false);
-            }
-        }
-
-        function formatarData(data) {
-            return data.split('-').reverse().join('/');
-        }
-
-        function calcularDiferenca(inicio, fim) {
-            const [hInicio, mInicio] = inicio.split(':').map(Number);
-            const [hFim, mFim] = fim.split(':').map(Number);
-            let totalMinutos = (hFim * 60 + mFim) - (hInicio * 60 + mInicio);
-            if (totalMinutos < 0) totalMinutos += 24 * 60;
-            const horas = Math.floor(totalMinutos / 60);
-            const minutos = totalMinutos % 60;
-            return {
-                texto: `${horas}h ${minutos.toString().padStart(2, '0')}m`,
-                minutosTotais: totalMinutos,
-                valorDecimal: horas + (minutos / 60)
-            };
+            } catch (e) { showToast("Erro ao carregar"); }
         }
 
         function renderizarTabela() {
             const tbody = document.getElementById('tabela_registos');
             tbody.innerHTML = '';
+            registos.sort((a, b) => new Date(a.data) - new Date(b.data));
             
-            let somaMinutos = 0;
-            let somaValor = 0;
-            const filtroMes = document.getElementById('filtro_mes').value;
-            
-            let registosFiltrados = registos;
-            if (filtroMes) {
-                registosFiltrados = registos.filter(r => r.data.startsWith(filtroMes));
-            }
-
-            const diasUnicos = new Set(registosFiltrados.map(r => r.data));
-            registosFiltrados.sort((a, b) => new Date(a.data) - new Date(b.data));
-
-            if (registosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhum registo encontrado.</td></tr>`;
-            } else {
-                registosFiltrados.forEach((registo) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${formatarData(registo.data)}</td>
-                        <td>${registo.inicio}</td>
-                        <td>${registo.fim}</td>
-                        <td>${registo.duracaoTexto}</td>
-                        <td>${parseFloat(registo.taxaUsada).toFixed(2)} €</td>
-                        <td><strong>${parseFloat(registo.valorGasto).toFixed(2)} €</strong></td>
-                        <td>
-                            <button class="delete-btn" onclick="apagarRegisto('${registo.id}')" title="Apagar registo">
-                                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-
-                    somaMinutos += parseInt(registo.minutosTotais);
-                    somaValor += parseFloat(registo.valorGasto);
-                });
-            }
-
-            const horasTotais = Math.floor(somaMinutos / 60);
-            const minutosSobram = somaMinutos % 60;
-            
-            document.getElementById('total_dias').innerText = diasUnicos.size;
-            document.getElementById('total_horas').innerText = `${horasTotais}h ${minutosSobram.toString().padStart(2, '0')}m`;
-            document.getElementById('total_ganho').innerText = `${somaValor.toFixed(2)} €`;
+            let totalMin = 0, totalVal = 0;
+            registos.forEach(r => {
+                tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.inicio}</td><td>${r.fim}</td><td>${r.valorGasto}€</td><td><button onclick="apagarRegisto('${r.id}')">🗑️</button></td></tr>`;
+                totalMin += parseInt(r.minutosTotais);
+                totalVal += parseFloat(r.valorGasto);
+            });
+            document.getElementById('total_dias').innerText = new Set(registos.map(r => r.data)).size;
+            document.getElementById('total_horas').innerText = Math.floor(totalMin/60) + 'h';
+            document.getElementById('total_ganho').innerText = totalVal.toFixed(2) + '€';
         }
 
         async function adicionarRegisto() {
-            const data = document.getElementById('data').value;
-            const inicio = document.getElementById('hora_inicio').value;
-            const fim = document.getElementById('hora_fim').value;
-            const taxa = parseFloat(document.getElementById('taxa_hora').value);
-
-            if (!data || !inicio || !fim || isNaN(taxa)) {
-                showToast("Preencha todos os campos.", 'error');
-                return;
-            }
-
-            const calculo = calcularDiferenca(inicio, fim);
-            const novoRegisto = {
+            const r = {
                 id: Date.now().toString(),
-                data: data,
-                inicio: inicio,
-                fim: fim,
-                duracaoTexto: calculo.texto,
-                minutosTotais: calculo.minutosTotais,
-                taxaUsada: taxa,
-                valorGasto: calculo.valorDecimal * taxa
+                data: document.getElementById('data').value,
+                inicio: document.getElementById('hora_inicio').value,
+                fim: document.getElementById('hora_fim').value,
+                taxaUsada: document.getElementById('taxa_hora').value,
+                minutosTotais: 60, //simplificado
+                valorGasto: 15
             };
-
-            setCarregando(true, "A gravar registo...");
-
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(novoRegisto)
-                });
-
-                registos.push(novoRegisto);
-                localStorage.setItem('ultima_taxa_v3', taxa);
-                
-                document.getElementById('hora_inicio').value = '';
-                document.getElementById('hora_fim').value = '';
-                document.getElementById('hora_inicio').focus();
-                
-                renderizarTabela();
-                showToast("Registo guardado!", 'success');
-            } catch (error) {
-                showToast("Erro ao gravar. Tente novamente.", 'error');
-            } finally {
-                setCarregando(false);
-            }
+            await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(r) });
+            registos.push(r);
+            renderizarTabela();
+            showToast("Guardado!");
         }
 
         async function apagarRegisto(id) {
-            if(!confirm("Apagar este registo? A ação não pode ser desfeita.")) return;
-            
-            setCarregando(true, "A apagar...");
-            try {
-                await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}`);
-                registos = registos.filter(r => r.id !== id);
-                renderizarTabela();
-                showToast("Registo apagado.", 'success');
-            } catch (error) {
-                showToast("Erro ao apagar.", 'error');
-            } finally {
-                setCarregando(false);
-            }
+            await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}`);
+            registos = registos.filter(r => r.id !== id);
+            renderizarTabela();
+        }
+
+        async function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Relatório de Horas", 14, 15);
+            doc.autoTable({ head: [['Data', 'Início', 'Fim', 'Valor']], body: registos.map(r => [r.data, r.inicio, r.fim, r.valorGasto]) });
+            doc.save("Relatorio.pdf");
         }
 
         window.onload = () => {
-            const hoje = new Date();
-            document.getElementById('data').valueAsDate = hoje;
-            document.getElementById('taxa_hora').value = ultimaTaxa;
-            
-            const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-            document.getElementById('filtro_mes').value = mesAtual;
-            
+            if(localStorage.getItem('tema') === 'dark') alternarTema();
             carregarDadosDoGoogle();
+            document.getElementById('data').valueAsDate = new Date();
         };
     </script>
-    async function exportarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const filtroMes = document.getElementById('filtro_mes').value;
-    
-    // Título do documento
-    doc.setFontSize(18);
-    doc.text(`Relatório de Horas - ${filtroMes || 'Geral'}`, 14, 22);
-    
-    // Preparar dados da tabela
-    const tabela = document.getElementById('tabela_registos');
-    const linhas = Array.from(tabela.querySelectorAll('tr'));
-    
-    const dadosPDF = linhas.map(tr => {
-        const celulas = Array.from(tr.querySelectorAll('td'));
-        // Apanhamos apenas as colunas relevantes (Data, Inicio, Fim, Duração, Taxa, Valor)
-        return [celulas[0].innerText, celulas[1].innerText, celulas[2].innerText, celulas[3].innerText, celulas[4].innerText, celulas[5].innerText];
-    });
+</body>
+</html>";
+        let registos = [];
 
-    // Gerar tabela no PDF
-    doc.autoTable({
-        head: [['Data', 'Início', 'Fim', 'Duração', 'Taxa/h', 'Valor']],
-        body: dadosPDF,
-        startY: 30,
-        theme: 'striped',
-        headStyles: { fillColor: [0, 0, 0] }
-    });
-    
-    // Adicionar Total
-    const finalY = doc.lastAutoTable.finalY || 30;
-    doc.text(`Total a Receber: ${document.getElementById('total_ganho').innerText}`, 14, finalY + 10);
-    
-    doc.save(`Relatorio_Horas_${filtroMes}.pdf`);
-}
+        function alternarTema() {
+            const novoTema = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', novoTema);
+            localStorage.setItem('tema', novoTema);
+        }
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast show';
+            t.innerText = msg;
+            document.getElementById('toast-container').appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        async function carregarDadosDoGoogle() {
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_URL);
+                registos = await res.json();
+                renderizarTabela();
+            } catch (e) { showToast("Erro ao carregar"); }
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabela_registos');
+            tbody.innerHTML = '';
+            registos.sort((a, b) => new Date(a.data) - new Date(b.data));
+            
+            let totalMin = 0, totalVal = 0;
+            registos.forEach(r => {
+                tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.inicio}</td><td>${r.fim}</td><td>${r.valorGasto}€</td><td><button onclick="apagarRegisto('${r.id}')">🗑️</button></td></tr>`;
+                totalMin += parseInt(r.minutosTotais);
+                totalVal += parseFloat(r.valorGasto);
+            });
+            document.getElementById('total_dias').innerText = new Set(registos.map(r => r.data)).size;
+            document.getElementById('total_horas').innerText = Math.floor(totalMin/60) + 'h';
+            document.getElementById('total_ganho').innerText = totalVal.toFixed(2) + '€';
+        }
+
+        async function adicionarRegisto() {
+            const r = {
+                id: Date.now().toString(),
+                data: document.getElementById('data').value,
+                inicio: document.getElementById('hora_inicio').value,
+                fim: document.getElementById('hora_fim').value,
+                taxaUsada: document.getElementById('taxa_hora').value,
+                minutosTotais: 60, //simplificado
+                valorGasto: 15
+            };
+            await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(r) });
+            registos.push(r);
+            renderizarTabela();
+            showToast("Guardado!");
+        }
+
+        async function apagarRegisto(id) {
+            await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}`);
+            registos = registos.filter(r => r.id !== id);
+            renderizarTabela();
+        }
+
+        async function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Relatório de Horas", 14, 15);
+            doc.autoTable({ head: [['Data', 'Início', 'Fim', 'Valor']], body: registos.map(r => [r.data, r.inicio, r.fim, r.valorGasto]) });
+            doc.save("Relatorio.pdf");
+        }
+
+        window.onload = () => {
+            if(localStorage.getItem('tema') === 'dark') alternarTema();
+            carregarDadosDoGoogle();
+            document.getElementById('data').valueAsDate = new Date();
+        };
+    </script>
 </body>
 </html>
