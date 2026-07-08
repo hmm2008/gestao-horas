@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Horas Cloud</title>
+    <style>
+        /* Estilos Base - Minimalistas e Modernos */
+        :root {
+            --bg-color: #f7f7f9;
+            --card-bg: #ffffff;
+            --text-main: #1d1d1f;
+            --text-muted: #86868b;
+            --border-color: #e5e5ea;
+            --accent-color: #000000;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            position: relative;
+        }
+
+        /* Indicador de Carregamento */
+        #loading {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            font-size: 13px;
+            color: var(--text-muted);
+            background: #f0f0f5;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: none; 
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 { font-size: 24px; font-weight: 500; margin: 0; letter-spacing: -0.5px; }
+
+        .filter-group { display: flex; align-items: center; gap: 10px; }
+        .filter-group label { margin-bottom: 0; }
+
+        /* Formulário de Inserção */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+        input { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; outline: none; font-family: inherit; }
+        input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(0,0,0,0.1); }
+
+        button.btn-add {
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        button.btn-add:hover { opacity: 0.8; }
+        button:disabled { background-color: var(--text-muted); cursor: not-allowed; }
+
+        /* Painel de Resumo */
+        .summary-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            background: #fbfbfd;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 1px solid var(--border-color);
+        }
+        .summary-item { text-align: center; border-right: 1px solid var(--border-color); }
+        .summary-item:last-child { border-right: none; }
+        .summary-value { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+        .summary-label { font-size: 12px; color: var(--text-muted); }
+
+        /* Tabela */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 15px 10px; border-bottom: 1px solid var(--border-color); font-size: 14px; white-space: nowrap; }
+        th { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        
+        .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 14px; }
+        .delete-btn:hover { text-decoration: underline; }
+        .empty-state { text-align: center; padding: 30px; color: var(--text-muted); font-size: 14px; }
+
+        @media (max-width: 650px) {
+            .form-grid { grid-template-columns: 1fr 1fr; }
+            .header-container { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .summary-panel { grid-template-columns: 1fr; gap: 15px; }
+            .summary-item { border-right: none; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+            .summary-item:last-child { border-bottom: none; padding-bottom: 0; }
+            #loading { top: -20px; right: 0; position: relative; display: inline-block; margin-bottom: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div id="loading">Sincronizando com a nuvem...</div>
+        
+        <div class="header-container">
+            <h1>Gestão de Horas</h1>
+            <div class="filter-group">
+                <label for="filtro_mes">Filtrar:</label>
+                <input type="month" id="filtro_mes" onchange="renderizarTabela()">
+            </div>
+        </div>
+
+        <!-- Formulário -->
+        <div class="form-grid">
+            <div class="input-group">
+                <label for="data">Data</label>
+                <input type="date" id="data" required>
+            </div>
+            <div class="input-group">
+                <label for="hora_inicio">Início</label>
+                <input type="time" id="hora_inicio" required>
+            </div>
+            <div class="input-group">
+                <label for="hora_fim">Fim</label>
+                <input type="time" id="hora_fim" required>
+            </div>
+            <div class="input-group">
+                <label for="taxa_hora">Preço/Hora (€)</label>
+                <input type="number" id="taxa_hora" step="0.5" min="0" required>
+            </div>
+        </div>
+        <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">Adicionar Registo</button>
+
+        <!-- Resumo -->
+        <div class="summary-panel">
+            <div class="summary-item">
+                <div class="summary-value" id="total_dias">0</div>
+                <div class="summary-label">Dias Trabalhados</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="total_horas">0h 00m</div>
+                <div class="summary-label">Total de Horas</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="total_ganho">0.00 €</div>
+                <div class="summary-label">Total a Receber</div>
+            </div>
+        </div>
+
+        <!-- Tabela -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Início</th>
+                        <th>Fim</th>
+                        <th>Duração</th>
+                        <th>Taxa/h</th>
+                        <th>Valor</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tabela_registos">
+                    <!-- Os registos aparecem aqui -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // === ATENÇÃO: COLOQUE O SEU LINK ABAIXO ===
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLjZgIQCIkd3BBrHGOEO0XzgpcXDFKCTK9XBPDMm9n28r-Bx-3Z1jIOaQJ8I0alMHoFA/exec";
+        
+        let registos = [];
+        let ultimaTaxa = localStorage.getItem('ultima_taxa_v3') || 15;
+
+        // Mostrar/Esconder loading
+        function setCarregando(estado) {
+            document.getElementById('loading').style.display = estado ? 'block' : 'none';
+            document.getElementById('btn_submit').disabled = estado;
+        }
+
+        // Ir buscar dados ao Google Drive ao abrir a página
+        async function carregarDadosDoGoogle() {
+            if (GOOGLE_SCRIPT_URL === "COLE_AQUI_O_SEU_LINK_DO_APPS_SCRIPT") {
+                alert("Esqueceu-se de colocar o link do seu Google Apps Script no código da aplicação!");
+                return;
+            }
+
+            setCarregando(true);
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const data = await response.json();
+                registos = data;
+                renderizarTabela();
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                alert("Erro ao ligar ao Google Drive. Verifique a sua ligação à internet.");
+            } finally {
+                setCarregando(false);
+            }
+        }
+
+        function formatarData(data) {
+            return data.split('-').reverse().join('/');
+        }
+
+        function calcularDiferenca(inicio, fim) {
+            const [hInicio, mInicio] = inicio.split(':').map(Number);
+            const [hFim, mFim] = fim.split(':').map(Number);
+            
+            let totalMinutos = (hFim * 60 + mFim) - (hInicio * 60 + mInicio);
+            if (totalMinutos < 0) totalMinutos += 24 * 60;
+            
+            const horas = Math.floor(totalMinutos / 60);
+            const minutos = totalMinutos % 60;
+            const valorDecimal = horas + (minutos / 60);
+            
+            return {
+                texto: `${horas}h ${minutos.toString().padStart(2, '0')}m`,
+                minutosTotais: totalMinutos,
+                valorDecimal: valorDecimal
+            };
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabela_registos');
+            tbody.innerHTML = '';
+            
+            let somaMinutos = 0;
+            let somaValor = 0;
+            const filtroMes = document.getElementById('filtro_mes').value;
+            
+            let registosFiltrados = registos;
+            if (filtroMes) {
+                registosFiltrados = registos.filter(r => r.data.startsWith(filtroMes));
+            }
+
+            const diasUnicos = new Set(registosFiltrados.map(r => r.data));
+
+            // ORDENAÇÃO ATUALIZADA: Por ordem crescente de data (a - b)
+            registosFiltrados.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+            if (registosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Sem registos.</td></tr>`;
+            } else {
+                registosFiltrados.forEach((registo) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${formatarData(registo.data)}</td>
+                        <td>${registo.inicio}</td>
+                        <td>${registo.fim}</td>
+                        <td>${registo.duracaoTexto}</td>
+                        <td>${parseFloat(registo.taxaUsada).toFixed(2)} €</td>
+                        <td><strong>${parseFloat(registo.valorGasto).toFixed(2)} €</strong></td>
+                        <td><button class="delete-btn" onclick="apagarRegisto('${registo.id}')">Apagar</button></td>
+                    `;
+                    tbody.appendChild(tr);
+
+                    somaMinutos += parseInt(registo.minutosTotais);
+                    somaValor += parseFloat(registo.valorGasto);
+                });
+            }
+
+            const horasTotais = Math.floor(somaMinutos / 60);
+            const minutosSobram = somaMinutos % 60;
+            
+            document.getElementById('total_dias').innerText = diasUnicos.size;
+            document.getElementById('total_horas').innerText = `${horasTotais}h ${minutosSobram.toString().padStart(2, '0')}m`;
+            document.getElementById('total_ganho').innerText = `${somaValor.toFixed(2)} €`;
+        }
+
+        // Enviar um novo registo para o Google Drive
+        async function adicionarRegisto() {
+            const data = document.getElementById('data').value;
+            const inicio = document.getElementById('hora_inicio').value;
+            const fim = document.getElementById('hora_fim').value;
+            const taxa = parseFloat(document.getElementById('taxa_hora').value);
+
+            if (!data || !inicio || !fim || isNaN(taxa)) {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
+
+            const calculo = calcularDiferenca(inicio, fim);
+            const novoRegisto = {
+                id: Date.now().toString(),
+                data: data,
+                inicio: inicio,
+                fim: fim,
+                duracaoTexto: calculo.texto,
+                minutosTotais: calculo.minutosTotais,
+                taxaUsada: taxa,
+                valorGasto: calculo.valorDecimal * taxa
+            };
+
+            setCarregando(true);
+
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(novoRegisto)
+                });
+
+                registos.push(novoRegisto);
+                localStorage.setItem('ultima_taxa_v3', taxa);
+                
+                document.getElementById('hora_inicio').value = '';
+                document.getElementById('hora_fim').value = '';
+                document.getElementById('hora_inicio').focus();
+                
+                renderizarTabela();
+            } catch (error) {
+                console.error("Erro:", error);
+                alert("Erro ao gravar. Tente novamente.");
+            } finally {
+                setCarregando(false);
+            }
+        }
+
+        // Apagar no Google Drive
+        async function apagarRegisto(id) {
+            if(!confirm("Tem a certeza que quer apagar este registo?")) return;
+            
+            setCarregando(true);
+            try {
+                await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}`);
+                registos = registos.filter(r => r.id !== id);
+                renderizarTabela();
+            } catch (error) {
+                alert("Erro ao apagar o registo.");
+            } finally {
+                setCarregando(false);
+            }
+        }
+
+        // Inicialização
+        window.onload = () => {
+            const hoje = new Date();
+            document.getElementById('data').valueAsDate = hoje;
+            document.getElementById('taxa_hora').value = ultimaTaxa;
+            
+            const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+            document.getElementById('filtro_mes').value = mesAtual;
+            
+            carregarDadosDoGoogle();
+        };
+    </script>
+</body>
+</html>
