@@ -4,123 +4,308 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão de Horas Cloud</title>
+    
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f7f7f9" id="meta-theme-color">
     <link rel="apple-touch-icon" href="icon.png">
+    
     <!-- Bibliotecas PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --border-color: #e5e5ea; --accent-color: #007aff; }
-        [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --border-color: #38383a; --accent-color: #0a84ff; }
-        body { font-family: sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; }
-        .app-container { background: var(--card-bg); max-width: 800px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-        input { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; width: 100%; box-sizing: border-box; }
-        .btn-main { background: var(--accent-color); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; margin-bottom: 20px; }
-        .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #eee; padding: 20px; border-radius: 12px; text-align: center; color: #000; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border-bottom: 1px solid #ccc; text-align: left; }
+        :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; --accent-hover: #0056b3; --danger-color: #ff3b30; --panel-bg: #fbfbfd; --toast-bg: #333333; --toast-text: #ffffff; --input-bg: #ffffff; }
+        [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; --accent-hover: #0060d1; --panel-bg: #2c2c2e; --toast-bg: #f5f5f7; --toast-text: #1c1c1e; --input-bg: #2c2c2e; }
+
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 40px 20px; display: flex; justify-content: center; transition: background-color 0.3s; }
+        .app-container { background: var(--card-bg); width: 100%; max-width: 800px; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); }
+        
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { font-size: 24px; font-weight: 500; margin: 0; }
+        .theme-toggle { background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 20px; padding: 5px; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+        input { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; background-color: var(--input-bg); color: var(--text-main); color-scheme: light dark; }
+        input:focus { outline: none; border-color: var(--accent-color); }
+
+        button.btn-add { background-color: var(--accent-color); color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; width: 100%; }
+        button.btn-add:hover { background-color: var(--accent-hover); }
+
+        .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; background: var(--panel-bg); padding: 25px; border-radius: 12px; margin: 30px 0; border: 1px solid var(--border-color); }
+        .summary-item { text-align: center; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .summary-item:last-child { border-right: none; }
+        .summary-value { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+        .summary-label { font-size: 12px; color: var(--text-muted); }
+
+        /* Botão PDF Profissional */
+        .pdf-btn { background-color: transparent; color: var(--accent-color); border: 1px solid var(--accent-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; margin-top: 10px; text-transform: uppercase; transition: 0.2s; }
+        .pdf-btn:hover { background-color: var(--accent-color); color: white; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 15px 10px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        th { font-size: 12px; color: var(--text-muted); }
+        .delete-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; font-size: 18px; }
+
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--toast-bg); color: var(--toast-text); padding: 12px 24px; border-radius: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transform: translateX(100%); transition: 0.3s; }
+        .toast.show { opacity: 1; transform: translateX(0); }
+
+        @media (max-width: 650px) {
+            .form-grid { grid-template-columns: 1fr 1fr; }
+            .summary-panel { grid-template-columns: 1fr; gap: 15px; }
+            .summary-item { border-right: none; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+            .summary-item:last-child { border-bottom: none; padding-bottom: 0; }
+            #toast-container { top: 20px; right: 5%; width: 90%; }
+        }
     </style>
 </head>
 <body>
+
+    <div id="toast-container"></div>
+
     <div class="app-container">
-        <div class="header">
+        <div class="header-container">
             <h1>Gestão de Horas</h1>
-            <button onclick="alternarTema()">☀️/🌙</button>
+            <button class="theme-toggle" onclick="alternarTema()">☀️/🌙</button>
         </div>
-        
+
         <div class="form-grid">
-            <input type="date" id="data">
-            <input type="time" id="hora_inicio">
-            <input type="time" id="hora_fim">
-            <input type="number" id="taxa_hora" step="0.5" placeholder="€/h">
-        </div>
-        <button class="btn-main" onclick="adicionarRegisto()">ADICIONAR REGISTO</button>
-        
-        <div class="summary-panel">
-            <div><strong id="total_dias">0</strong><br>Dias</div>
-            <div><strong id="total_horas">0h</strong><br>Horas</div>
-            <div>
-                <strong id="total_ganho">0€</strong><br>
-                <button onclick="exportarPDF()" style="background: red; color: white; border: none; padding: 5px 10px; cursor: pointer; margin-top: 5px;">PDF AGORA</button>
+            <div class="input-group">
+                <label>Data</label>
+                <input type="date" id="data" required>
+            </div>
+            <div class="input-group">
+                <label>Início</label>
+                <input type="time" id="hora_inicio" required>
+            </div>
+            <div class="input-group">
+                <label>Fim</label>
+                <input type="time" id="hora_fim" required>
+            </div>
+            <div class="input-group">
+                <label>Preço/Hora (€)</label>
+                <input type="number" id="taxa_hora" step="0.5" required>
             </div>
         </div>
         
-        <table>
-            <thead><tr><th>Data</th><th>Início</th><th>Fim</th><th>Valor</th><th>Ação</th></tr></thead>
-            <tbody id="tabela_registos"></tbody>
-        </table>
+        <button class="btn-add" onclick="adicionarRegisto()">Adicionar Registo</button>
+
+        <div class="summary-panel">
+            <div class="summary-item">
+                <div class="summary-value" id="total_dias">0</div>
+                <div class="summary-label">Dias Trabalhados</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="total_horas">0h 00m</div>
+                <div class="summary-label">Total de Horas</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="total_ganho">0.00 €</div>
+                <div class="summary-label">Total a Receber</div>
+                <!-- O Botão do PDF está garantidamente aqui -->
+                <button class="pdf-btn" onclick="exportarPDF()">Exportar PDF</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>Data</th><th>Início</th><th>Fim</th><th>Duração</th><th>Taxa/h</th><th>Valor</th><th></th></tr>
+                </thead>
+                <tbody id="tabela_registos"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
+        // ==========================================
+        // ⚠️ COLOQUE O SEU LINK ENTRE AS ASPAS ABAIXO
+        // ==========================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLjZgIQCIkd3BBrHGOEO0XzgpcXDFKCTK9XBPDMm9n28r-Bx-3Z1jIOaQJ8I0alMHoFA/exec";
+        
         let registos = [];
 
         function alternarTema() {
-            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', t);
+            const temaAtual = document.documentElement.getAttribute('data-theme');
+            const novoTema = temaAtual === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', novoTema);
+            localStorage.setItem('tema_v4', novoTema);
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function formatarData(data) { return data.split('-').reverse().join('/'); }
+
+        function calcularDiferenca(inicio, fim) {
+            const [hInicio, mInicio] = inicio.split(':').map(Number);
+            const [hFim, mFim] = fim.split(':').map(Number);
+            let totalMin = (hFim * 60 + mFim) - (hInicio * 60 + mInicio);
+            if (totalMin < 0) totalMin += 24 * 60;
+            const horas = Math.floor(totalMin / 60);
+            const min = totalMin % 60;
+            return {
+                texto: `${horas}h ${min.toString().padStart(2, '0')}m`,
+                minutosTotais: totalMin,
+                valorDecimal: horas + (min / 60)
+            };
         }
 
         async function carregarDadosDoGoogle() {
+            if (GOOGLE_SCRIPT_URL === "COLE_O_SEU_LINK_AQUI") {
+                showToast("Falta colocar o Link do Apps Script no código!");
+                return;
+            }
             try {
-                const res = await fetch(GOOGLE_SCRIPT_URL);
-                registos = await res.json();
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                registos = await response.json();
                 renderizarTabela();
-            } catch (e) { alert("Erro ao carregar"); }
+            } catch (error) {
+                showToast("Erro de ligação. Verifique o URL do Script.");
+            }
         }
 
         function renderizarTabela() {
             const tbody = document.getElementById('tabela_registos');
             tbody.innerHTML = '';
+            
+            // Ordenação Crescente
             registos.sort((a, b) => new Date(a.data) - new Date(b.data));
-            let totalMin = 0, totalVal = 0;
+
+            let somaMinutos = 0, somaValor = 0;
+            const diasUnicos = new Set();
+
             registos.forEach(r => {
-                tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.inicio}</td><td>${r.fim}</td><td>${parseFloat(r.valorGasto).toFixed(2)}€</td><td><button onclick="apagarRegisto('${r.id}')">🗑️</button></td></tr>`;
-                totalMin += parseInt(r.minutosTotais || 0);
-                totalVal += parseFloat(r.valorGasto || 0);
+                diasUnicos.add(r.data);
+                somaMinutos += parseInt(r.minutosTotais || 0);
+                somaValor += parseFloat(r.valorGasto || 0);
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${formatarData(r.data)}</td>
+                        <td>${r.inicio}</td>
+                        <td>${r.fim}</td>
+                        <td>${r.duracaoTexto || '--'}</td>
+                        <td>${parseFloat(r.taxaUsada).toFixed(2)} €</td>
+                        <td><strong>${parseFloat(r.valorGasto).toFixed(2)} €</strong></td>
+                        <td><button class="delete-btn" onclick="apagarRegisto('${r.id}')">🗑️</button></td>
+                    </tr>
+                `;
             });
-            document.getElementById('total_dias').innerText = new Set(registos.map(r => r.data)).size;
-            document.getElementById('total_horas').innerText = Math.floor(totalMin/60) + 'h';
-            document.getElementById('total_ganho').innerText = totalVal.toFixed(2) + '€';
+
+            const horasTotais = Math.floor(somaMinutos / 60);
+            const minutosSobram = somaMinutos % 60;
+            
+            document.getElementById('total_dias').innerText = diasUnicos.size;
+            document.getElementById('total_horas').innerText = `${horasTotais}h ${minutosSobram.toString().padStart(2, '0')}m`;
+            document.getElementById('total_ganho').innerText = `${somaValor.toFixed(2)} €`;
         }
 
         async function adicionarRegisto() {
-            const r = {
+            const data = document.getElementById('data').value;
+            const inicio = document.getElementById('hora_inicio').value;
+            const fim = document.getElementById('hora_fim').value;
+            const taxa = parseFloat(document.getElementById('taxa_hora').value);
+
+            if (!data || !inicio || !fim || isNaN(taxa)) {
+                showToast("Preencha todos os campos.");
+                return;
+            }
+
+            const calc = calcularDiferenca(inicio, fim);
+            const novoRegisto = {
                 id: Date.now().toString(),
-                data: document.getElementById('data').value,
-                inicio: document.getElementById('hora_inicio').value,
-                fim: document.getElementById('hora_fim').value,
-                taxaUsada: document.getElementById('taxa_hora').value,
-                minutosTotais: 60,
-                valorGasto: 15
+                data: data,
+                inicio: inicio,
+                fim: fim,
+                duracaoTexto: calc.texto,
+                minutosTotais: calc.minutosTotais,
+                taxaUsada: taxa,
+                valorGasto: calc.valorDecimal * taxa
             };
-            await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(r) });
-            registos.push(r);
-            renderizarTabela();
+
+            showToast("A gravar...");
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(novoRegisto) });
+                registos.push(novoRegisto);
+                localStorage.setItem('ultima_taxa_v4', taxa);
+                
+                document.getElementById('hora_inicio').value = '';
+                document.getElementById('hora_fim').value = '';
+                document.getElementById('hora_inicio').focus();
+                
+                renderizarTabela();
+                showToast("Registo guardado com sucesso!");
+            } catch (error) {
+                showToast("Erro ao gravar no Google.");
+            }
         }
 
         async function apagarRegisto(id) {
-            await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}`);
-            registos = registos.filter(r => r.id !== id);
-            renderizarTabela();
+            if(!confirm("Apagar este registo?")) return;
+            showToast("A apagar...");
+            try {
+                await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}`);
+                registos = registos.filter(r => r.id !== id);
+                renderizarTabela();
+                showToast("Registo apagado.");
+            } catch (error) {
+                showToast("Erro ao apagar.");
+            }
         }
 
         async function exportarPDF() {
+            if (registos.length === 0) {
+                showToast("Não há dados para exportar.");
+                return;
+            }
+            showToast("A gerar PDF...");
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("Relatório de Horas", 14, 15);
-            doc.autoTable({ 
-                head: [['Data', 'Início', 'Fim', 'Valor']], 
-                body: registos.map(r => [r.data, r.inicio, r.fim, r.valorGasto + '€']) 
+            
+            doc.setFontSize(18);
+            doc.text("Relatório de Horas", 14, 20);
+            
+            doc.autoTable({
+                startY: 30,
+                head: [['Data', 'Início', 'Fim', 'Duração', 'Taxa', 'Valor']],
+                body: registos.map(r => [
+                    formatarData(r.data), 
+                    r.inicio, 
+                    r.fim, 
+                    r.duracaoTexto, 
+                    parseFloat(r.taxaUsada).toFixed(2) + ' €', 
+                    parseFloat(r.valorGasto).toFixed(2) + ' €'
+                ]),
+                theme: 'striped',
+                headStyles: { fillColor: [0, 122, 255] }
             });
-            doc.save("Relatorio.pdf");
+            
+            const finalY = doc.lastAutoTable.finalY || 30;
+            doc.setFontSize(12);
+            doc.text(`Total a Receber: ${document.getElementById('total_ganho').innerText}`, 14, finalY + 10);
+            
+            doc.save("Relatorio_Horas.pdf");
+            showToast("PDF descarregado!");
         }
 
         window.onload = () => {
-            carregarDadosDoGoogle();
+            if(localStorage.getItem('tema_v4') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
+            document.getElementById('taxa_hora').value = localStorage.getItem('ultima_taxa_v4') || 15;
+            carregarDadosDoGoogle();
         };
     </script>
 </body>
