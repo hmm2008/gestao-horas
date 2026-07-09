@@ -30,7 +30,7 @@
         input { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; background-color: var(--input-bg); color: var(--text-main); color-scheme: light dark; }
         input:focus { outline: none; border-color: var(--accent-color); }
 
-        button.btn-add { background-color: var(--accent-color); color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; width: 100%; }
+        button.btn-add { background-color: var(--accent-color); color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; width: 100%; transition: 0.2s; }
         button.btn-add:hover { background-color: var(--accent-hover); }
 
         .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; background: var(--panel-bg); padding: 25px; border-radius: 12px; margin: 30px 0; border: 1px solid var(--border-color); }
@@ -39,9 +39,9 @@
         .summary-value { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
         .summary-label { font-size: 12px; color: var(--text-muted); }
 
-        /* Botão PDF Profissional */
-        .pdf-btn { background-color: transparent; color: var(--accent-color); border: 1px solid var(--accent-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; margin-top: 10px; text-transform: uppercase; transition: 0.2s; }
-        .pdf-btn:hover { background-color: var(--accent-color); color: white; }
+        /* Botão PDF Inquebrável */
+        .pdf-btn { background-color: #34c759; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; margin-top: 12px; text-transform: uppercase; transition: 0.2s; box-shadow: 0 2px 6px rgba(52, 199, 89, 0.4); }
+        .pdf-btn:hover { background-color: #2da94f; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { text-align: left; padding: 15px 10px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
@@ -58,6 +58,8 @@
             .summary-item { border-right: none; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
             .summary-item:last-child { border-bottom: none; padding-bottom: 0; }
             #toast-container { top: 20px; right: 5%; width: 90%; }
+            .toast { justify-content: center; transform: translateY(-100%); }
+            .toast.show { transform: translateY(0); }
         }
     </style>
 </head>
@@ -104,7 +106,6 @@
             <div class="summary-item">
                 <div class="summary-value" id="total_ganho">0.00 €</div>
                 <div class="summary-label">Total a Receber</div>
-                <!-- O Botão do PDF está garantidamente aqui -->
                 <button class="pdf-btn" onclick="exportarPDF()">Exportar PDF</button>
             </div>
         </div>
@@ -131,7 +132,7 @@
             const temaAtual = document.documentElement.getAttribute('data-theme');
             const novoTema = temaAtual === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', novoTema);
-            localStorage.setItem('tema_v4', novoTema);
+            localStorage.setItem('tema_v5', novoTema);
         }
 
         function showToast(msg) {
@@ -144,10 +145,10 @@
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, 5000); // 5 segundos para dar tempo de ler os erros
         }
 
-        function formatarData(data) { return data.split('-').reverse().join('/'); }
+        function formatarData(data) { return data ? data.split('-').reverse().join('/') : ''; }
 
         function calcularDiferenca(inicio, fim) {
             const [hInicio, mInicio] = inicio.split(':').map(Number);
@@ -164,16 +165,34 @@
         }
 
         async function carregarDadosDoGoogle() {
-            if (GOOGLE_SCRIPT_URL === "COLE_O_SEU_LINK_AQUI") {
-                showToast("Falta colocar o Link do Apps Script no código!");
+            if (GOOGLE_SCRIPT_URL === "COLE_AQUI_O_SEU_LINK_DO_APPS_SCRIPT") {
+                showToast("ERRO: Esqueceu-se de colar o link do Google Script no código!");
                 return;
             }
+            
+            showToast("A sincronizar com a base de dados...");
+            
             try {
-                const response = await fetch(GOOGLE_SCRIPT_URL);
-                registos = await response.json();
+                // O antiCache contorna os bloqueios do Safari
+                const antiCache = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'nocache=' + Date.now();
+                const response = await fetch(antiCache);
+                
+                if (!response.ok) {
+                    throw new Error("Servidor respondeu com erro " + response.status);
+                }
+                
+                const data = await response.json();
+                
+                if (!Array.isArray(data)) {
+                    throw new Error("Os dados recebidos não têm o formato correto.");
+                }
+                
+                registos = data;
                 renderizarTabela();
+                
             } catch (error) {
-                showToast("Erro de ligação. Verifique o URL do Script.");
+                console.error(error);
+                showToast("ERRO DE LIGAÇÃO: " + error.message);
             }
         }
 
@@ -181,36 +200,44 @@
             const tbody = document.getElementById('tabela_registos');
             tbody.innerHTML = '';
             
-            // Ordenação Crescente
-            registos.sort((a, b) => new Date(a.data) - new Date(b.data));
+            try {
+                // Ordenação Crescente protegida contra datas inválidas
+                registos.sort((a, b) => {
+                    if(!a.data) return 1;
+                    if(!b.data) return -1;
+                    return new Date(a.data) - new Date(b.data);
+                });
 
-            let somaMinutos = 0, somaValor = 0;
-            const diasUnicos = new Set();
+                let somaMinutos = 0, somaValor = 0;
+                const diasUnicos = new Set();
 
-            registos.forEach(r => {
-                diasUnicos.add(r.data);
-                somaMinutos += parseInt(r.minutosTotais || 0);
-                somaValor += parseFloat(r.valorGasto || 0);
+                registos.forEach(r => {
+                    if(r.data) diasUnicos.add(r.data);
+                    somaMinutos += parseInt(r.minutosTotais || 0);
+                    somaValor += parseFloat(r.valorGasto || 0);
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${formatarData(r.data)}</td>
-                        <td>${r.inicio}</td>
-                        <td>${r.fim}</td>
-                        <td>${r.duracaoTexto || '--'}</td>
-                        <td>${parseFloat(r.taxaUsada).toFixed(2)} €</td>
-                        <td><strong>${parseFloat(r.valorGasto).toFixed(2)} €</strong></td>
-                        <td><button class="delete-btn" onclick="apagarRegisto('${r.id}')">🗑️</button></td>
-                    </tr>
-                `;
-            });
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${formatarData(r.data)}</td>
+                            <td>${r.inicio || '--'}</td>
+                            <td>${r.fim || '--'}</td>
+                            <td>${r.duracaoTexto || '--'}</td>
+                            <td>${parseFloat(r.taxaUsada || 0).toFixed(2)} €</td>
+                            <td><strong>${parseFloat(r.valorGasto || 0).toFixed(2)} €</strong></td>
+                            <td><button class="delete-btn" onclick="apagarRegisto('${r.id}')" title="Apagar">🗑️</button></td>
+                        </tr>
+                    `;
+                });
 
-            const horasTotais = Math.floor(somaMinutos / 60);
-            const minutosSobram = somaMinutos % 60;
-            
-            document.getElementById('total_dias').innerText = diasUnicos.size;
-            document.getElementById('total_horas').innerText = `${horasTotais}h ${minutosSobram.toString().padStart(2, '0')}m`;
-            document.getElementById('total_ganho').innerText = `${somaValor.toFixed(2)} €`;
+                const horasTotais = Math.floor(somaMinutos / 60);
+                const minutosSobram = somaMinutos % 60;
+                
+                document.getElementById('total_dias').innerText = diasUnicos.size;
+                document.getElementById('total_horas').innerText = `${horasTotais}h ${minutosSobram.toString().padStart(2, '0')}m`;
+                document.getElementById('total_ganho').innerText = `${somaValor.toFixed(2)} €`;
+            } catch(e) {
+                showToast("Erro ao desenhar a tabela: " + e.message);
+            }
         }
 
         async function adicionarRegisto() {
@@ -220,7 +247,7 @@
             const taxa = parseFloat(document.getElementById('taxa_hora').value);
 
             if (!data || !inicio || !fim || isNaN(taxa)) {
-                showToast("Preencha todos os campos.");
+                showToast("Por favor, preencha todos os campos.");
                 return;
             }
 
@@ -236,11 +263,11 @@
                 valorGasto: calc.valorDecimal * taxa
             };
 
-            showToast("A gravar...");
+            showToast("A gravar no Google Drive...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(novoRegisto) });
                 registos.push(novoRegisto);
-                localStorage.setItem('ultima_taxa_v4', taxa);
+                localStorage.setItem('ultima_taxa_v5', taxa);
                 
                 document.getElementById('hora_inicio').value = '';
                 document.getElementById('hora_fim').value = '';
@@ -249,62 +276,67 @@
                 renderizarTabela();
                 showToast("Registo guardado com sucesso!");
             } catch (error) {
-                showToast("Erro ao gravar no Google.");
+                showToast("ERRO ao gravar: " + error.message);
             }
         }
 
         async function apagarRegisto(id) {
-            if(!confirm("Apagar este registo?")) return;
+            if(!confirm("Tem a certeza que quer apagar este registo?")) return;
             showToast("A apagar...");
             try {
-                await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}`);
+                const antiCache = `${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`;
+                await fetch(antiCache);
                 registos = registos.filter(r => r.id !== id);
                 renderizarTabela();
                 showToast("Registo apagado.");
             } catch (error) {
-                showToast("Erro ao apagar.");
+                showToast("ERRO ao apagar: " + error.message);
             }
         }
 
         async function exportarPDF() {
             if (registos.length === 0) {
-                showToast("Não há dados para exportar.");
+                showToast("Não há dados para exportar no PDF.");
                 return;
             }
-            showToast("A gerar PDF...");
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            showToast("A gerar o seu ficheiro PDF...");
             
-            doc.setFontSize(18);
-            doc.text("Relatório de Horas", 14, 20);
-            
-            doc.autoTable({
-                startY: 30,
-                head: [['Data', 'Início', 'Fim', 'Duração', 'Taxa', 'Valor']],
-                body: registos.map(r => [
-                    formatarData(r.data), 
-                    r.inicio, 
-                    r.fim, 
-                    r.duracaoTexto, 
-                    parseFloat(r.taxaUsada).toFixed(2) + ' €', 
-                    parseFloat(r.valorGasto).toFixed(2) + ' €'
-                ]),
-                theme: 'striped',
-                headStyles: { fillColor: [0, 122, 255] }
-            });
-            
-            const finalY = doc.lastAutoTable.finalY || 30;
-            doc.setFontSize(12);
-            doc.text(`Total a Receber: ${document.getElementById('total_ganho').innerText}`, 14, finalY + 10);
-            
-            doc.save("Relatorio_Horas.pdf");
-            showToast("PDF descarregado!");
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFontSize(18);
+                doc.text("Relatório de Horas", 14, 20);
+                
+                doc.autoTable({
+                    startY: 30,
+                    head: [['Data', 'Início', 'Fim', 'Duração', 'Taxa', 'Valor']],
+                    body: registos.map(r => [
+                        formatarData(r.data), 
+                        r.inicio || '', 
+                        r.fim || '', 
+                        r.duracaoTexto || '', 
+                        parseFloat(r.taxaUsada || 0).toFixed(2) + ' €', 
+                        parseFloat(r.valorGasto || 0).toFixed(2) + ' €'
+                    ]),
+                    theme: 'striped',
+                    headStyles: { fillColor: [52, 199, 89] } // Verde escuro para combinar com o botão
+                });
+                
+                const finalY = doc.lastAutoTable.finalY || 30;
+                doc.setFontSize(12);
+                doc.text(`Total a Receber: ${document.getElementById('total_ganho').innerText}`, 14, finalY + 10);
+                
+                doc.save("Relatorio_Horas.pdf");
+            } catch(e) {
+                showToast("Erro ao criar PDF: " + e.message);
+            }
         }
 
         window.onload = () => {
-            if(localStorage.getItem('tema_v4') === 'dark') alternarTema();
+            if(localStorage.getItem('tema_v5') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
-            document.getElementById('taxa_hora').value = localStorage.getItem('ultima_taxa_v4') || 15;
+            document.getElementById('taxa_hora').value = localStorage.getItem('ultima_taxa_v5') || 15;
             carregarDadosDoGoogle();
         };
     </script>
