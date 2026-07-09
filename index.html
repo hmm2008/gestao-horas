@@ -255,7 +255,8 @@
             const c = calcDiferenca(i,f);
             
             const req = { 
-                id: idEmEdicao ? idEmEdicao : Date.now().toString(), 
+                // A MAGIA ACONTECE AQUI: Adicionamos "REG_" para o Excel não achar que é um número
+                id: idEmEdicao ? idEmEdicao : 'REG_' + Date.now().toString(), 
                 data: d, 
                 inicio: i, 
                 fim: f, 
@@ -265,6 +266,16 @@
                 valorGasto: c.dec * t,
                 cliente: cli 
             };
+            
+            showToast("A guardar...");
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
+                
+                showToast("Guardado!");
+                setTimeout(() => { window.location.reload(); }, 1500); 
+                
+            } catch(e) { showToast("Erro ao guardar"); }
+        }
             
             showToast("A guardar...");
             try {
