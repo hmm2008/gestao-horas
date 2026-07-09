@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     
+    <!-- Bibliotecas para gerar o PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
@@ -15,7 +16,7 @@
         :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; --input-bg: #ffffff; }
         [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; --input-bg: #2c2c2e; }
         
-        body { font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
         .app-container { background: var(--card-bg); max-width: 900px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .theme-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
@@ -98,7 +99,7 @@
 
     <script>
         // ==============================================================
-        // ⚠️ COLOQUE O SEU LINK DO APPS SCRIPT AQUI ABAIXO
+        // ⚠️ COLOQUE O SEU LINK NOVO DO APPS SCRIPT AQUI ABAIXO
         // ==============================================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzffmQprOEwg1pqkm8znKPBQRfedaRfieYhAdYJKUnpAShJM2uzK6PSXhLQ8WySxOG7RA/exec";
         
@@ -130,7 +131,6 @@
             return dataLimpa.split('-').reverse().join('/');
         }
         
-        // Garante que o input type="date" recebe o formato exato que ele exige (YYYY-MM-DD)
         function formatDataParaInput(d) {
             if(!d) return '';
             try {
@@ -142,18 +142,6 @@
                 if(!isNaN(ano)) return `${ano}-${mes}-${dia}`;
             } catch(e) {}
             return d.split('T')[0];
-        }
-
-        function formatHora(h) {
-            if(!h) return '';
-            if(h.includes('T')) {
-                const dataObj = new Date(h);
-                return dataObj.getUTCHours().toString().padStart(2, '0') + ':' + dataObj.getUTCMinutes().toString().padStart(2, '0');
-            }
-            if(h.split(':').length === 3) {
-                return h.substring(0, 5);
-            }
-            return h;
         }
 
         function calcDiferenca(ini, fim) {
@@ -187,6 +175,7 @@
             const tbody = document.getElementById('tabela_registos');
             tbody.innerHTML = '';
             
+            // Ordenar por data
             registos.sort((a,b) => {
                 const dataA = a.data ? a.data.split('T')[0] : '';
                 const dataB = b.data ? b.data.split('T')[0] : '';
@@ -203,8 +192,8 @@
                 tbody.innerHTML += `<tr>
                     <td>${formatDataBR(r.data)}</td>
                     <td><strong>${r.cliente || '--'}</strong></td>
-                    <td>${formatHora(r.inicio)}</td>
-                    <td>${formatHora(r.fim)}</td>
+                    <td>${r.inicio||'--'}</td>
+                    <td>${r.fim||'--'}</td>
                     <td>${r.duracaoTexto||'--'}</td>
                     <td>${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
                     <td><strong>${parseFloat(r.valorGasto||0).toFixed(2)}€</strong></td>
@@ -219,9 +208,7 @@
             document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
         }
 
-        // --- FUNÇÃO EDITAR CORRIGIDA ---
         function editarRegisto(id) {
-            // String() garante que mesmo que o Google Sheets mande um número, nós convertemos para texto para comparar corretamente
             const registo = registos.find(r => String(r.id) === String(id)); 
             
             if (!registo) {
@@ -231,8 +218,8 @@
 
             document.getElementById('data').value = formatDataParaInput(registo.data);
             document.getElementById('cliente').value = registo.cliente || '';
-            document.getElementById('hora_inicio').value = formatHora(registo.inicio);
-            document.getElementById('hora_fim').value = formatHora(registo.fim);
+            document.getElementById('hora_inicio').value = registo.inicio;
+            document.getElementById('hora_fim').value = registo.fim;
             document.getElementById('taxa_hora').value = registo.taxaUsada;
 
             idEmEdicao = id;
@@ -244,7 +231,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-       async function adicionarRegisto() {
+        async function adicionarRegisto() {
             const d=document.getElementById('data').value;
             const cli=document.getElementById('cliente').value;
             const i=document.getElementById('hora_inicio').value;
@@ -255,7 +242,7 @@
             const c = calcDiferenca(i,f);
             
             const req = { 
-                // A MAGIA ACONTECE AQUI: Adicionamos "REG_" para o Excel não achar que é um número
+                // CRUCIAL: O prefixo 'REG_' garante que o Google Sheets nunca confunde isto com um número
                 id: idEmEdicao ? idEmEdicao : 'REG_' + Date.now().toString(), 
                 data: d, 
                 inicio: i, 
@@ -271,19 +258,14 @@
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
                 
-                showToast("Guardado!");
-                setTimeout(() => { window.location.reload(); }, 1500); 
-                
-            } catch(e) { showToast("Erro ao guardar"); }
-        }
-                
-                localStorage.setItem('taxa_hora_guardada', t);
-                renderizarTabela();
-                atualizarListaClientes();
-                
-                document.getElementById('hora_inicio').value = '';
-                document.getElementById('hora_fim').value = '';
                 showToast("Guardado com sucesso!");
+                
+                // Grava a taxa em memória para a próxima vez
+                localStorage.setItem('taxa_hora_guardada', t);
+                
+                // Refresh automático para limpar o formulário e recarregar os dados perfeitamente formatados
+                setTimeout(() => { window.location.reload(); }, 1500);
+                
             } catch(e) { showToast("Erro ao guardar"); }
         }
 
@@ -308,8 +290,8 @@
                 startY: 30,
                 head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor']],
                 body: registos.map(r => [
-                    formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), 
-                    formatHora(r.fim), r.duracaoTexto, parseFloat(r.valorGasto).toFixed(2)+'€'
+                    formatDataBR(r.data), r.cliente || '-', r.inicio, 
+                    r.fim, r.duracaoTexto, parseFloat(r.valorGasto).toFixed(2)+'€'
                 ]),
                 theme: 'striped', headStyles: { fillColor: [52, 199, 89] }
             });
@@ -321,6 +303,7 @@
             if(localStorage.getItem('tema_final') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
             
+            // Carrega o valor/hora da memória
             const taxaGuardada = localStorage.getItem('taxa_hora_guardada');
             if (taxaGuardada) document.getElementById('taxa_hora').value = taxaGuardada;
             
