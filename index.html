@@ -12,19 +12,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; }
-        [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; }
+        :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; --input-bg: #ffffff; }
+        [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; --input-bg: #2c2c2e; }
+        
         body { font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
         .app-container { background: var(--card-bg); max-width: 900px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .theme-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
         
-        /* Agora são 5 colunas para caber o Cliente */
         .form-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 10px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; }
-        input { padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: transparent; color: inherit; color-scheme: light dark; }
-        .btn-add { background: var(--accent-color); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; }
+        
+        input { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); outline: none; color-scheme: light dark; }
+        input:focus { border-color: var(--accent-color); }
+        
+        .btn-add { background: var(--accent-color); color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
+        .btn-add:hover { opacity: 0.9; }
         
         .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: rgba(128,128,128,0.1); padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid var(--border-color); }
         .summary-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-right: 1px solid var(--border-color); }
@@ -45,7 +49,7 @@
 
         @media (max-width: 700px) {
             .form-grid { grid-template-columns: 1fr 1fr; }
-            .cliente-grid { grid-column: span 2; } /* O cliente ocupa 2 espaços no telemóvel */
+            .cliente-grid { grid-column: span 2; }
             .summary-panel { grid-template-columns: 1fr; }
             .summary-item { border-right: none; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
             .summary-item:last-child { border-bottom: none; }
@@ -60,13 +64,12 @@
             <button class="theme-btn" onclick="alternarTema()">☀️/🌙</button>
         </div>
         
-        <!-- Formulário atualizado com o campo Cliente -->
         <div class="form-grid">
             <div class="input-group"><label>Data</label><input type="date" id="data"></div>
             <div class="input-group cliente-grid">
                 <label>Cliente / Projeto</label>
                 <input type="text" id="cliente" list="lista_clientes" placeholder="Ex: João Silva">
-                <datalist id="lista_clientes"></datalist> <!-- Lista de autocompletar -->
+                <datalist id="lista_clientes"></datalist>
             </div>
             <div class="input-group"><label>Início</label><input type="time" id="hora_inicio"></div>
             <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
@@ -93,7 +96,7 @@
 
     <script>
         // ==============================================================
-        // ⚠️ COLOQUE O SEU **NOVO** LINK ENTRE AS ASPAS ABAIXO
+        // ⚠️ COLOQUE O SEU LINK DO APPS SCRIPT AQUI ABAIXO
         // ==============================================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzffmQprOEwg1pqkm8znKPBQRfedaRfieYhAdYJKUnpAShJM2uzK6PSXhLQ8WySxOG7RA/exec";
         
@@ -118,7 +121,24 @@
             setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000);
         }
 
-        function formatData(d) { return d ? d.split('-').reverse().join('/') : ''; }
+        // --- ESCUDOS DE FORMATAÇÃO ---
+        function formatData(d) { 
+            if(!d) return '--';
+            const dataLimpa = d.split('T')[0];
+            return dataLimpa.split('-').reverse().join('/');
+        }
+
+        function formatHora(h) {
+            if(!h) return '--';
+            if(h.includes('T')) {
+                const dataObj = new Date(h);
+                return dataObj.getUTCHours().toString().padStart(2, '0') + ':' + dataObj.getUTCMinutes().toString().padStart(2, '0');
+            }
+            if(h.split(':').length === 3) {
+                return h.substring(0, 5);
+            }
+            return h;
+        }
 
         function calcDiferenca(ini, fim) {
             const [hI, mI] = ini.split(':').map(Number);
@@ -130,7 +150,6 @@
         }
 
         function atualizarListaClientes() {
-            // Extrai todos os clientes únicos para o autocompletar
             const clientesUnicos = [...new Set(registos.map(r => r.cliente).filter(c => c && c.trim() !== ''))];
             const datalist = document.getElementById('lista_clientes');
             datalist.innerHTML = clientesUnicos.map(c => `<option value="${c}">`).join('');
@@ -141,30 +160,36 @@
             try {
                 const antiCache = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'nocache=' + Date.now();
                 const res = await fetch(antiCache);
-                if(!res.ok) throw new Error("Falha no servidor");
+                if(!res.ok) throw new Error("Falha");
                 registos = await res.json();
                 renderizarTabela();
                 atualizarListaClientes();
-            } catch (e) { showToast("Erro de Ligação: Verifique o URL do Script"); }
+            } catch (e) { showToast("Erro a ler tabela. Tente recarregar."); }
         }
 
         function renderizarTabela() {
             const tbody = document.getElementById('tabela_registos');
             tbody.innerHTML = '';
-            registos.sort((a,b) => new Date(a.data) - new Date(b.data));
+            
+            registos.sort((a,b) => {
+                const dataA = a.data ? a.data.split('T')[0] : '';
+                const dataB = b.data ? b.data.split('T')[0] : '';
+                return new Date(dataA) - new Date(dataB);
+            });
+
             let sMin=0, sVal=0; const dias = new Set();
             
             registos.forEach(r => {
-                if(r.data) dias.add(r.data);
+                if(r.data) dias.add(r.data.split('T')[0]);
                 sMin += parseInt(r.minutosTotais||0);
                 sVal += parseFloat(r.valorGasto||0);
                 
                 tbody.innerHTML += `<tr>
                     <td>${formatData(r.data)}</td>
-                    <td><strong>${r.cliente || '-'}</strong></td>
-                    <td>${r.inicio||'-'}</td>
-                    <td>${r.fim||'-'}</td>
-                    <td>${r.duracaoTexto||'-'}</td>
+                    <td><strong>${r.cliente || '--'}</strong></td>
+                    <td>${formatHora(r.inicio)}</td>
+                    <td>${formatHora(r.fim)}</td>
+                    <td>${r.duracaoTexto||'--'}</td>
                     <td>${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
                     <td><strong>${parseFloat(r.valorGasto||0).toFixed(2)}€</strong></td>
                     <td><button class="delete-btn" onclick="apagarRegisto('${r.id}')">🗑️</button></td>
@@ -193,17 +218,20 @@
                 minutosTotais: c.mins, 
                 taxaUsada: t, 
                 valorGasto: c.dec * t,
-                cliente: cli // Envia o cliente para o Google
+                cliente: cli 
             };
             
             showToast("A guardar...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
                 registos.push(req);
+                
+                // GUARDA O PREÇO/HORA NA MEMÓRIA
+                localStorage.setItem('taxa_hora_guardada', t);
+                
                 renderizarTabela();
                 atualizarListaClientes();
                 
-                // Limpa apenas as horas para facilitar registos sucessivos do mesmo cliente
                 document.getElementById('hora_inicio').value = '';
                 document.getElementById('hora_fim').value = '';
                 showToast("Guardado com sucesso!");
@@ -232,13 +260,12 @@
             
             doc.autoTable({
                 startY: 30,
-                // Adicionámos a coluna Cliente ao PDF
                 head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor']],
                 body: registos.map(r => [
                     formatData(r.data), 
                     r.cliente || '-', 
-                    r.inicio, 
-                    r.fim, 
+                    formatHora(r.inicio), 
+                    formatHora(r.fim), 
                     r.duracaoTexto, 
                     parseFloat(r.valorGasto).toFixed(2)+'€'
                 ]),
@@ -252,6 +279,13 @@
         window.onload = () => {
             if(localStorage.getItem('tema_final') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
+            
+            // CARREGA O PREÇO/HORA DA MEMÓRIA (Se não houver, fica vazio)
+            const taxaGuardada = localStorage.getItem('taxa_hora_guardada');
+            if (taxaGuardada) {
+                document.getElementById('taxa_hora').value = taxaGuardada;
+            }
+            
             carregarDadosDoGoogle();
         };
     </script>
