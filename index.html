@@ -15,10 +15,12 @@
         :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; }
         [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; }
         body { font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
-        .app-container { background: var(--card-bg); max-width: 800px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .app-container { background: var(--card-bg); max-width: 900px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .theme-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
-        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+        
+        /* Agora são 5 colunas para caber o Cliente */
+        .form-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 10px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; }
         input { padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: transparent; color: inherit; color-scheme: light dark; }
@@ -32,16 +34,18 @@
         
         .btn-pdf { background: #34c759; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         
+        .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; white-space: nowrap; }
         .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 16px; }
 
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
         .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; font-size: 14px; }
         .toast.show { opacity: 1; }
 
-        @media (max-width: 600px) {
+        @media (max-width: 700px) {
             .form-grid { grid-template-columns: 1fr 1fr; }
+            .cliente-grid { grid-column: span 2; } /* O cliente ocupa 2 espaços no telemóvel */
             .summary-panel { grid-template-columns: 1fr; }
             .summary-item { border-right: none; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
             .summary-item:last-child { border-bottom: none; }
@@ -55,8 +59,15 @@
             <h1 style="margin:0;">Gestão de Horas</h1>
             <button class="theme-btn" onclick="alternarTema()">☀️/🌙</button>
         </div>
+        
+        <!-- Formulário atualizado com o campo Cliente -->
         <div class="form-grid">
             <div class="input-group"><label>Data</label><input type="date" id="data"></div>
+            <div class="input-group cliente-grid">
+                <label>Cliente / Projeto</label>
+                <input type="text" id="cliente" list="lista_clientes" placeholder="Ex: João Silva">
+                <datalist id="lista_clientes"></datalist> <!-- Lista de autocompletar -->
+            </div>
             <div class="input-group"><label>Início</label><input type="time" id="hora_inicio"></div>
             <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
             <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
@@ -68,27 +79,28 @@
             <div class="summary-item"><span class="val" id="total_horas">0h</span><span class="lab">Total Horas</span></div>
             <div class="summary-item">
                 <span class="val" id="total_ganho">0.00 €</span><span class="lab">A Receber</span>
-                <button class="btn-pdf" onclick="exportarPDF()">ExportAR PDF</button>
+                <button class="btn-pdf" onclick="exportarPDF()">Exportar PDF</button>
             </div>
         </div>
 
-        <table>
-            <thead><tr><th>Data</th><th>Início</th><th>Fim</th><th>Duração</th><th>Taxa</th><th>Valor</th><th></th></tr></thead>
-            <tbody id="tabela_registos"></tbody>
-        </table>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Taxa</th><th>Valor</th><th></th></tr></thead>
+                <tbody id="tabela_registos"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        // === COLOQUE O SEU LINK ABAIXO ===
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1tokzLeRFCwh9MfA25xOusqi_qfFFtui4fRj-Tkvg8eJlcYW5948ZGbK9XNp8bV4Ldg/exec";
+        // ==============================================================
+        // ⚠️ COLOQUE O SEU **NOVO** LINK ENTRE AS ASPAS ABAIXO
+        // ==============================================================
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZRWLTW8t55XvVy9T3ndFB3RxajRgnPNJcxBh6vH3Dso4uo7wgd788CCeg4qPE2kcsfw/exec";
         
         let registos = [];
 
-        // Registo do novo Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(reg => {
-                reg.update(); // Força a atualização do motor
-            });
+            navigator.serviceWorker.register('sw.js').then(reg => reg.update());
         }
 
         function alternarTema() {
@@ -117,14 +129,23 @@
             return { texto: `${h}h ${(totMin % 60).toString().padStart(2,'0')}m`, mins: totMin, dec: h + ((totMin % 60)/60) };
         }
 
+        function atualizarListaClientes() {
+            // Extrai todos os clientes únicos para o autocompletar
+            const clientesUnicos = [...new Set(registos.map(r => r.cliente).filter(c => c && c.trim() !== ''))];
+            const datalist = document.getElementById('lista_clientes');
+            datalist.innerHTML = clientesUnicos.map(c => `<option value="${c}">`).join('');
+        }
+
         async function carregarDadosDoGoogle() {
             if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) { showToast("Coloque o seu link Apps Script!"); return; }
             try {
-                const res = await fetch(GOOGLE_SCRIPT_URL);
+                const antiCache = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'nocache=' + Date.now();
+                const res = await fetch(antiCache);
                 if(!res.ok) throw new Error("Falha no servidor");
                 registos = await res.json();
                 renderizarTabela();
-            } catch (e) { showToast("Novo Erro de Ligação: Verifique o URL do Script"); }
+                atualizarListaClientes();
+            } catch (e) { showToast("Erro de Ligação: Verifique o URL do Script"); }
         }
 
         function renderizarTabela() {
@@ -139,8 +160,12 @@
                 sVal += parseFloat(r.valorGasto||0);
                 
                 tbody.innerHTML += `<tr>
-                    <td>${formatData(r.data)}</td><td>${r.inicio||'-'}</td><td>${r.fim||'-'}</td>
-                    <td>${r.duracaoTexto||'-'}</td><td>${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
+                    <td>${formatData(r.data)}</td>
+                    <td><strong>${r.cliente || '-'}</strong></td>
+                    <td>${r.inicio||'-'}</td>
+                    <td>${r.fim||'-'}</td>
+                    <td>${r.duracaoTexto||'-'}</td>
+                    <td>${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
                     <td><strong>${parseFloat(r.valorGasto||0).toFixed(2)}€</strong></td>
                     <td><button class="delete-btn" onclick="apagarRegisto('${r.id}')">🗑️</button></td>
                 </tr>`;
@@ -151,16 +176,36 @@
         }
 
         async function adicionarRegisto() {
-            const d=document.getElementById('data').value, i=document.getElementById('hora_inicio').value, f=document.getElementById('hora_fim').value, t=parseFloat(document.getElementById('taxa_hora').value);
-            if(!d || !i || !f || isNaN(t)) { showToast("Preencha tudo"); return; }
+            const d=document.getElementById('data').value;
+            const cli=document.getElementById('cliente').value;
+            const i=document.getElementById('hora_inicio').value;
+            const f=document.getElementById('hora_fim').value;
+            const t=parseFloat(document.getElementById('taxa_hora').value);
+            
+            if(!d || !i || !f || isNaN(t)) { showToast("Preencha as horas e a data."); return; }
             const c = calcDiferenca(i,f);
-            const req = { id: Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t };
+            const req = { 
+                id: Date.now().toString(), 
+                data: d, 
+                inicio: i, 
+                fim: f, 
+                duracaoTexto: c.texto, 
+                minutosTotais: c.mins, 
+                taxaUsada: t, 
+                valorGasto: c.dec * t,
+                cliente: cli // Envia o cliente para o Google
+            };
             
             showToast("A guardar...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
                 registos.push(req);
                 renderizarTabela();
+                atualizarListaClientes();
+                
+                // Limpa apenas as horas para facilitar registos sucessivos do mesmo cliente
+                document.getElementById('hora_inicio').value = '';
+                document.getElementById('hora_fim').value = '';
                 showToast("Guardado com sucesso!");
             } catch(e) { showToast("Erro ao guardar"); }
         }
@@ -169,7 +214,8 @@
             if(!confirm("Apagar?")) return;
             showToast("A apagar...");
             try {
-                await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}`);
+                const antiCache = `${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`;
+                await fetch(antiCache);
                 registos = registos.filter(r => r.id !== id);
                 renderizarTabela();
                 showToast("Apagado!");
@@ -181,15 +227,26 @@
             showToast("A preparar PDF...");
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("Relatório de Horas", 14, 20);
+            
+            doc.text("Relatório de Horas e Projetos", 14, 20);
+            
             doc.autoTable({
                 startY: 30,
-                head: [['Data', 'Início', 'Fim', 'Duração', 'Valor']],
-                body: registos.map(r => [formatData(r.data), r.inicio, r.fim, r.duracaoTexto, parseFloat(r.valorGasto).toFixed(2)+'€']),
+                // Adicionámos a coluna Cliente ao PDF
+                head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor']],
+                body: registos.map(r => [
+                    formatData(r.data), 
+                    r.cliente || '-', 
+                    r.inicio, 
+                    r.fim, 
+                    r.duracaoTexto, 
+                    parseFloat(r.valorGasto).toFixed(2)+'€'
+                ]),
                 theme: 'striped', headStyles: { fillColor: [52, 199, 89] }
             });
-            doc.text(`Total: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY || 30) + 10);
-            doc.save("Relatorio.pdf");
+            
+            doc.text(`Total a receber: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY || 30) + 10);
+            doc.save("Relatorio_Clientes.pdf");
         }
 
         window.onload = () => {
