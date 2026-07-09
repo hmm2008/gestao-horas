@@ -244,7 +244,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        async function adicionarRegisto() {
+       async function adicionarRegisto() {
             const d=document.getElementById('data').value;
             const cli=document.getElementById('cliente').value;
             const i=document.getElementById('hora_inicio').value;
@@ -276,32 +276,6 @@
                 
             } catch(e) { showToast("Erro ao guardar"); }
         }
-            
-            showToast("A guardar...");
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
-                
-                showToast("Guardado!");
-                setTimeout(() => { window.location.reload(); }, 1500); 
-                
-            } catch(e) { showToast("Erro ao guardar"); }
-        }
-            
-            showToast("A guardar...");
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
-                
-                if (idEmEdicao) {
-                    const index = registos.findIndex(r => String(r.id) === String(idEmEdicao));
-                    if(index !== -1) registos[index] = req;
-                    
-                    idEmEdicao = null;
-                    const btn = document.getElementById('btn_submit');
-                    btn.innerText = "ADICIONAR REGISTO";
-                    btn.style.backgroundColor = "var(--accent-color)";
-                } else {
-                    registos.push(req);
-                }
                 
                 localStorage.setItem('taxa_hora_guardada', t);
                 renderizarTabela();
