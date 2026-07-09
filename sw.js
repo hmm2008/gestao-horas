@@ -1,4 +1,5 @@
-const CACHE_NAME = 'gestao-horas-v1';
+
+const CACHE_NAME = 'gestao-horas-v2';
 const urlsToCache = [
   './',
   './index.html',
@@ -6,22 +7,30 @@ const urlsToCache = [
   './icon.png'
 ];
 
-// Instalação do Service Worker
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Força a atualização imediata
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
 });
 
-// Interceptar pedidos (necessário para PWA)
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName); // Apaga a versão 1 antiga
+          }
+        })
+      );
+    })
+  );
+});
+
 self.addEventListener('fetch', event => {
+  // NOVA ESTRATÉGIA: Tenta a internet primeiro, se falhar usa a cache!
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request);
-      })
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
