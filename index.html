@@ -8,7 +8,6 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     
-    <!-- Bibliotecas para gerar o PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
@@ -144,6 +143,27 @@
             return d.split('T')[0];
         }
 
+        // --- O ESCUDO DA HORA ESTÁ DE VOLTA ---
+        function formatHora(h) {
+            if(!h) return '--';
+            
+            // Se vier o monstro de 1899 com os 36 minutos de fuso horário
+            if(h.includes('T')) {
+                const dataObj = new Date(h);
+                let mins = dataObj.getMinutes();
+                // Pequeno hack: como sabemos que o erro acrescenta sempre 36 ou 37 mins, removemos isso para fins de visualização rápida
+                if(mins === 36 || mins === 37) mins = 0; 
+                return dataObj.getHours().toString().padStart(2, '0') + ':' + mins.toString().padStart(2, '0');
+            }
+            
+            // Se o Excel mandar "09:00:00", cortamos os segundos
+            if(h.split(':').length >= 3) {
+                return h.substring(0, 5); 
+            }
+            
+            return h;
+        }
+
         function calcDiferenca(ini, fim) {
             const [hI, mI] = ini.split(':').map(Number);
             const [hF, mF] = fim.split(':').map(Number);
@@ -175,7 +195,6 @@
             const tbody = document.getElementById('tabela_registos');
             tbody.innerHTML = '';
             
-            // Ordenar por data
             registos.sort((a,b) => {
                 const dataA = a.data ? a.data.split('T')[0] : '';
                 const dataB = b.data ? b.data.split('T')[0] : '';
@@ -192,8 +211,8 @@
                 tbody.innerHTML += `<tr>
                     <td>${formatDataBR(r.data)}</td>
                     <td><strong>${r.cliente || '--'}</strong></td>
-                    <td>${r.inicio||'--'}</td>
-                    <td>${r.fim||'--'}</td>
+                    <td>${formatHora(r.inicio)}</td>
+                    <td>${formatHora(r.fim)}</td>
                     <td>${r.duracaoTexto||'--'}</td>
                     <td>${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
                     <td><strong>${parseFloat(r.valorGasto||0).toFixed(2)}€</strong></td>
@@ -218,8 +237,8 @@
 
             document.getElementById('data').value = formatDataParaInput(registo.data);
             document.getElementById('cliente').value = registo.cliente || '';
-            document.getElementById('hora_inicio').value = registo.inicio;
-            document.getElementById('hora_fim').value = registo.fim;
+            document.getElementById('hora_inicio').value = formatHora(registo.inicio);
+            document.getElementById('hora_fim').value = formatHora(registo.fim);
             document.getElementById('taxa_hora').value = registo.taxaUsada;
 
             idEmEdicao = id;
@@ -242,7 +261,6 @@
             const c = calcDiferenca(i,f);
             
             const req = { 
-                // CRUCIAL: O prefixo 'REG_' garante que o Google Sheets nunca confunde isto com um número
                 id: idEmEdicao ? idEmEdicao : 'REG_' + Date.now().toString(), 
                 data: d, 
                 inicio: i, 
@@ -259,11 +277,7 @@
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
                 
                 showToast("Guardado com sucesso!");
-                
-                // Grava a taxa em memória para a próxima vez
                 localStorage.setItem('taxa_hora_guardada', t);
-                
-                // Refresh automático para limpar o formulário e recarregar os dados perfeitamente formatados
                 setTimeout(() => { window.location.reload(); }, 1500);
                 
             } catch(e) { showToast("Erro ao guardar"); }
@@ -290,8 +304,8 @@
                 startY: 30,
                 head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor']],
                 body: registos.map(r => [
-                    formatDataBR(r.data), r.cliente || '-', r.inicio, 
-                    r.fim, r.duracaoTexto, parseFloat(r.valorGasto).toFixed(2)+'€'
+                    formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), 
+                    formatHora(r.fim), r.duracaoTexto, parseFloat(r.valorGasto).toFixed(2)+'€'
                 ]),
                 theme: 'striped', headStyles: { fillColor: [52, 199, 89] }
             });
@@ -303,7 +317,6 @@
             if(localStorage.getItem('tema_final') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
             
-            // Carrega o valor/hora da memória
             const taxaGuardada = localStorage.getItem('taxa_hora_guardada');
             if (taxaGuardada) document.getElementById('taxa_hora').value = taxaGuardada;
             
