@@ -41,6 +41,8 @@
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; white-space: nowrap; }
+        .action-btns { display: flex; gap: 10px; }
+        .edit-btn { background: none; border: none; color: #ff9500; cursor: pointer; font-size: 16px; }
         .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 16px; }
 
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
@@ -75,7 +77,7 @@
             <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
             <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
         </div>
-        <button class="btn-add" onclick="adicionarRegisto()">ADICIONAR REGISTO</button>
+        <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">ADICIONAR REGISTO</button>
 
         <div class="summary-panel">
             <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
@@ -88,7 +90,7 @@
 
         <div class="table-container">
             <table>
-                <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Taxa</th><th>Valor</th><th></th></tr></thead>
+                <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Taxa</th><th>Valor</th><th>Ações</th></tr></thead>
                 <tbody id="tabela_registos"></tbody>
             </table>
         </div>
@@ -101,6 +103,7 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzffmQprOEwg1pqkm8znKPBQRfedaRfieYhAdYJKUnpAShJM2uzK6PSXhLQ8WySxOG7RA/exec";
         
         let registos = [];
+        let idEmEdicao = null; // Variável para saber se estamos a editar ou a criar de novo
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').then(reg => reg.update());
@@ -122,10 +125,16 @@
         }
 
         // --- ESCUDOS DE FORMATAÇÃO ---
-        function formatData(d) { 
+        function formatDataBR(d) { 
             if(!d) return '--';
             const dataLimpa = d.split('T')[0];
             return dataLimpa.split('-').reverse().join('/');
+        }
+        
+        // Mantém a data no formato AAAA-MM-DD para injetar no campo de input
+        function formatDataParaInput(d) {
+            if(!d) return '';
+            return d.split('T')[0];
         }
 
         function formatHora(h) {
@@ -156,7 +165,7 @@
         }
 
         async function carregarDadosDoGoogle() {
-            if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) { showToast("Coloque o seu link Apps Script!"); return; }
+            if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) return;
             try {
                 const antiCache = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'nocache=' + Date.now();
                 const res = await fetch(antiCache);
@@ -164,7 +173,7 @@
                 registos = await res.json();
                 renderizarTabela();
                 atualizarListaClientes();
-            } catch (e) { showToast("Erro a ler tabela. Tente recarregar."); }
+            } catch (e) { console.error("Erro a ler tabela."); }
         }
 
         function renderizarTabela() {
@@ -185,19 +194,46 @@
                 sVal += parseFloat(r.valorGasto||0);
                 
                 tbody.innerHTML += `<tr>
-                    <td>${formatData(r.data)}</td>
+                    <td>${formatDataBR(r.data)}</td>
                     <td><strong>${r.cliente || '--'}</strong></td>
                     <td>${formatHora(r.inicio)}</td>
                     <td>${formatHora(r.fim)}</td>
                     <td>${r.duracaoTexto||'--'}</td>
                     <td>${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
                     <td><strong>${parseFloat(r.valorGasto||0).toFixed(2)}€</strong></td>
-                    <td><button class="delete-btn" onclick="apagarRegisto('${r.id}')">🗑️</button></td>
+                    <td class="action-btns">
+                        <button class="edit-btn" onclick="editarRegisto('${r.id}')" title="Editar">✏️</button>
+                        <button class="delete-btn" onclick="apagarRegisto('${r.id}')" title="Apagar">🗑️</button>
+                    </td>
                 </tr>`;
             });
             document.getElementById('total_dias').innerText = dias.size;
             document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`;
             document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
+        }
+
+        // --- NOVA FUNÇÃO PARA EDITAR ---
+        function editarRegisto(id) {
+            const registo = registos.find(r => r.id === id);
+            if (!registo) return;
+
+            // Preenche o formulário com os dados do registo
+            document.getElementById('data').value = formatDataParaInput(registo.data);
+            document.getElementById('cliente').value = registo.cliente || '';
+            document.getElementById('hora_inicio').value = formatHora(registo.inicio);
+            document.getElementById('hora_fim').value = formatHora(registo.fim);
+            document.getElementById('taxa_hora').value = registo.taxaUsada;
+
+            // Avisa o sistema que estamos em modo de edição
+            idEmEdicao = id;
+            
+            // Muda o aspeto do botão
+            const btn = document.getElementById('btn_submit');
+            btn.innerText = "ATUALIZAR REGISTO";
+            btn.style.backgroundColor = "#ff9500"; // Laranja
+            
+            // Desliza a página até ao topo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function adicionarRegisto() {
@@ -209,8 +245,10 @@
             
             if(!d || !i || !f || isNaN(t)) { showToast("Preencha as horas e a data."); return; }
             const c = calcDiferenca(i,f);
+            
+            // Se idEmEdicao tiver valor, usamos o ID antigo, se não, criamos um novo
             const req = { 
-                id: Date.now().toString(), 
+                id: idEmEdicao ? idEmEdicao : Date.now().toString(), 
                 data: d, 
                 inicio: i, 
                 fim: f, 
@@ -224,11 +262,23 @@
             showToast("A guardar...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
-                registos.push(req);
                 
-                // GUARDA O PREÇO/HORA NA MEMÓRIA
+                if (idEmEdicao) {
+                    // Atualiza localmente
+                    const index = registos.findIndex(r => r.id === idEmEdicao);
+                    if(index !== -1) registos[index] = req;
+                    
+                    // Restaura o botão e o modo
+                    idEmEdicao = null;
+                    const btn = document.getElementById('btn_submit');
+                    btn.innerText = "ADICIONAR REGISTO";
+                    btn.style.backgroundColor = "var(--accent-color)";
+                } else {
+                    // Adiciona novo localmente
+                    registos.push(req);
+                }
+                
                 localStorage.setItem('taxa_hora_guardada', t);
-                
                 renderizarTabela();
                 atualizarListaClientes();
                 
@@ -238,51 +288,32 @@
             } catch(e) { showToast("Erro ao guardar"); }
         }
 
-       async function apagarRegisto(id) {
+        async function apagarRegisto(id) {
             if(!confirm("Apagar este registo?")) return;
-            
             showToast("A apagar o registo...");
-            
             try {
-                // Comunica com o Google para apagar
                 const antiCache = `${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`;
                 await fetch(antiCache);
-                
-                // Mostra a mensagem de sucesso
                 showToast("Registo apagado!");
-                
-                // Faz o refresh automático da página após 1.5 segundos (para dar tempo de ler a mensagem)
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-                
-            } catch(e) { 
-                showToast("Erro ao apagar"); 
-            }
+                setTimeout(() => { window.location.reload(); }, 1500);
+            } catch(e) { showToast("Erro ao apagar"); }
         }
 
         async function exportarPDF() {
-            if(registos.length === 0) { showToast("Sem dados para exportar"); return; }
-            showToast("A preparar PDF...");
+            if(registos.length === 0) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
             doc.text("Relatório de Horas e Projetos", 14, 20);
-            
             doc.autoTable({
                 startY: 30,
                 head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor']],
                 body: registos.map(r => [
-                    formatData(r.data), 
-                    r.cliente || '-', 
-                    formatHora(r.inicio), 
-                    formatHora(r.fim), 
-                    r.duracaoTexto, 
-                    parseFloat(r.valorGasto).toFixed(2)+'€'
+                    formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), 
+                    formatHora(r.fim), r.duracaoTexto, parseFloat(r.valorGasto).toFixed(2)+'€'
                 ]),
                 theme: 'striped', headStyles: { fillColor: [52, 199, 89] }
             });
-            
             doc.text(`Total a receber: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY || 30) + 10);
             doc.save("Relatorio_Clientes.pdf");
         }
@@ -291,11 +322,8 @@
             if(localStorage.getItem('tema_final') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
             
-            // CARREGA O PREÇO/HORA DA MEMÓRIA (Se não houver, fica vazio)
             const taxaGuardada = localStorage.getItem('taxa_hora_guardada');
-            if (taxaGuardada) {
-                document.getElementById('taxa_hora').value = taxaGuardada;
-            }
+            if (taxaGuardada) document.getElementById('taxa_hora').value = taxaGuardada;
             
             carregarDadosDoGoogle();
         };
