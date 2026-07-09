@@ -103,7 +103,7 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzffmQprOEwg1pqkm8znKPBQRfedaRfieYhAdYJKUnpAShJM2uzK6PSXhLQ8WySxOG7RA/exec";
         
         let registos = [];
-        let idEmEdicao = null; // Variável para saber se estamos a editar ou a criar de novo
+        let idEmEdicao = null;
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').then(reg => reg.update());
@@ -124,21 +124,28 @@
             setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000);
         }
 
-        // --- ESCUDOS DE FORMATAÇÃO ---
         function formatDataBR(d) { 
             if(!d) return '--';
             const dataLimpa = d.split('T')[0];
             return dataLimpa.split('-').reverse().join('/');
         }
         
-        // Mantém a data no formato AAAA-MM-DD para injetar no campo de input
+        // Garante que o input type="date" recebe o formato exato que ele exige (YYYY-MM-DD)
         function formatDataParaInput(d) {
             if(!d) return '';
+            try {
+                if (d.includes('T')) return d.split('T')[0];
+                const dateObj = new Date(d);
+                const ano = dateObj.getFullYear();
+                const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const dia = String(dateObj.getDate()).padStart(2, '0');
+                if(!isNaN(ano)) return `${ano}-${mes}-${dia}`;
+            } catch(e) {}
             return d.split('T')[0];
         }
 
         function formatHora(h) {
-            if(!h) return '--';
+            if(!h) return '';
             if(h.includes('T')) {
                 const dataObj = new Date(h);
                 return dataObj.getUTCHours().toString().padStart(2, '0') + ':' + dataObj.getUTCMinutes().toString().padStart(2, '0');
@@ -212,27 +219,28 @@
             document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
         }
 
-        // --- NOVA FUNÇÃO PARA EDITAR ---
+        // --- FUNÇÃO EDITAR CORRIGIDA ---
         function editarRegisto(id) {
-            const registo = registos.find(r => r.id === id);
-            if (!registo) return;
+            // String() garante que mesmo que o Google Sheets mande um número, nós convertemos para texto para comparar corretamente
+            const registo = registos.find(r => String(r.id) === String(id)); 
+            
+            if (!registo) {
+                showToast("Registo não encontrado.");
+                return;
+            }
 
-            // Preenche o formulário com os dados do registo
             document.getElementById('data').value = formatDataParaInput(registo.data);
             document.getElementById('cliente').value = registo.cliente || '';
             document.getElementById('hora_inicio').value = formatHora(registo.inicio);
             document.getElementById('hora_fim').value = formatHora(registo.fim);
             document.getElementById('taxa_hora').value = registo.taxaUsada;
 
-            // Avisa o sistema que estamos em modo de edição
             idEmEdicao = id;
             
-            // Muda o aspeto do botão
             const btn = document.getElementById('btn_submit');
             btn.innerText = "ATUALIZAR REGISTO";
-            btn.style.backgroundColor = "#ff9500"; // Laranja
+            btn.style.backgroundColor = "#ff9500"; 
             
-            // Desliza a página até ao topo
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -246,7 +254,6 @@
             if(!d || !i || !f || isNaN(t)) { showToast("Preencha as horas e a data."); return; }
             const c = calcDiferenca(i,f);
             
-            // Se idEmEdicao tiver valor, usamos o ID antigo, se não, criamos um novo
             const req = { 
                 id: idEmEdicao ? idEmEdicao : Date.now().toString(), 
                 data: d, 
@@ -264,17 +271,14 @@
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
                 
                 if (idEmEdicao) {
-                    // Atualiza localmente
-                    const index = registos.findIndex(r => r.id === idEmEdicao);
+                    const index = registos.findIndex(r => String(r.id) === String(idEmEdicao));
                     if(index !== -1) registos[index] = req;
                     
-                    // Restaura o botão e o modo
                     idEmEdicao = null;
                     const btn = document.getElementById('btn_submit');
                     btn.innerText = "ADICIONAR REGISTO";
                     btn.style.backgroundColor = "var(--accent-color)";
                 } else {
-                    // Adiciona novo localmente
                     registos.push(req);
                 }
                 
