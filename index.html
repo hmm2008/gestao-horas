@@ -238,16 +238,27 @@
             } catch(e) { showToast("Erro ao guardar"); }
         }
 
-        async function apagarRegisto(id) {
-            if(!confirm("Apagar?")) return;
-            showToast("A apagar...");
+       async function apagarRegisto(id) {
+            if(!confirm("Apagar este registo?")) return;
+            
+            showToast("A apagar o registo...");
+            
             try {
+                // Comunica com o Google para apagar
                 const antiCache = `${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`;
                 await fetch(antiCache);
-                registos = registos.filter(r => r.id !== id);
-                renderizarTabela();
-                showToast("Apagado!");
-            } catch(e) { showToast("Erro ao apagar"); }
+                
+                // Mostra a mensagem de sucesso
+                showToast("Registo apagado!");
+                
+                // Faz o refresh automático da página após 1.5 segundos (para dar tempo de ler a mensagem)
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+                
+            } catch(e) { 
+                showToast("Erro ao apagar"); 
+            }
         }
 
         async function exportarPDF() {
