@@ -137,15 +137,7 @@
             </div>
         </div>
     </div>
-<!-- Painel de Finanças -->
-    <div id="painel_financeiro" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; background: #f0f0f0; padding: 15px; border-radius: 8px; margin: 20px 0;">
-        <div style="text-align:center; font-size:12px;">Bruto<span id="f_bruto" style="display:block; font-weight:bold;">0€</span></div>
-        <div style="text-align:center; font-size:12px;">Despesas<input type="number" id="inp_despesas" value="0" oninput="calcularFinancas()" style="width:100%"></div>
-        <div style="text-align:center; font-size:12px;">IRS %<input type="number" id="inp_irs" value="0" oninput="calcularFinancas()" style="width:100%"></div>
-        <div style="text-align:center; font-size:12px;">SS %<input type="number" id="inp_ss" value="0" oninput="calcularFinancas()" style="width:100%"></div>
-        <div style="text-align:center; font-size:12px;">Impostos<span id="f_impostos" style="display:block; font-weight:bold;">0€</span></div>
-        <div style="text-align:center; font-size:12px;">Líquido<span id="f_liquido" style="display:block; font-weight:bold;">0€</span></div>
-    </div>
+
     <!-- CONTEÚDO PRINCIPAL DA APLICAÇÃO -->
     <div class="app-container">
         <div class="header">
@@ -165,6 +157,15 @@
             <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
         </div>
         <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">ADICIONAR REGISTO</button>
+        <!-- Painel de Finanças -->
+    <div id="painel_financeiro" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; background: #f0f0f0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <div style="text-align:center; font-size:12px;">Bruto<span id="f_bruto" style="display:block; font-weight:bold;">0€</span></div>
+        <div style="text-align:center; font-size:12px;">Despesas<input type="number" id="inp_despesas" value="0" oninput="calcularFinancas()" style="width:100%"></div>
+        <div style="text-align:center; font-size:12px;">IRS %<input type="number" id="inp_irs" value="0" oninput="calcularFinancas()" style="width:100%"></div>
+        <div style="text-align:center; font-size:12px;">SS %<input type="number" id="inp_ss" value="0" oninput="calcularFinancas()" style="width:100%"></div>
+        <div style="text-align:center; font-size:12px;">Impostos<span id="f_impostos" style="display:block; font-weight:bold;">0€</span></div>
+        <div style="text-align:center; font-size:12px;">Líquido<span id="f_liquido" style="display:block; font-weight:bold;">0€</span></div>
+    </div>
 
         <div class="summary-panel">
             <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
