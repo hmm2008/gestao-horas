@@ -127,10 +127,28 @@
 
         function iniciarBackupCSV() {
             const dados = obterRegistosFiltrados();
-            if(!dados.length) return;
-            abrirModal("Backup CSV", "Deseja descarregar o ficheiro CSV?", () => {
-                let csv = "Data,Cliente,Inicio,Fim,Valor\n" + dados.map(r => `${r.data},${r.cliente},${r.inicio},${r.fim},${r.valorGasto}`).join("\n");
-                const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8," + encodeURI(csv); a.download = "backup.csv"; a.click();
+            if(dados.length === 0) { showToast("Sem dados para exportar."); return; }
+            
+            const nomeFicheiro = "Backup_Horas_" + new Date().toISOString().split('T')[0] + ".csv";
+            
+            abrirModal("Confirmar Backup CSV", `Deseja gravar o ficheiro "${nomeFicheiro}" com colunas separadas?`, () => {
+                // Adicionamos o BOM (\uFEFF) para o Excel reconhecer o formato UTF-8 e separar as colunas
+                let csvContent = "\uFEFF"; 
+                // Cabeçalhos
+                csvContent += "Data;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
+                
+                // Dados (usamos ; em vez de , para forçar a separação por colunas no Excel)
+                dados.forEach(r => {
+                    csvContent += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = nomeFicheiro;
+                a.click();
+                showToast("Backup organizado com sucesso!");
             });
         }
 
