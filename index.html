@@ -125,39 +125,49 @@
             return { texto: `${Math.floor(tot/60)}h ${tot%60}m`, mins: tot, dec: tot/60 };
         }
 
-        async function iniciarBackupCSV() {
+       function iniciarBackupCSV() {
             const dados = obterRegistosFiltrados();
-            if (dados.length === 0) { showToast("Sem dados para exportar."); return; }
+            if (dados.length === 0) { 
+                showToast("Sem dados para exportar."); 
+                return; 
+            }
 
-            // 1. Prepara o conteúdo CSV
-            let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
-            dados.forEach(r => {
-                csvContent += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`;
-            });
+            // Função que gera o conteúdo do CSV
+            const gerarConteudoCSV = () => {
+                let csv = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
+                dados.forEach(r => {
+                    csv += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada || 0).toFixed(2)};${parseFloat(r.valorGasto || 0).toFixed(2)}\n`;
+                });
+                return csv;
+            };
 
-            // 2. Tenta usar o File System Access API (forma moderna e elegante)
-            if ('showSaveFilePicker' in window) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: `Backup_Horas_${new Date().toISOString().split('T')[0]}.csv`,
-                        types: [{ description: 'Ficheiro CSV', accept: { 'text/csv': ['.csv'] } }],
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(csvContent);
-                    await writable.close();
-                    showToast("Ficheiro guardado com sucesso!");
-                } catch (err) {
-                    if (err.name !== 'AbortError') showToast("Erro ao gravar ficheiro.");
-                }
-            } else {
-                // 3. Fallback (para navegadores que não suportam o File System Access)
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `Backup_Horas_${new Date().toISOString().split('T')[0]}.csv`;
-                a.click();
-                showToast("Download iniciado!");
+            try {
+                // Abrimos a caixa de diálogo e passamos a lógica de download para dentro do callback
+                abrirModal("Confirmar Backup", "Deseja descarregar o ficheiro CSV com os dados atuais?", () => {
+                    try {
+                        const csv = gerarConteudoCSV();
+                        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        
+                        // Criamos o link de forma explícita
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "Backup_Horas_" + new Date().toISOString().split('T')[0] + ".csv";
+                        
+                        // Adicionamos ao documento, clicamos e removemos
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        
+                        showToast("Ficheiro descarregado com sucesso!");
+                    } catch (e) {
+                        console.error("Erro interno no download:", e);
+                        showToast("Erro ao processar o download.");
+                    }
+                });
+            } catch (e) {
+                console.error("Erro ao abrir modal:", e);
+                showToast("Erro ao abrir a janela de confirmação.");
             }
         }
 
