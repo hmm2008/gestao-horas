@@ -24,8 +24,8 @@
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 10px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; }
         
-        input { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); outline: none; color-scheme: light dark; }
-        input:focus { border-color: var(--accent-color); }
+        input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); outline: none; color-scheme: light dark; }
+        input:focus, select:focus { border-color: var(--accent-color); }
         
         .btn-add { background: var(--accent-color); color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
         .btn-add:hover { opacity: 0.9; }
@@ -38,8 +38,11 @@
         
         .btn-pdf { background: #34c759; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         
+        .filter-panel { display: flex; gap: 10px; margin-bottom: 15px; padding: 15px; background: rgba(128,128,128,0.05); border-radius: 10px; border: 1px solid var(--border-color); }
+        .filter-panel select { flex: 1; font-weight: bold; }
+
         .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; white-space: nowrap; }
         .action-btns { display: flex; gap: 10px; }
         .edit-btn { background: none; border: none; color: #ff9500; cursor: pointer; font-size: 16px; }
@@ -55,6 +58,7 @@
             .summary-panel { grid-template-columns: 1fr; }
             .summary-item { border-right: none; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
             .summary-item:last-child { border-bottom: none; }
+            .filter-panel { flex-direction: column; }
         }
     </style>
 </head>
@@ -86,6 +90,16 @@
                 <span class="val" id="total_ganho">0.00 €</span><span class="lab">A Receber</span>
                 <button class="btn-pdf" onclick="exportarPDF()">Exportar PDF</button>
             </div>
+        </div>
+
+        <!-- PAINEL DE FILTROS -->
+        <div class="filter-panel">
+            <select id="filtro_mes" onchange="renderizarTabela()">
+                <option value="todos">Todos os Meses</option>
+            </select>
+            <select id="filtro_cliente" onchange="renderizarTabela()">
+                <option value="todos">Todos os Clientes</option>
+            </select>
         </div>
 
         <div class="table-container">
@@ -143,24 +157,17 @@
             return d.split('T')[0];
         }
 
-        // --- O ESCUDO DA HORA ESTÁ DE VOLTA ---
         function formatHora(h) {
             if(!h) return '--';
-            
-            // Se vier o monstro de 1899 com os 36 minutos de fuso horário
             if(h.includes('T')) {
                 const dataObj = new Date(h);
                 let mins = dataObj.getMinutes();
-                // Pequeno hack: como sabemos que o erro acrescenta sempre 36 ou 37 mins, removemos isso para fins de visualização rápida
                 if(mins === 36 || mins === 37) mins = 0; 
                 return dataObj.getHours().toString().padStart(2, '0') + ':' + mins.toString().padStart(2, '0');
             }
-            
-            // Se o Excel mandar "09:00:00", cortamos os segundos
             if(h.split(':').length >= 3) {
                 return h.substring(0, 5); 
             }
-            
             return h;
         }
 
@@ -173,10 +180,61 @@
             return { texto: `${h}h ${(totMin % 60).toString().padStart(2,'0')}m`, mins: totMin, dec: h + ((totMin % 60)/60) };
         }
 
-        function atualizarListaClientes() {
-            const clientesUnicos = [...new Set(registos.map(r => r.cliente).filter(c => c && c.trim() !== ''))];
-            const datalist = document.getElementById('lista_clientes');
-            datalist.innerHTML = clientesUnicos.map(c => `<option value="${c}">`).join('');
+        function atualizarDropdownsFiltros() {
+            // Atualiza Datalist e Filtro de Clientes
+            const clientesUnicos = [...new Set(registos.map(r => r.cliente).filter(c => c && c.trim() !== ''))].sort();
+            
+            document.getElementById('lista_clientes').innerHTML = clientesUnicos.map(c => `<option value="${c}">`).join('');
+            
+            const selCliente = document.getElementById('filtro_cliente');
+            const clienteAtual = selCliente.value;
+            selCliente.innerHTML = '<option value="todos">Todos os Clientes</option>' + 
+                clientesUnicos.map(c => `<option value="${c}">${c}</option>`).join('');
+            if(clientesUnicos.includes(clienteAtual)) selCliente.value = clienteAtual;
+
+            // Atualiza Filtro de Meses (formato YYYY-MM)
+            const mesesUnicos = [...new Set(registos.map(r => {
+                if(!r.data) return '';
+                return r.data.split('T')[0].substring(0,7);
+            }).filter(m => m !== ''))].sort().reverse();
+
+            const selMes = document.getElementById('filtro_mes');
+            const mesAtual = selMes.value;
+            selMes.innerHTML = '<option value="todos">Todos os Meses</option>' + 
+                mesesUnicos.map(m => {
+                    const [ano, mes] = m.split('-');
+                    const nomeMes = new Date(ano, mes-1, 1).toLocaleString('pt-PT', { month: 'long' });
+                    return `<option value="${m}">${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)} ${ano}</option>`;
+                }).join('');
+            if(mesesUnicos.includes(mesAtual)) selMes.value = mesAtual;
+        }
+
+        // Função mágica que devolve apenas os registos que passam nos filtros selecionados
+        function obterRegistosFiltrados() {
+            const fMes = document.getElementById('filtro_mes').value;
+            const fCliente = document.getElementById('filtro_cliente').value;
+
+            let filtrados = [...registos].sort((a,b) => {
+                const dataA = a.data ? a.data.split('T')[0] : '';
+                const dataB = b.data ? b.data.split('T')[0] : '';
+                return new Date(dataA) - new Date(dataB);
+            });
+
+            return filtrados.filter(r => {
+                let passaMes = true;
+                let passaCliente = true;
+
+                if (fMes !== 'todos') {
+                    const m = r.data ? r.data.split('T')[0].substring(0,7) : '';
+                    if (m !== fMes) passaMes = false;
+                }
+                
+                if (fCliente !== 'todos') {
+                    if (r.cliente !== fCliente) passaCliente = false;
+                }
+
+                return passaMes && passaCliente;
+            });
         }
 
         async function carregarDadosDoGoogle() {
@@ -186,8 +244,8 @@
                 const res = await fetch(antiCache);
                 if(!res.ok) throw new Error("Falha");
                 registos = await res.json();
+                atualizarDropdownsFiltros();
                 renderizarTabela();
-                atualizarListaClientes();
             } catch (e) { console.error("Erro a ler tabela."); }
         }
 
@@ -195,15 +253,11 @@
             const tbody = document.getElementById('tabela_registos');
             tbody.innerHTML = '';
             
-            registos.sort((a,b) => {
-                const dataA = a.data ? a.data.split('T')[0] : '';
-                const dataB = b.data ? b.data.split('T')[0] : '';
-                return new Date(dataA) - new Date(dataB);
-            });
+            const registosExibidos = obterRegistosFiltrados();
 
             let sMin=0, sVal=0; const dias = new Set();
             
-            registos.forEach(r => {
+            registosExibidos.forEach(r => {
                 if(r.data) dias.add(r.data.split('T')[0]);
                 sMin += parseInt(r.minutosTotais||0);
                 sVal += parseFloat(r.valorGasto||0);
@@ -222,6 +276,8 @@
                     </td>
                 </tr>`;
             });
+            
+            // Atualiza os painéis de cima apenas com os dados filtrados!
             document.getElementById('total_dias').innerText = dias.size;
             document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`;
             document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
@@ -230,10 +286,7 @@
         function editarRegisto(id) {
             const registo = registos.find(r => String(r.id) === String(id)); 
             
-            if (!registo) {
-                showToast("Registo não encontrado.");
-                return;
-            }
+            if (!registo) { showToast("Registo não encontrado."); return; }
 
             document.getElementById('data').value = formatDataParaInput(registo.data);
             document.getElementById('cliente').value = registo.cliente || '';
@@ -295,22 +348,38 @@
         }
 
         async function exportarPDF() {
-            if(registos.length === 0) return;
+            const registosParaPDF = obterRegistosFiltrados(); // O PDF agora usa o filtro!
+            
+            if(registosParaPDF.length === 0) {
+                showToast("Não há dados para exportar com estes filtros.");
+                return; 
+            }
+            
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
+            // Texto do filtro para aparecer no PDF
+            const fMes = document.getElementById('filtro_mes').selectedOptions[0].text;
+            const fCli = document.getElementById('filtro_cliente').selectedOptions[0].text;
+            
             doc.text("Relatório de Horas e Projetos", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Filtros Ativos: ${fMes} | ${fCli}`, 14, 26);
+            
             doc.autoTable({
-                startY: 30,
+                startY: 32,
                 head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor']],
-                body: registos.map(r => [
+                body: registosParaPDF.map(r => [
                     formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), 
                     formatHora(r.fim), r.duracaoTexto, parseFloat(r.valorGasto).toFixed(2)+'€'
                 ]),
                 theme: 'striped', headStyles: { fillColor: [52, 199, 89] }
             });
             doc.text(`Total a receber: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY || 30) + 10);
-            doc.save("Relatorio_Clientes.pdf");
+            
+            // O nome do ficheiro adapta-se se tiver um cliente escolhido
+            const nomeFicheiro = fCli === "Todos os Clientes" ? "Relatorio_Geral.pdf" : `Relatorio_${fCli}.pdf`;
+            doc.save(nomeFicheiro);
         }
 
         window.onload = () => {
