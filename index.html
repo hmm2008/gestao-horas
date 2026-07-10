@@ -251,7 +251,7 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNRyIBHuwG6SJ5NMT2ROw-9UcyhR75-Bdmdm6jte9uUsABDTjVriF0EaDaS-Cw7kRt5w/exec";
         
         let registos = [];
-        let despesasRegistadas = []; // Nova variável para guardar as despesas
+        let despesasRegistadas = []; 
         let idEmEdicao = null;
         let documentoPDFFinal = null;
         let nomePDFFinal = "";
@@ -346,12 +346,22 @@
                 if(!res.ok) throw new Error("Erro");
                 const json = await res.json();
                 
-                // Agora o backend envia os dois pacotes de dados
+                // NOVO: Correção automática do fuso horário
+                const corrigirData = (r) => {
+                    if (r.data && r.data.includes('T')) {
+                        const dt = new Date(r.data);
+                        r.data = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+                    }
+                };
+                
                 if(json.registos && json.despesas) {
+                    json.registos.forEach(corrigirData);
+                    json.despesas.forEach(corrigirData);
                     registos = json.registos;
                     despesasRegistadas = json.despesas;
                 } else {
-                    registos = json; // Segurança caso leia o formato antigo
+                    json.forEach(corrigirData);
+                    registos = json;
                     despesasRegistadas = [];
                 }
                 
@@ -392,11 +402,9 @@
             calcularFinancas();
         }
 
-        // CÁLCULO DE FINANÇAS ATUALIZADO (Lê as despesas reais)
         function calcularFinancas() {
             const fMes = document.getElementById('filtro_mes').value;
             
-            // 1. Filtrar e Somar as despesas do mês selecionado
             let despesasFiltradas = despesasRegistadas;
             if(fMes !== 'todos') {
                 despesasFiltradas = despesasRegistadas.filter(d => d.data && d.data.substring(0,7) === fMes);
@@ -405,11 +413,9 @@
             
             document.getElementById('f_despesas_totais').innerText = totalDespesasReais.toFixed(2) + ' €';
 
-            // 2. Fazer os cálculos de impostos e líquido
             const textoBruto = document.getElementById('total_ganho').innerText;
             const bruto = parseFloat(textoBruto.replace('€', '').trim()) || 0;
             
-            // LER os inputs de percentagem que o utilizador guardou
             const irs = (parseFloat(document.getElementById('inp_irs').value) || 0) / 100;
             const ss = (parseFloat(document.getElementById('inp_ss').value) || 0) / 100;
             
@@ -419,12 +425,10 @@
             document.getElementById('f_impostos').innerText = totalImpostos.toFixed(2) + ' €';
             document.getElementById('f_liquido').innerText = liquido.toFixed(2) + ' €';
             
-            // Guarda as taxas para a próxima visita
             localStorage.setItem('tx_irs', document.getElementById('inp_irs').value);
             localStorage.setItem('tx_ss', document.getElementById('inp_ss').value);
         }
 
-        // --- SISTEMA DE GESTÃO DE DESPESAS (NOVAS FUNÇÕES) ---
         function abrirModalDespesa() {
             document.getElementById('modal-despesa').classList.add('show');
             document.getElementById('d_data').valueAsDate = new Date();
@@ -438,7 +442,6 @@
             
             if(!d || isNaN(val)) { showToast("Preencha a Data e o Valor!"); return; }
             
-            // O truque: envia o tipo "despesa" para o script perceber
             const req = { tipo: 'despesa', id: 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
             
             showToast("A guardar despesa...");
@@ -471,7 +474,6 @@
             if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos."); return; }
             const c = calcDiferenca(i,f);
             
-            // tipo: 'registo' para separar das despesas
             const req = { tipo: 'registo', id: idEmEdicao ? idEmEdicao : 'R_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: cli };
             showToast("A guardar...");
             try {
@@ -599,7 +601,6 @@
             const t = localStorage.getItem('taxa_hora_guardada');
             if (t) document.getElementById('taxa_hora').value = t;
             
-            // Restaura os valores de impostos guardados
             if (localStorage.getItem('tx_irs')) document.getElementById('inp_irs').value = localStorage.getItem('tx_irs');
             if (localStorage.getItem('tx_ss')) document.getElementById('inp_ss').value = localStorage.getItem('tx_ss');
             
