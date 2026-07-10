@@ -132,43 +132,41 @@
                 return; 
             }
 
-            // Função que gera o conteúdo do CSV
-            const gerarConteudoCSV = () => {
+            // Esta é a função que realiza o download "bruto"
+            const executarDownload = () => {
                 let csv = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
                 dados.forEach(r => {
                     csv += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada || 0).toFixed(2)};${parseFloat(r.valorGasto || 0).toFixed(2)}\n`;
                 });
-                return csv;
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "Backup_Horas_" + new Date().toISOString().split('T')[0] + ".csv";
+                
+                // Forçamos o download
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url); // Limpeza de memória
+                showToast("Download iniciado com sucesso!");
             };
 
-            try {
-                // Abrimos a caixa de diálogo e passamos a lógica de download para dentro do callback
-                abrirModal("Confirmar Backup", "Deseja descarregar o ficheiro CSV com os dados atuais?", () => {
-                    try {
-                        const csv = gerarConteudoCSV();
-                        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                        const url = URL.createObjectURL(blob);
-                        
-                        // Criamos o link de forma explícita
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = "Backup_Horas_" + new Date().toISOString().split('T')[0] + ".csv";
-                        
-                        // Adicionamos ao documento, clicamos e removemos
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        
-                        showToast("Ficheiro descarregado com sucesso!");
-                    } catch (e) {
-                        console.error("Erro interno no download:", e);
-                        showToast("Erro ao processar o download.");
-                    }
-                });
-            } catch (e) {
-                console.error("Erro ao abrir modal:", e);
-                showToast("Erro ao abrir a janela de confirmação.");
-            }
+            // Abrimos a modal
+            document.getElementById('modal-title').innerText = "Confirmar Backup";
+            document.getElementById('modal-text').innerText = "Deseja gravar o ficheiro CSV com os dados atuais?";
+            
+            const btn = document.getElementById('btn-confirm-action');
+            btn.onclick = () => {
+                fecharModal('modal-confirm');
+                // Pequeno atraso (100ms) para garantir que a modal fechou 
+                // e o browser não bloqueia a nova ação de download
+                setTimeout(executarDownload, 100);
+            };
+            
+            document.getElementById('modal-confirm').classList.add('show');
         }
 
         function abrirDashboard() {
