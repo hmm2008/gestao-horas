@@ -127,32 +127,35 @@
 
        function iniciarBackupCSV() {
             const dados = obterRegistosFiltrados();
-            if (dados.length === 0) { 
-                showToast("Sem dados para exportar."); 
-                return; 
-            }
+            if (dados.length === 0) { showToast("Sem dados."); return; }
 
-            // Esta é a função que realiza o download "bruto"
-            const executarDownload = () => {
-                let csv = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
-                dados.forEach(r => {
-                    csv += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada || 0).toFixed(2)};${parseFloat(r.valorGasto || 0).toFixed(2)}\n`;
-                });
+            // Configura a modal
+            document.getElementById('modal-title').innerText = "Download de Backup";
+            document.getElementById('modal-text').innerText = "O download irá iniciar automaticamente.";
+            
+            // O botão de confirmar vai apenas fechar a modal, o download acontece antes
+            const btn = document.getElementById('btn-confirm-action');
+            btn.innerText = "Fechar";
+            btn.onclick = () => { fecharModal('modal-confirm'); };
+            
+            document.getElementById('modal-confirm').classList.add('show');
 
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "Backup_Horas_" + new Date().toISOString().split('T')[0] + ".csv";
-                
-                // Forçamos o download
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url); // Limpeza de memória
-                showToast("Download iniciado com sucesso!");
-            };
+            // --- DOWNLOAD DIRETO (Sem setTimeout, dentro do evento de clique) ---
+            let csv = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
+            dados.forEach(r => {
+                csv += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada || 0).toFixed(2)};${parseFloat(r.valorGasto || 0).toFixed(2)}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Backup_Horas_" + new Date().toISOString().split('T')[0] + ".csv";
+            document.body.appendChild(a);
+            a.click(); // O browser permite isto porque estamos dentro da função que iniciou no clique do botão "Backup CSV"
+            document.body.removeChild(a);
+        }
 
             // Abrimos a modal
             document.getElementById('modal-title').innerText = "Confirmar Backup";
