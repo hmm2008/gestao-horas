@@ -137,7 +137,15 @@
             </div>
         </div>
     </div>
-
+<!-- Painel de Finanças -->
+    <div id="painel_financeiro" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; background: #f0f0f0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <div style="text-align:center; font-size:12px;">Bruto<span id="f_bruto" style="display:block; font-weight:bold;">0€</span></div>
+        <div style="text-align:center; font-size:12px;">Despesas<input type="number" id="inp_despesas" value="0" oninput="calcularFinancas()" style="width:100%"></div>
+        <div style="text-align:center; font-size:12px;">IRS %<input type="number" id="inp_irs" value="0" oninput="calcularFinancas()" style="width:100%"></div>
+        <div style="text-align:center; font-size:12px;">SS %<input type="number" id="inp_ss" value="0" oninput="calcularFinancas()" style="width:100%"></div>
+        <div style="text-align:center; font-size:12px;">Impostos<span id="f_impostos" style="display:block; font-weight:bold;">0€</span></div>
+        <div style="text-align:center; font-size:12px;">Líquido<span id="f_liquido" style="display:block; font-weight:bold;">0€</span></div>
+    </div>
     <!-- CONTEÚDO PRINCIPAL DA APLICAÇÃO -->
     <div class="app-container">
         <div class="header">
