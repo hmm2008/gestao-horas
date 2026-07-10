@@ -221,6 +221,24 @@
             if (chartClientesInst) gerarGraficos();
         }
 
+        function calcularFinancas() {
+    // Busca o valor bruto total (limpando o símbolo do €)
+    const bruto = parseFloat(document.getElementById('f_bruto').innerText.replace('€', '').replace(',', '.')) || 0;
+    
+    // Busca os valores dos inputs de despesas e percentagens
+    const despesas = parseFloat(document.getElementById('inp_despesas').value) || 0;
+    const irs = (parseFloat(document.getElementById('inp_irs').value) || 0) / 100;
+    const ss = (parseFloat(document.getElementById('inp_ss').value) || 0) / 100;
+    
+    // Cálculos
+    const totalImpostos = bruto * (irs + ss);
+    const liquido = bruto - despesas - totalImpostos;
+    
+    // Atualiza o painel visual
+    document.getElementById('f_impostos').innerText = totalImpostos.toFixed(2) + '€';
+    document.getElementById('f_liquido').innerText = liquido.toFixed(2) + '€';
+}
+
         function showToast(msg) {
             const t = document.createElement('div');
             t.className = 'toast';
@@ -330,6 +348,8 @@
             document.getElementById('total_dias').innerText = dias.size;
             document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`;
             document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
+            document.getElementById('f_bruto').innerText = sV.toFixed(2) + '€';
+    calcularFinancas();
         }
 
         function editarRegisto(id) {
