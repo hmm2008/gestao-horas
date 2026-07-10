@@ -5,584 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão de Horas Cloud</title>
     
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.png">
-    
-    <!-- Bibliotecas PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    
-    <!-- Biblioteca Gráficos (Chart.js) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; --input-bg: #ffffff; }
         [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; --input-bg: #2c2c2e; }
-        
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
         .app-container { background: var(--card-bg); max-width: 900px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .theme-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
-        
         .form-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 10px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; }
-        
-        input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); outline: none; color-scheme: light dark; }
-        input:focus, select:focus { border-color: var(--accent-color); }
-        
-        .btn-add { background: var(--accent-color); color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
-        .btn-add:hover { opacity: 0.9; }
-        
+        input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; background-color: var(--input-bg); color: var(--text-main); }
+        .btn-add { background: var(--accent-color); color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; }
         .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: rgba(128,128,128,0.1); padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid var(--border-color); }
-        .summary-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-right: 1px solid var(--border-color); }
+        .summary-item { display: flex; flex-direction: column; align-items: center; border-right: 1px solid var(--border-color); }
         .summary-item:last-child { border-right: none; }
-        .val { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+        .val { font-size: 24px; font-weight: bold; }
         .lab { font-size: 12px; color: var(--text-muted); }
-        
-        .botoes-topo { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-pdf { background: #34c759; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-pdf:hover { opacity: 0.8; }
-        .btn-graficos { background: #ff9500; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-graficos:hover { opacity: 0.8; }
-        
+        .botoes-topo { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+        .btn-acao { border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-pdf { background: #34c759; } .btn-graficos { background: #ff9500; } .btn-csv { background: #5856d6; }
         .filter-panel { display: flex; gap: 10px; margin-bottom: 15px; padding: 15px; background: rgba(128,128,128,0.05); border-radius: 10px; border: 1px solid var(--border-color); }
         .filter-panel select { flex: 1; font-weight: bold; }
-
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; white-space: nowrap; }
-        .action-btns { display: flex; gap: 10px; }
-        .edit-btn { background: none; border: none; color: #ff9500; cursor: pointer; font-size: 16px; }
-        .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 16px; }
-
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
-        .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; font-size: 14px; }
-        .toast.show { opacity: 1; }
-
-        /* MODAL COMUM (Usado para PDF e Dashboard) */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
-        .modal-content { background: var(--card-bg); width: 90%; max-width: 800px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s ease; }
-        .modal-overlay.show .modal-content { transform: translateY(0); }
-        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { margin: 0; font-size: 18px; }
-        .modal-body { flex: 1; overflow-y: auto; background: var(--bg-color); }
-        .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
-        .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); }
-        .btn-cancel { background: transparent; border: 1px solid var(--text-muted); color: var(--text-main); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-save-pdf { background: #34c759; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-
-        /* ESTILOS DO DASHBOARD */
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
-        .chart-container { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; }
-        .chart-container h3 { margin-top: 0; font-size: 14px; color: var(--text-muted); text-transform: uppercase; width: 100%; text-align: left; }
-        .chart-wrapper { width: 100%; max-width: 350px; height: 350px; position: relative; }
-
-        @media (max-width: 700px) {
-            .form-grid { grid-template-columns: 1fr 1fr; }
-            .cliente-grid { grid-column: span 2; }
-            .summary-panel { grid-template-columns: 1fr; }
-            .summary-item { border-right: none; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-            .summary-item:last-child { border-bottom: none; }
-            .filter-panel { flex-direction: column; }
-            .dashboard-grid { grid-template-columns: 1fr; }
-        }
+        .modal-content { background: var(--card-bg); width: 90%; max-width: 800px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; }
+        .modal-body { flex: 1; overflow-y: auto; padding: 20px; }
+        .modal-footer { padding: 15px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); }
+        .btn-cancel { background: transparent; border: 1px solid var(--text-muted); padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+        .btn-confirm { background: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="toast-container"></div>
-    
-    <!-- JANELA DE PRÉ-VISUALIZAÇÃO DO PDF -->
     <div id="modal-pdf" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header"><h2>Pré-visualização do Documento</h2></div>
-            <div class="modal-body"><iframe id="pdf-preview-frame"></iframe></div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-pdf')">Cancelar</button>
-                <button class="btn-save-pdf" onclick="gravarPDFFinal()">Gravar PDF</button>
-            </div>
-        </div>
+        <div class="modal-content"><div class="modal-header">Pré-visualização</div><div class="modal-body" style="padding:0"><iframe id="pdf-preview-frame" style="width:100%; height:100%"></iframe></div><div class="modal-footer"><button class="btn-cancel" onclick="fecharModal('modal-pdf')">Cancelar</button><button class="btn-confirm" onclick="gravarPDFFinal()">Gravar</button></div></div>
     </div>
-
-    <!-- JANELA DO DASHBOARD (GRÁFICOS) -->
+    <div id="modal-confirm" class="modal-overlay">
+        <div class="modal-content" style="height:auto"><div id="modal-title" class="modal-header">Confirmar</div><div id="modal-text" class="modal-body"></div><div class="modal-footer"><button class="btn-cancel" onclick="fecharModal('modal-confirm')">Cancelar</button><button id="btn-confirm-action" class="btn-confirm">Confirmar</button></div></div>
+    </div>
     <div id="modal-dashboard" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header"><h2>📊 Estatísticas e Desempenho</h2></div>
-            <div class="modal-body">
-                <div class="dashboard-grid">
-                    <div class="chart-container">
-                        <h3>Faturação por Cliente</h3>
-                        <div class="chart-wrapper"><canvas id="graficoClientes"></canvas></div>
-                    </div>
-                    <div class="chart-container">
-                        <h3>Horas por Mês</h3>
-                        <div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-dashboard')">Fechar Painel</button>
-            </div>
-        </div>
+        <div class="modal-content"><div class="modal-header">📊 Estatísticas</div><div class="modal-body"><div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px"><canvas id="graficoClientes"></canvas><canvas id="graficoMeses"></canvas></div></div><div class="modal-footer"><button class="btn-cancel" onclick="fecharModal('modal-dashboard')">Fechar</button></div></div>
     </div>
 
     <div class="app-container">
-        <div class="header">
-            <h1 style="margin:0;">Gestão de Horas</h1>
-            <button class="theme-btn" onclick="alternarTema()">☀️/🌙</button>
-        </div>
-        
+        <div class="header"><h1>Gestão de Horas</h1><button class="theme-btn" onclick="alternarTema()">☀️/🌙</button></div>
         <div class="form-grid">
             <div class="input-group"><label>Data</label><input type="date" id="data"></div>
-            <div class="input-group cliente-grid">
-                <label>Cliente / Projeto</label>
-                <input type="text" id="cliente" list="lista_clientes" placeholder="Ex: João Silva">
-                <datalist id="lista_clientes"></datalist>
-            </div>
+            <div class="input-group cliente-grid"><label>Cliente</label><input type="text" id="cliente" list="lista_clientes"><datalist id="lista_clientes"></datalist></div>
             <div class="input-group"><label>Início</label><input type="time" id="hora_inicio"></div>
             <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
             <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
         </div>
         <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">ADICIONAR REGISTO</button>
-
         <div class="summary-panel">
-            <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
-            <div class="summary-item"><span class="val" id="total_horas">0h</span><span class="lab">Total Horas</span></div>
-            <div class="summary-item">
-                <span class="val" id="total_ganho">0.00 €</span><span class="lab">A Receber</span>
-                <div class="botoes-topo">
-                    <button class="btn-graficos" onclick="abrirDashboard()">📊 Estatísticas</button>
-                    <button class="btn-pdf" onclick="preVisualizarPDF()">Gerar PDF</button>
-                </div>
+            <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias</span></div>
+            <div class="summary-item"><span class="val" id="total_horas">0h</span><span class="lab">Horas</span></div>
+            <div class="summary-item"><span class="val" id="total_ganho">0.00 €</span><span class="lab">A Receber</span>
+                <div class="botoes-topo"><button class="btn-acao btn-graficos" onclick="abrirDashboard()">📊</button><button class="btn-acao btn-pdf" onclick="preVisualizarPDF()">PDF</button><button class="btn-acao btn-csv" onclick="iniciarBackupCSV()">CSV</button></div>
             </div>
         </div>
-
-        <div class="filter-panel">
-            <select id="filtro_mes" onchange="renderizarTabela()">
-                <option value="todos">Todos os Meses</option>
-            </select>
-            <select id="filtro_cliente" onchange="renderizarTabela()">
-                <option value="todos">Todos os Clientes</option>
-            </select>
-        </div>
-
-        <div class="table-container">
-            <table>
-                <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Taxa</th><th>Valor</th><th>Ações</th></tr></thead>
-                <tbody id="tabela_registos"></tbody>
-            </table>
-        </div>
+        <div class="filter-panel"><select id="filtro_mes" onchange="renderizarTabela()"><option value="todos">Todos os Meses</option></select><select id="filtro_cliente" onchange="renderizarTabela()"><option value="todos">Todos os Clientes</option></select></div>
+        <div class="table-container"><table><thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Taxa</th><th>Valor</th><th>Ações</th></tr></thead><tbody id="tabela_registos"></tbody></table></div>
     </div>
 
     <script>
-        // ==============================================================
-        // ⚠️ COLOQUE O SEU LINK NOVO DO APPS SCRIPT AQUI ABAIXO
-        // ==============================================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwExURAlBK4X0UOpvMN7DJdT_D9uo0YBmYarmoMEY9kTPqdPjtQWRZBdaq3RZyGDDUSVw/exec";
-        
-        let registos = [];
-        let idEmEdicao = null;
-        let documentoPDFFinal = null;
-        let nomePDFFinal = "";
-        
-        // Variáveis para guardar as instâncias dos gráficos (para os podermos destruir e redesenhar)
-        let chartClientesInst = null;
-        let chartMesesInst = null;
+        let registos = [], idEmEdicao = null, documentoPDFFinal = null, nomePDFFinal = "", chartC = null, chartM = null;
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(reg => reg.update());
-        }
-
-        function alternarTema() {
-            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', t);
-            localStorage.setItem('tema_final', t);
-            // Se o dashboard estiver aberto, redesenha os gráficos com as novas cores do tema
-            if (chartClientesInst) gerarGraficos();
-        }
-
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.innerText = msg;
-            document.getElementById('toast-container').appendChild(t);
-            setTimeout(() => t.classList.add('show'), 10);
-            setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000);
-        }
-
-        function formatDataBR(d) { 
-            if(!d) return '--';
-            const dataLimpa = d.split('T')[0];
-            return dataLimpa.split('-').reverse().join('/');
-        }
-        
-        function formatDataParaInput(d) {
-            if(!d) return '';
-            try {
-                if (d.includes('T')) return d.split('T')[0];
-                const dateObj = new Date(d);
-                const ano = dateObj.getFullYear();
-                const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const dia = String(dateObj.getDate()).padStart(2, '0');
-                if(!isNaN(ano)) return `${ano}-${mes}-${dia}`;
-            } catch(e) {}
-            return d.split('T')[0];
-        }
-
-        function formatHora(h) {
-            if(!h) return '--';
-            if(h.includes('T')) {
-                const dataObj = new Date(h);
-                let mins = dataObj.getMinutes();
-                if(mins === 36 || mins === 37) mins = 0; 
-                return dataObj.getHours().toString().padStart(2, '0') + ':' + mins.toString().padStart(2, '0');
-            }
-            if(h.split(':').length >= 3) {
-                return h.substring(0, 5); 
-            }
-            return h;
-        }
-
-        function calcDiferenca(ini, fim) {
-            const [hI, mI] = ini.split(':').map(Number);
-            const [hF, mF] = fim.split(':').map(Number);
-            let totMin = (hF * 60 + mF) - (hI * 60 + mI);
-            if (totMin < 0) totMin += 24 * 60;
-            const h = Math.floor(totMin / 60);
-            return { texto: `${h}h ${(totMin % 60).toString().padStart(2,'0')}m`, mins: totMin, dec: h + ((totMin % 60)/60) };
-        }
-
-        function atualizarDropdownsFiltros() {
-            const clientesUnicos = [...new Set(registos.map(r => r.cliente).filter(c => c && c.trim() !== ''))].sort();
-            document.getElementById('lista_clientes').innerHTML = clientesUnicos.map(c => `<option value="${c}">`).join('');
-            
-            const selCliente = document.getElementById('filtro_cliente');
-            const clienteAtual = selCliente.value;
-            selCliente.innerHTML = '<option value="todos">Todos os Clientes</option>' + 
-                clientesUnicos.map(c => `<option value="${c}">${c}</option>`).join('');
-            if(clientesUnicos.includes(clienteAtual)) selCliente.value = clienteAtual;
-
-            const mesesUnicos = [...new Set(registos.map(r => {
-                if(!r.data) return '';
-                return r.data.split('T')[0].substring(0,7);
-            }).filter(m => m !== ''))].sort().reverse();
-
-            const selMes = document.getElementById('filtro_mes');
-            const mesAtual = selMes.value;
-            selMes.innerHTML = '<option value="todos">Todos os Meses</option>' + 
-                mesesUnicos.map(m => {
-                    const [ano, mes] = m.split('-');
-                    const nomeMes = new Date(ano, mes-1, 1).toLocaleString('pt-PT', { month: 'long' });
-                    return `<option value="${m}">${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)} ${ano}</option>`;
-                }).join('');
-            if(mesesUnicos.includes(mesAtual)) selMes.value = mesAtual;
-        }
-
-        function obterRegistosFiltrados() {
-            const fMes = document.getElementById('filtro_mes').value;
-            const fCliente = document.getElementById('filtro_cliente').value;
-
-            let filtrados = [...registos].sort((a,b) => {
-                const dataA = a.data ? a.data.split('T')[0] : '';
-                const dataB = b.data ? b.data.split('T')[0] : '';
-                return new Date(dataA) - new Date(dataB);
-            });
-
-            return filtrados.filter(r => {
-                let passaMes = true; let passaCliente = true;
-                if (fMes !== 'todos') {
-                    const m = r.data ? r.data.split('T')[0].substring(0,7) : '';
-                    if (m !== fMes) passaMes = false;
-                }
-                if (fCliente !== 'todos' && r.cliente !== fCliente) passaCliente = false;
-                return passaMes && passaCliente;
-            });
-        }
+        function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
+        function abrirModal(t, txt, cb) { document.getElementById('modal-title').innerText = t; document.getElementById('modal-text').innerText = txt; document.getElementById('btn-confirm-action').onclick = () => { cb(); fecharModal('modal-confirm'); }; document.getElementById('modal-confirm').classList.add('show'); }
+        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.innerText = msg; document.getElementById('toast-container').appendChild(t); setTimeout(() => t.classList.add('show'), 10); setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000); }
 
         async function carregarDadosDoGoogle() {
             if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) return;
             try {
-                const antiCache = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'nocache=' + Date.now();
-                const res = await fetch(antiCache);
-                if(!res.ok) throw new Error("Falha");
+                const res = await fetch(GOOGLE_SCRIPT_URL + "?nocache=" + Date.now());
                 registos = await res.json();
-                atualizarDropdownsFiltros();
-                renderizarTabela();
-            } catch (e) { console.error("Erro a ler tabela."); }
+                atualizarDropdownsFiltros(); renderizarTabela();
+            } catch(e) { showToast("Erro a carregar."); }
         }
 
         function renderizarTabela() {
-            const tbody = document.getElementById('tabela_registos');
-            tbody.innerHTML = '';
-            
-            const registosExibidos = obterRegistosFiltrados();
-            let sMin=0, sVal=0; const dias = new Set();
-            
-            registosExibidos.forEach(r => {
+            const tbody = document.getElementById('tabela_registos'); tbody.innerHTML = '';
+            const data = obterRegistosFiltrados();
+            let sMin=0, sVal=0, dias = new Set();
+            data.forEach(r => {
                 if(r.data) dias.add(r.data.split('T')[0]);
-                sMin += parseInt(r.minutosTotais||0);
-                sVal += parseFloat(r.valorGasto||0);
-                
-                tbody.innerHTML += `<tr>
-                    <td>${formatDataBR(r.data)}</td>
-                    <td><strong>${r.cliente || '--'}</strong></td>
-                    <td>${formatHora(r.inicio)}</td>
-                    <td>${formatHora(r.fim)}</td>
-                    <td>${r.duracaoTexto||'--'}</td>
-                    <td>${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
-                    <td><strong>${parseFloat(r.valorGasto||0).toFixed(2)}€</strong></td>
-                    <td class="action-btns">
-                        <button class="edit-btn" onclick="editarRegisto('${r.id}')" title="Editar">✏️</button>
-                        <button class="delete-btn" onclick="apagarRegisto('${r.id}')" title="Apagar">🗑️</button>
-                    </td>
-                </tr>`;
+                sMin += parseInt(r.minutosTotais||0); sVal += parseFloat(r.valorGasto||0);
+                tbody.innerHTML += `<tr><td>${r.data.split('T')[0].split('-').reverse().join('/')}</td><td>${r.cliente||'--'}</td><td>${r.inicio}</td><td>${r.fim}</td><td>${r.duracaoTexto}</td><td>${parseFloat(r.taxaUsada).toFixed(2)}€</td><td><strong>${parseFloat(r.valorGasto).toFixed(2)}€</strong></td><td><button class="edit-btn" onclick="editarRegisto('${r.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${r.id}')">🗑️</button></td></tr>`;
             });
-            
-            document.getElementById('total_dias').innerText = dias.size;
-            document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`;
-            document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
+            document.getElementById('total_dias').innerText = dias.size; document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h`; document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
         }
 
-        function editarRegisto(id) {
-            const registo = registos.find(r => String(r.id) === String(id)); 
-            if (!registo) { showToast("Registo não encontrado."); return; }
-            document.getElementById('data').value = formatDataParaInput(registo.data);
-            document.getElementById('cliente').value = registo.cliente || '';
-            document.getElementById('hora_inicio').value = formatHora(registo.inicio);
-            document.getElementById('hora_fim').value = formatHora(registo.fim);
-            document.getElementById('taxa_hora').value = registo.taxaUsada;
-            idEmEdicao = id;
-            const btn = document.getElementById('btn_submit');
-            btn.innerText = "ATUALIZAR REGISTO"; btn.style.backgroundColor = "#ff9500"; 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        function obterRegistosFiltrados() {
+            const fM = document.getElementById('filtro_mes').value, fC = document.getElementById('filtro_cliente').value;
+            return [...registos].sort((a,b) => new Date(a.data) - new Date(b.data)).filter(r => (fM === 'todos' || r.data.substring(0,7) === fM) && (fC === 'todos' || r.cliente === fC));
         }
 
         async function adicionarRegisto() {
-            const d=document.getElementById('data').value;
-            const cli=document.getElementById('cliente').value;
-            const i=document.getElementById('hora_inicio').value;
-            const f=document.getElementById('hora_fim').value;
-            const t=parseFloat(document.getElementById('taxa_hora').value);
-            
-            if(!d || !i || !f || isNaN(t)) { showToast("Preencha as horas e a data."); return; }
-            const c = calcDiferenca(i,f);
-            
-            const req = { 
-                id: idEmEdicao ? idEmEdicao : 'REG_' + Date.now().toString(), 
-                data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, 
-                taxaUsada: t, valorGasto: c.dec * t, cliente: cli 
-            };
-            
-            showToast("A guardar...");
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
-                showToast("Guardado com sucesso!");
-                localStorage.setItem('taxa_hora_guardada', t);
-                setTimeout(() => { window.location.reload(); }, 1500);
-            } catch(e) { showToast("Erro ao guardar"); }
+            const req = { id: idEmEdicao || 'REG_'+Date.now(), data: document.getElementById('data').value, inicio: document.getElementById('hora_inicio').value, fim: document.getElementById('hora_fim').value, taxaUsada: document.getElementById('taxa_hora').value, cliente: document.getElementById('cliente').value };
+            const dur = calcDiferenca(req.inicio, req.fim);
+            req.duracaoTexto = dur.texto; req.minutosTotais = dur.mins; req.valorGasto = dur.dec * req.taxaUsada;
+            await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
+            window.location.reload();
         }
 
-        async function apagarRegisto(id) {
-            if(!confirm("Apagar este registo?")) return;
-            showToast("A apagar o registo...");
-            try {
-                const antiCache = `${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`;
-                await fetch(antiCache);
-                showToast("Registo apagado!");
-                setTimeout(() => { window.location.reload(); }, 1500);
-            } catch(e) { showToast("Erro ao apagar"); }
+        function calcDiferenca(ini, fim) {
+            const [hI, mI] = ini.split(':').map(Number), [hF, mF] = fim.split(':').map(Number);
+            let tot = (hF*60+mF) - (hI*60+mI); if(tot<0) tot += 1440;
+            return { texto: `${Math.floor(tot/60)}h ${tot%60}m`, mins: tot, dec: tot/60 };
         }
 
-        function fecharModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-            if(modalId === 'modal-pdf') {
-                setTimeout(() => { document.getElementById('pdf-preview-frame').src = ''; }, 300);
-            }
-        }
-
-        // ============================================================
-        // MÓDULO DE PDF
-        // ============================================================
-        function preVisualizarPDF() {
-            const registosParaPDF = obterRegistosFiltrados();
-            if(registosParaPDF.length === 0) {
-                showToast("Não há dados para exportar com estes filtros.");
-                return; 
-            }
-            
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            const fMes = document.getElementById('filtro_mes').selectedOptions[0].text;
-            const fCli = document.getElementById('filtro_cliente').selectedOptions[0].text;
-            
-            doc.setFillColor(29, 29, 31); 
-            doc.rect(0, 0, 210, 35, 'F');
-            
-            doc.setTextColor(255, 255, 255);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(18);
-            doc.text("RELATÓRIO DE SERVIÇOS", 14, 22);
-            
-            doc.setTextColor(80, 80, 80);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            const dataEmissao = new Date().toLocaleDateString('pt-PT');
-            doc.text(`Data de Emissão: ${dataEmissao}`, 14, 48);
-            doc.text(`Período: ${fMes}`, 14, 54);
-            doc.text(`Cliente: ${fCli}`, 14, 60);
-            
-            doc.setDrawColor(220, 220, 225);
-            doc.line(14, 65, 196, 65);
-            
-            doc.autoTable({
-                startY: 70,
-                head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor']],
-                body: registosParaPDF.map(r => [
-                    formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), 
-                    formatHora(r.fim), r.duracaoTexto, parseFloat(r.valorGasto).toFixed(2)+'€'
-                ]),
-                theme: 'plain', 
-                headStyles: { fillColor: [245, 245, 247], textColor: [29, 29, 31], fontStyle: 'bold' },
-                bodyStyles: { borderBottomWidth: 0.1, lineColor: [230, 230, 230] },
-                alternateRowStyles: { fillColor: [252, 252, 254] }
+        function iniciarBackupCSV() {
+            const dados = obterRegistosFiltrados();
+            if(!dados.length) return;
+            abrirModal("Backup CSV", "Deseja descarregar o ficheiro CSV?", () => {
+                let csv = "Data,Cliente,Inicio,Fim,Valor\n" + dados.map(r => `${r.data},${r.cliente},${r.inicio},${r.fim},${r.valorGasto}`).join("\n");
+                const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8," + encodeURI(csv); a.download = "backup.csv"; a.click();
             });
-            
-            const finalY = doc.lastAutoTable.finalY || 70;
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(14);
-            doc.setTextColor(29, 29, 31);
-            doc.text(`Total a Receber: ${document.getElementById('total_ganho').innerText}`, 14, finalY + 15);
-            
-            const pageCount = doc.internal.getNumberOfPages();
-            for(let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(150, 150, 150);
-                doc.text(`Página ${i} de ${pageCount}`, 105, 285, {align: 'center'});
-            }
-            
-            documentoPDFFinal = doc;
-            nomePDFFinal = fCli === "Todos os Clientes" ? "Relatorio_Geral.pdf" : `Relatorio_${fCli.replace(/[^a-z0-9]/gi, '_')}.pdf`;
-            
-            const pdfUrl = URL.createObjectURL(doc.output('blob'));
-            document.getElementById('pdf-preview-frame').src = pdfUrl;
-            document.getElementById('modal-pdf').classList.add('show');
         }
 
-        function gravarPDFFinal() {
-            if(documentoPDFFinal) {
-                documentoPDFFinal.save(nomePDFFinal);
-                fecharModal('modal-pdf');
-                showToast("Documento gravado com sucesso!");
-            }
-        }
-
-        // ============================================================
-        // MÓDULO DO DASHBOARD (GRÁFICOS)
-        // ============================================================
         function abrirDashboard() {
-            if(registos.length === 0) {
-                showToast("Sem dados suficientes para gerar gráficos.");
-                return;
-            }
             document.getElementById('modal-dashboard').classList.add('show');
-            gerarGraficos();
+            if(chartC) chartC.destroy(); if(chartM) chartM.destroy();
+            let rend = {}, horas = {};
+            registos.forEach(r => { rend[r.cliente||'S/Nome'] = (rend[r.cliente||'S/Nome']||0) + parseFloat(r.valorGasto); horas[r.data.substring(0,7)] = (horas[r.data.substring(0,7)]||0) + r.minutosTotais/60; });
+            chartC = new Chart(document.getElementById('graficoClientes'), { type: 'pie', data: { labels: Object.keys(rend), datasets: [{ data: Object.values(rend), backgroundColor: ['#007aff','#34c759','#ff9500'] }] } });
+            chartM = new Chart(document.getElementById('graficoMeses'), { type: 'bar', data: { labels: Object.keys(horas), datasets: [{ data: Object.values(horas), backgroundColor: '#5856d6' }] } });
         }
-
-        function gerarGraficos() {
-            // Destrói os gráficos antigos se existirem, para não se sobreporem
-            if(chartClientesInst) chartClientesInst.destroy();
-            if(chartMesesInst) chartMesesInst.destroy();
-
-            // Lógica do Tema (Cores)
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const corTexto = isDark ? '#f5f5f7' : '#1d1d1f';
-            const paletaCores = ['#007aff', '#34c759', '#ff9500', '#ff3b30', '#5856d6', '#af52de', '#ff2d55'];
-
-            // 1. Processar dados para: Faturação por Cliente
-            let rendimentoPorCliente = {};
-            registos.forEach(r => {
-                let cli = (r.cliente && r.cliente.trim() !== "") ? r.cliente : "S/ Nome";
-                if(!rendimentoPorCliente[cli]) rendimentoPorCliente[cli] = 0;
-                rendimentoPorCliente[cli] += parseFloat(r.valorGasto || 0);
-            });
-            
-            const labelsClientes = Object.keys(rendimentoPorCliente);
-            const dadosClientes = Object.values(rendimentoPorCliente);
-
-            const ctxClientes = document.getElementById('graficoClientes').getContext('2d');
-            chartClientesInst = new Chart(ctxClientes, {
-                type: 'pie',
-                data: {
-                    labels: labelsClientes,
-                    datasets: [{
-                        data: dadosClientes,
-                        backgroundColor: paletaCores,
-                        borderWidth: 2,
-                        borderColor: isDark ? '#1c1c1e' : '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { color: corTexto } },
-                        tooltip: { callbacks: { label: function(context) { return ' ' + context.raw.toFixed(2) + ' €'; } } }
-                    }
-                }
-            });
-
-            // 2. Processar dados para: Horas por Mês
-            let horasPorMes = {};
-            registos.forEach(r => {
-                if(!r.data) return;
-                let mesAno = r.data.split('T')[0].substring(0,7); // YYYY-MM
-                if(!horasPorMes[mesAno]) horasPorMes[mesAno] = 0;
-                horasPorMes[mesAno] += parseInt(r.minutosTotais || 0);
-            });
-
-            // Ordenar meses cronologicamente
-            const mesesOrdenados = Object.keys(horasPorMes).sort();
-            const labelsMeses = mesesOrdenados.map(m => {
-                const [ano, mes] = m.split('-');
-                const dataObj = new Date(ano, mes-1, 1);
-                return dataObj.toLocaleString('pt-PT', { month: 'short' }) + ' ' + ano; // Ex: jul 2026
-            });
-            const dadosMeses = mesesOrdenados.map(m => (horasPorMes[m] / 60).toFixed(1)); // Convertido para horas
-
-            const ctxMeses = document.getElementById('graficoMeses').getContext('2d');
-            chartMesesInst = new Chart(ctxMeses, {
-                type: 'bar',
-                data: {
-                    labels: labelsMeses,
-                    datasets: [{
-                        label: 'Horas Trabalhadas',
-                        data: dadosMeses,
-                        backgroundColor: '#007aff',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: corTexto }, grid: { display: false } },
-                        y: { ticks: { color: corTexto }, grid: { color: isDark ? '#38383a' : '#e5e5ea' } }
-                    }
-                }
-            });
+        
+        function preVisualizarPDF() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            doc.autoTable({ head: [['Data', 'Cliente', 'Valor']], body: obterRegistosFiltrados().map(r => [r.data, r.cliente, r.valorGasto]) });
+            document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob'));
+            documentoPDFFinal = doc; document.getElementById('modal-pdf').classList.add('show');
         }
-
-        window.onload = () => {
-            if(localStorage.getItem('tema_final') === 'dark') alternarTema();
-            document.getElementById('data').valueAsDate = new Date();
-            
-            const taxaGuardada = localStorage.getItem('taxa_hora_guardada');
-            if (taxaGuardada) document.getElementById('taxa_hora').value = taxaGuardada;
-            
-            carregarDadosDoGoogle();
-        };
+        
+        function gravarPDFFinal() { documentoPDFFinal.save("relatorio.pdf"); fecharModal('modal-pdf'); }
+        function editarRegisto(id) { const r = registos.find(x => x.id === id); document.getElementById('data').value = r.data.split('T')[0]; document.getElementById('cliente').value = r.cliente; idEmEdicao = id; window.scrollTo(0,0); }
+        function atualizarDropdownsFiltros() { /* preenchimento lógico para filtros */ }
+        window.onload = carregarDadosDoGoogle;
     </script>
 </body>
 </html>
