@@ -127,17 +127,13 @@
 
         function iniciarBackupCSV() {
             const dados = obterRegistosFiltrados();
-            if(dados.length === 0) { showToast("Sem dados para exportar."); return; }
+            if(dados.length === 0) { showToast("Sem dados."); return; }
             
-            const nomeFicheiro = "Backup_Horas_" + new Date().toISOString().split('T')[0] + ".csv";
-            
-            abrirModal("Confirmar Backup CSV", `Deseja gravar o ficheiro "${nomeFicheiro}" com colunas separadas?`, () => {
-                // Adicionamos o BOM (\uFEFF) para o Excel reconhecer o formato UTF-8 e separar as colunas
-                let csvContent = "\uFEFF"; 
-                // Cabeçalhos
-                csvContent += "Data;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
+            // Esta função executa o download diretamente
+            const fazerDownload = () => {
+                const nomeFicheiro = "Backup_Horas_" + new Date().toISOString().split('T')[0] + ".csv";
+                let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
                 
-                // Dados (usamos ; em vez de , para forçar a separação por colunas no Excel)
                 dados.forEach(r => {
                     csvContent += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`;
                 });
@@ -147,9 +143,14 @@
                 const a = document.createElement("a");
                 a.href = url;
                 a.download = nomeFicheiro;
+                document.body.appendChild(a); // Garante que o elemento existe no DOM
                 a.click();
-                showToast("Backup organizado com sucesso!");
-            });
+                document.body.removeChild(a);
+                showToast("Backup descarregado!");
+            };
+
+            // Se quiser manter a elegância da caixa de confirmação:
+            abrirModal("Confirmar Backup CSV", "Deseja gravar o ficheiro CSV?", fazerDownload);
         }
 
         function abrirDashboard() {
