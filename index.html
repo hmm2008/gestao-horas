@@ -36,7 +36,8 @@
         .val { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
         .lab { font-size: 12px; color: var(--text-muted); }
         
-        .btn-pdf { background: #34c759; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-pdf { background: #34c759; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-pdf:hover { opacity: 0.8; }
         
         .filter-panel { display: flex; gap: 10px; margin-bottom: 15px; padding: 15px; background: rgba(128,128,128,0.05); border-radius: 10px; border: 1px solid var(--border-color); }
         .filter-panel select { flex: 1; font-weight: bold; }
@@ -52,6 +53,19 @@
         .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; font-size: 14px; }
         .toast.show { opacity: 1; }
 
+        /* --- ESTILOS DO NOVO MODAL DE PDF --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        .modal-content { background: var(--card-bg); width: 90%; max-width: 800px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal-overlay.show .modal-content { transform: translateY(0); }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { margin: 0; font-size: 18px; }
+        .modal-body { flex: 1; background: #e5e5ea; }
+        .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
+        .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); }
+        .btn-cancel { background: transparent; border: 1px solid var(--text-muted); color: var(--text-main); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-save-pdf { background: #34c759; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
         @media (max-width: 700px) {
             .form-grid { grid-template-columns: 1fr 1fr; }
             .cliente-grid { grid-column: span 2; }
@@ -64,6 +78,23 @@
 </head>
 <body>
     <div id="toast-container"></div>
+    
+    <!-- JANELA DE PRÉ-VISUALIZAÇÃO DO PDF -->
+    <div id="modal-pdf" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Pré-visualização do Documento</h2>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdf-preview-frame"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="fecharModalPDF()">Cancelar</button>
+                <button class="btn-save-pdf" onclick="gravarPDFFinal()">Gravar PDF</button>
+            </div>
+        </div>
+    </div>
+
     <div class="app-container">
         <div class="header">
             <h1 style="margin:0;">Gestão de Horas</h1>
@@ -88,11 +119,10 @@
             <div class="summary-item"><span class="val" id="total_horas">0h</span><span class="lab">Total Horas</span></div>
             <div class="summary-item">
                 <span class="val" id="total_ganho">0.00 €</span><span class="lab">A Receber</span>
-                <button class="btn-pdf" onclick="exportarPDF()">Exportar PDF</button>
+                <button class="btn-pdf" onclick="preVisualizarPDF()">Gerar Relatório (PDF)</button>
             </div>
         </div>
 
-        <!-- PAINEL DE FILTROS -->
         <div class="filter-panel">
             <select id="filtro_mes" onchange="renderizarTabela()">
                 <option value="todos">Todos os Meses</option>
@@ -112,12 +142,14 @@
 
     <script>
         // ==============================================================
-        // ⚠️ COLOQUE O SEU LINK NOVO DO APPS SCRIPT AQUI ABAIXO
+        // ⚠️ COLOQUE O SEU LINK DO APPS SCRIPT AQUI ABAIXO
         // ==============================================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwExURAlBK4X0UOpvMN7DJdT_D9uo0YBmYarmoMEY9kTPqdPjtQWRZBdaq3RZyGDDUSVw/exec";
         
         let registos = [];
         let idEmEdicao = null;
+        let documentoPDFFinal = null; // Guarda o documento gerado para o gravar mais tarde
+        let nomePDFFinal = "";
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').then(reg => reg.update());
@@ -181,9 +213,7 @@
         }
 
         function atualizarDropdownsFiltros() {
-            // Atualiza Datalist e Filtro de Clientes
             const clientesUnicos = [...new Set(registos.map(r => r.cliente).filter(c => c && c.trim() !== ''))].sort();
-            
             document.getElementById('lista_clientes').innerHTML = clientesUnicos.map(c => `<option value="${c}">`).join('');
             
             const selCliente = document.getElementById('filtro_cliente');
@@ -192,7 +222,6 @@
                 clientesUnicos.map(c => `<option value="${c}">${c}</option>`).join('');
             if(clientesUnicos.includes(clienteAtual)) selCliente.value = clienteAtual;
 
-            // Atualiza Filtro de Meses (formato YYYY-MM)
             const mesesUnicos = [...new Set(registos.map(r => {
                 if(!r.data) return '';
                 return r.data.split('T')[0].substring(0,7);
@@ -209,7 +238,6 @@
             if(mesesUnicos.includes(mesAtual)) selMes.value = mesAtual;
         }
 
-        // Função mágica que devolve apenas os registos que passam nos filtros selecionados
         function obterRegistosFiltrados() {
             const fMes = document.getElementById('filtro_mes').value;
             const fCliente = document.getElementById('filtro_cliente').value;
@@ -221,18 +249,12 @@
             });
 
             return filtrados.filter(r => {
-                let passaMes = true;
-                let passaCliente = true;
-
+                let passaMes = true; let passaCliente = true;
                 if (fMes !== 'todos') {
                     const m = r.data ? r.data.split('T')[0].substring(0,7) : '';
                     if (m !== fMes) passaMes = false;
                 }
-                
-                if (fCliente !== 'todos') {
-                    if (r.cliente !== fCliente) passaCliente = false;
-                }
-
+                if (fCliente !== 'todos' && r.cliente !== fCliente) passaCliente = false;
                 return passaMes && passaCliente;
             });
         }
@@ -254,7 +276,6 @@
             tbody.innerHTML = '';
             
             const registosExibidos = obterRegistosFiltrados();
-
             let sMin=0, sVal=0; const dias = new Set();
             
             registosExibidos.forEach(r => {
@@ -277,7 +298,6 @@
                 </tr>`;
             });
             
-            // Atualiza os painéis de cima apenas com os dados filtrados!
             document.getElementById('total_dias').innerText = dias.size;
             document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`;
             document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
@@ -285,21 +305,15 @@
 
         function editarRegisto(id) {
             const registo = registos.find(r => String(r.id) === String(id)); 
-            
             if (!registo) { showToast("Registo não encontrado."); return; }
-
             document.getElementById('data').value = formatDataParaInput(registo.data);
             document.getElementById('cliente').value = registo.cliente || '';
             document.getElementById('hora_inicio').value = formatHora(registo.inicio);
             document.getElementById('hora_fim').value = formatHora(registo.fim);
             document.getElementById('taxa_hora').value = registo.taxaUsada;
-
             idEmEdicao = id;
-            
             const btn = document.getElementById('btn_submit');
-            btn.innerText = "ATUALIZAR REGISTO";
-            btn.style.backgroundColor = "#ff9500"; 
-            
+            btn.innerText = "ATUALIZAR REGISTO"; btn.style.backgroundColor = "#ff9500"; 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -315,24 +329,16 @@
             
             const req = { 
                 id: idEmEdicao ? idEmEdicao : 'REG_' + Date.now().toString(), 
-                data: d, 
-                inicio: i, 
-                fim: f, 
-                duracaoTexto: c.texto, 
-                minutosTotais: c.mins, 
-                taxaUsada: t, 
-                valorGasto: c.dec * t,
-                cliente: cli 
+                data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, 
+                taxaUsada: t, valorGasto: c.dec * t, cliente: cli 
             };
             
             showToast("A guardar...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
-                
                 showToast("Guardado com sucesso!");
                 localStorage.setItem('taxa_hora_guardada', t);
                 setTimeout(() => { window.location.reload(); }, 1500);
-                
             } catch(e) { showToast("Erro ao guardar"); }
         }
 
@@ -347,9 +353,11 @@
             } catch(e) { showToast("Erro ao apagar"); }
         }
 
-        async function exportarPDF() {
-            const registosParaPDF = obterRegistosFiltrados(); // O PDF agora usa o filtro!
-            
+        // ============================================================
+        // NOVO DESIGN DO PDF E SISTEMA DE PRÉ-VISUALIZAÇÃO
+        // ============================================================
+        function preVisualizarPDF() {
+            const registosParaPDF = obterRegistosFiltrados();
             if(registosParaPDF.length === 0) {
                 showToast("Não há dados para exportar com estes filtros.");
                 return; 
@@ -358,28 +366,84 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // Texto do filtro para aparecer no PDF
             const fMes = document.getElementById('filtro_mes').selectedOptions[0].text;
             const fCli = document.getElementById('filtro_cliente').selectedOptions[0].text;
             
-            doc.text("Relatório de Horas e Projetos", 14, 20);
-            doc.setFontSize(10);
-            doc.text(`Filtros Ativos: ${fMes} | ${fCli}`, 14, 26);
+            // Design Minimalista e Moderno - Cabeçalho
+            doc.setFillColor(29, 29, 31); // Fundo escuro e elegante
+            doc.rect(0, 0, 210, 35, 'F');
             
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("RELATÓRIO DE SERVIÇOS", 14, 22);
+            
+            // Informações do Documento
+            doc.setTextColor(80, 80, 80);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            const dataEmissao = new Date().toLocaleDateString('pt-PT');
+            doc.text(`Data de Emissão: ${dataEmissao}`, 14, 48);
+            doc.text(`Período: ${fMes}`, 14, 54);
+            doc.text(`Cliente: ${fCli}`, 14, 60);
+            
+            // Linha Separadora Limpa
+            doc.setDrawColor(220, 220, 225);
+            doc.line(14, 65, 196, 65);
+            
+            // Tabela com estilo 'plain' minimalista
             doc.autoTable({
-                startY: 32,
+                startY: 70,
                 head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor']],
                 body: registosParaPDF.map(r => [
                     formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), 
                     formatHora(r.fim), r.duracaoTexto, parseFloat(r.valorGasto).toFixed(2)+'€'
                 ]),
-                theme: 'striped', headStyles: { fillColor: [52, 199, 89] }
+                theme: 'plain', 
+                headStyles: { fillColor: [245, 245, 247], textColor: [29, 29, 31], fontStyle: 'bold' },
+                bodyStyles: { borderBottomWidth: 0.1, lineColor: [230, 230, 230] },
+                alternateRowStyles: { fillColor: [252, 252, 254] }
             });
-            doc.text(`Total a receber: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY || 30) + 10);
             
-            // O nome do ficheiro adapta-se se tiver um cliente escolhido
-            const nomeFicheiro = fCli === "Todos os Clientes" ? "Relatorio_Geral.pdf" : `Relatorio_${fCli}.pdf`;
-            doc.save(nomeFicheiro);
+            // Total em Destaque no Fundo
+            const finalY = doc.lastAutoTable.finalY || 70;
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.setTextColor(29, 29, 31);
+            doc.text(`Total a Receber: ${document.getElementById('total_ganho').innerText}`, 14, finalY + 15);
+            
+            // Rodapé com Paginação
+            const pageCount = doc.internal.getNumberOfPages();
+            for(let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text(`Página ${i} de ${pageCount}`, 105, 285, {align: 'center'});
+            }
+            
+            // Guarda o documento em memória e gera o URL para a pré-visualização
+            documentoPDFFinal = doc;
+            nomePDFFinal = fCli === "Todos os Clientes" ? "Relatorio_Geral.pdf" : `Relatorio_${fCli.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+            
+            const pdfBlob = doc.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            
+            // Mostra o Modal
+            document.getElementById('pdf-preview-frame').src = pdfUrl;
+            document.getElementById('modal-pdf').classList.add('show');
+        }
+
+        function fecharModalPDF() {
+            document.getElementById('modal-pdf').classList.remove('show');
+            setTimeout(() => { document.getElementById('pdf-preview-frame').src = ''; }, 300); // Limpa a memória após a animação
+        }
+
+        function gravarPDFFinal() {
+            if(documentoPDFFinal) {
+                documentoPDFFinal.save(nomePDFFinal);
+                fecharModalPDF();
+                showToast("Documento gravado com sucesso!");
+            }
         }
 
         window.onload = () => {
