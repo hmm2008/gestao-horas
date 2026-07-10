@@ -8,7 +8,6 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     
-    <!-- Bibliotecas PDF e Gráficos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -38,11 +37,10 @@
         .val { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
         .lab { font-size: 12px; color: var(--text-muted); }
         
-        /* NOVO: Estilos do Painel Financeiro */
         .finance-panel { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; background: rgba(0, 122, 255, 0.05); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border-color); align-items: center; }
-        .finance-item { display: flex; flex-direction: column; text-align: center; }
-        .finance-item input { text-align: center; margin-top: 5px; padding: 8px; font-size: 14px; }
-        .finance-item.result-item { justify-content: center; border-left: 1px solid var(--border-color); }
+        .finance-item { display: flex; flex-direction: column; text-align: center; justify-content: center; align-items: center;}
+        .finance-item input { text-align: center; margin-top: 5px; padding: 8px; font-size: 14px; width: 80%; }
+        .finance-item.result-item { border-left: 1px solid var(--border-color); }
         .finance-item.highlight .val { color: var(--accent-color); }
         
         .botoes-topo { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
@@ -65,14 +63,13 @@
         .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; font-size: 14px; }
         .toast.show { opacity: 1; }
 
-        /* ESTILOS DOS MODAIS PRESTÍGIO */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
         .modal-content { background: var(--card-bg); width: 90%; max-width: 800px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s ease; }
         .modal-overlay.show .modal-content { transform: translateY(0); }
         .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { margin: 0; font-size: 18px; }
-        .modal-body { flex: 1; overflow-y: auto; background: var(--bg-color); }
+        .modal-body { flex: 1; overflow-y: auto; background: var(--bg-color); padding: 20px;}
         .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
         .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); }
         
@@ -82,7 +79,6 @@
 
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
         .chart-container { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; }
-        .chart-container h3 { margin-top: 0; font-size: 14px; color: var(--text-muted); text-transform: uppercase; width: 100%; text-align: left; }
         .chart-wrapper { width: 100%; max-width: 350px; height: 350px; position: relative; }
 
         @media (max-width: 700px) {
@@ -101,11 +97,36 @@
 <body>
     <div id="toast-container"></div>
     
+    <!-- MODAL DE DESPESAS -->
+    <div id="modal-despesa" class="modal-overlay">
+        <div class="modal-content" style="max-width: 450px; height: auto;">
+            <div class="modal-header"><h2>🛒 Registar Despesa</h2></div>
+            <div class="modal-body">
+                <div class="input-group" style="margin-bottom:15px;"><label>Data</label><input type="date" id="d_data"></div>
+                <div class="input-group" style="margin-bottom:15px;"><label>Categoria</label>
+                    <select id="d_categoria">
+                        <option value="Combustível">Combustível</option>
+                        <option value="Portagens">Portagens</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Materiais">Materiais</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="input-group" style="margin-bottom:15px;"><label>Descrição (Opcional)</label><input type="text" id="d_descricao" placeholder="Ex: Galp, Almoço Cliente..."></div>
+                <div class="input-group" style="margin-bottom:15px;"><label>Valor Gasto (€)</label><input type="number" id="d_valor" step="0.01"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="fecharModal('modal-despesa')">Cancelar</button>
+                <button class="btn-confirm" onclick="guardarDespesa()">Guardar Despesa</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DE PRÉ-VISUALIZAÇÃO DO PDF -->
     <div id="modal-pdf" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header"><h2>Pré-visualização do Documento</h2></div>
-            <div class="modal-body"><iframe id="pdf-preview-frame"></iframe></div>
+            <div class="modal-body" style="padding:0;"><iframe id="pdf-preview-frame"></iframe></div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="fecharModal('modal-pdf')">Cancelar</button>
                 <button class="btn-save-pdf" onclick="gravarPDFFinal()">Gravar PDF</button>
@@ -117,7 +138,7 @@
     <div id="modal-confirm" class="modal-overlay">
         <div class="modal-content" style="height: auto; max-width: 500px;">
             <div id="modal-title" class="modal-header">Confirmar Backup</div>
-            <div id="modal-text" class="modal-body" style="padding: 20px; background: transparent;">Pretende descarregar o ficheiro CSV?</div>
+            <div id="modal-text" class="modal-body" style="background: transparent;">Pretende descarregar o ficheiro CSV?</div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="fecharModal('modal-confirm')">Cancelar</button>
                 <button id="btn-confirm-action" class="btn-confirm">Gravar Ficheiro</button>
@@ -132,11 +153,11 @@
             <div class="modal-body">
                 <div class="dashboard-grid">
                     <div class="chart-container">
-                        <h3>Faturação por Cliente</h3>
+                        <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Faturação por Cliente</h3>
                         <div class="chart-wrapper"><canvas id="graficoClientes"></canvas></div>
                     </div>
                     <div class="chart-container">
-                        <h3>Horas por Mês</h3>
+                        <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Horas por Mês</h3>
                         <div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div>
                     </div>
                 </div>
@@ -184,8 +205,9 @@
         <!-- NOVO PAINEL FINANCEIRO DE DESPESAS E IMPOSTOS -->
         <div class="finance-panel">
             <div class="finance-item">
-                <span class="lab">Despesas Fixas (€)</span>
-                <input type="number" id="inp_despesas" value="0" step="0.01" oninput="calcularFinancas()">
+                <span class="lab">Despesas Reais</span>
+                <span class="val" id="f_despesas_totais" style="font-size: 18px; margin: 5px 0;">0.00 €</span>
+                <button class="btn-acao" style="background:#ff3b30; width:90%;" onclick="abrirModalDespesa()">🛒 Registar</button>
             </div>
             <div class="finance-item">
                 <span class="lab">IRS (%)</span>
@@ -197,11 +219,11 @@
             </div>
             <div class="finance-item result-item">
                 <span class="lab">Total Impostos</span>
-                <span class="val" id="f_impostos" style="font-size: 18px;">0.00 €</span>
+                <span class="val" id="f_impostos" style="font-size: 18px; margin-top:5px; display:block;">0.00 €</span>
             </div>
             <div class="finance-item result-item highlight">
                 <span class="lab">Líquido a Receber</span>
-                <span class="val" id="f_liquido">0.00 €</span>
+                <span class="val" id="f_liquido" style="margin-top:5px; display:block;">0.00 €</span>
             </div>
         </div>
 
@@ -224,11 +246,12 @@
 
     <script>
         // ==============================================================
-        // ⚠️ COLOQUE O SEU LINK DO APPS SCRIPT AQUI ABAIXO
+        // ⚠️ COLOQUE O SEU NOVO LINK DO APPS SCRIPT AQUI ABAIXO
         // ==============================================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwExURAlBK4X0UOpvMN7DJdT_D9uo0YBmYarmoMEY9kTPqdPjtQWRZBdaq3RZyGDDUSVw/exec";
         
         let registos = [];
+        let despesasRegistadas = []; // Nova variável para guardar as despesas
         let idEmEdicao = null;
         let documentoPDFFinal = null;
         let nomePDFFinal = "";
@@ -321,7 +344,17 @@
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL + "?nocache=" + Date.now());
                 if(!res.ok) throw new Error("Erro");
-                registos = await res.json();
+                const json = await res.json();
+                
+                // Agora o backend envia os dois pacotes de dados
+                if(json.registos && json.despesas) {
+                    registos = json.registos;
+                    despesasRegistadas = json.despesas;
+                } else {
+                    registos = json; // Segurança caso leia o formato antigo
+                    despesasRegistadas = [];
+                }
+                
                 atualizarDropdownsFiltros();
                 renderizarTabela();
             } catch (e) { console.error("Erro a ler base de dados."); }
@@ -356,28 +389,63 @@
             document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`;
             document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
             
-            // NOVO: Chama o cálculo de finanças após atualizar a tabela
             calcularFinancas();
         }
 
-        // NOVO: Função para calcular os impostos e o valor líquido a receber
+        // CÁLCULO DE FINANÇAS ATUALIZADO (Lê as despesas reais)
         function calcularFinancas() {
-            // Obter o valor bruto do elemento 'total_ganho' (limpando o €)
+            const fMes = document.getElementById('filtro_mes').value;
+            
+            // 1. Filtrar e Somar as despesas do mês selecionado
+            let despesasFiltradas = despesasRegistadas;
+            if(fMes !== 'todos') {
+                despesasFiltradas = despesasRegistadas.filter(d => d.data && d.data.substring(0,7) === fMes);
+            }
+            const totalDespesasReais = despesasFiltradas.reduce((soma, d) => soma + parseFloat(d.valor || 0), 0);
+            
+            document.getElementById('f_despesas_totais').innerText = totalDespesasReais.toFixed(2) + ' €';
+
+            // 2. Fazer os cálculos de impostos e líquido
             const textoBruto = document.getElementById('total_ganho').innerText;
             const bruto = parseFloat(textoBruto.replace('€', '').trim()) || 0;
             
-            // Obter os valores dos inputs das despesas e impostos
-            const despesas = parseFloat(document.getElementById('inp_despesas').value) || 0;
+            // LER os inputs de percentagem que o utilizador guardou
             const irs = (parseFloat(document.getElementById('inp_irs').value) || 0) / 100;
             const ss = (parseFloat(document.getElementById('inp_ss').value) || 0) / 100;
             
-            // Efetuar os cálculos
             const totalImpostos = bruto * (irs + ss);
-            const liquido = bruto - despesas - totalImpostos;
+            const liquido = bruto - totalDespesasReais - totalImpostos;
             
-            // Atualizar os valores na interface
             document.getElementById('f_impostos').innerText = totalImpostos.toFixed(2) + ' €';
             document.getElementById('f_liquido').innerText = liquido.toFixed(2) + ' €';
+            
+            // Guarda as taxas para a próxima visita
+            localStorage.setItem('tx_irs', document.getElementById('inp_irs').value);
+            localStorage.setItem('tx_ss', document.getElementById('inp_ss').value);
+        }
+
+        // --- SISTEMA DE GESTÃO DE DESPESAS (NOVAS FUNÇÕES) ---
+        function abrirModalDespesa() {
+            document.getElementById('modal-despesa').classList.add('show');
+            document.getElementById('d_data').valueAsDate = new Date();
+        }
+
+        async function guardarDespesa() {
+            const d = document.getElementById('d_data').value;
+            const cat = document.getElementById('d_categoria').value;
+            const desc = document.getElementById('d_descricao').value;
+            const val = parseFloat(document.getElementById('d_valor').value);
+            
+            if(!d || isNaN(val)) { showToast("Preencha a Data e o Valor!"); return; }
+            
+            // O truque: envia o tipo "despesa" para o script perceber
+            const req = { tipo: 'despesa', id: 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
+            
+            showToast("A guardar despesa...");
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
+                window.location.reload();
+            } catch(e) { showToast("Erro ao guardar despesa"); }
         }
 
         function editarRegisto(id) {
@@ -403,7 +471,8 @@
             if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos."); return; }
             const c = calcDiferenca(i,f);
             
-            const req = { id: idEmEdicao ? idEmEdicao : 'REG_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: cli };
+            // tipo: 'registo' para separar das despesas
+            const req = { tipo: 'registo', id: idEmEdicao ? idEmEdicao : 'R_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: cli };
             showToast("A guardar...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
@@ -423,7 +492,6 @@
 
         function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
 
-        // --- SISTEMA DE BACKUP CSV SÍNCRONO (NÃO BLOQUEIA) ---
         function iniciarBackupCSV() {
             const dados = obterRegistosFiltrados();
             if(dados.length === 0) { showToast("Sem dados para exportar."); return; }
@@ -434,7 +502,6 @@
             
             const btnConfirmar = document.getElementById('btn-confirm-action');
             
-            // EXECUÇÃO SÍNCRONA DIRECTA NO CLIQUE (O BROWSER DEIXA PASSAR)
             btnConfirmar.onclick = function() {
                 let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
                 dados.forEach(r => {
@@ -458,7 +525,6 @@
             document.getElementById('modal-confirm').classList.add('show');
         }
 
-        // --- PRE-VISUALIZAÇÃO DO PDF ---
         function preVisualizarPDF() {
             const registosParaPDF = obterRegistosFiltrados();
             if(registosParaPDF.length === 0) { showToast("Sem dados."); return; }
@@ -490,7 +556,6 @@
 
         function gravarPDFFinal() { if(documentoPDFFinal) { documentoPDFFinal.save(nomePDFFinal); fecharModal('modal-pdf'); showToast("PDF Gravado!"); } }
 
-        // --- DASHBOARD (GRÁFICOS) ---
         function abrirDashboard() {
             if(registos.length === 0) { showToast("Sem dados para gráficos."); return; }
             document.getElementById('modal-dashboard').classList.add('show');
@@ -530,8 +595,14 @@
         window.onload = () => {
             if(localStorage.getItem('tema_final') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
+            
             const t = localStorage.getItem('taxa_hora_guardada');
             if (t) document.getElementById('taxa_hora').value = t;
+            
+            // Restaura os valores de impostos guardados
+            if (localStorage.getItem('tx_irs')) document.getElementById('inp_irs').value = localStorage.getItem('tx_irs');
+            if (localStorage.getItem('tx_ss')) document.getElementById('inp_ss').value = localStorage.getItem('tx_ss');
+            
             carregarDadosDoGoogle();
         };
     </script>
