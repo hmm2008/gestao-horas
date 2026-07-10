@@ -48,6 +48,7 @@
         .btn-pdf { background: #34c759; }
         .btn-graficos { background: #ff9500; }
         .btn-csv { background: #5856d6; }
+        .btn-ver-despesas { background: #8e8e93; }
         
         .filter-panel { display: flex; gap: 10px; margin-bottom: 15px; padding: 15px; background: rgba(128,128,128,0.05); border-radius: 10px; border: 1px solid var(--border-color); }
         .filter-panel select { flex: 1; font-weight: bold; }
@@ -97,10 +98,26 @@
 <body>
     <div id="toast-container"></div>
     
-    <!-- MODAL DE DESPESAS -->
+    <!-- MODAL DE GESTÃO DE DESPESAS (EDITAR/APAGAR) -->
+    <div id="modal-lista-despesas" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h2>📋 Histórico de Despesas</h2></div>
+            <div class="modal-body" style="padding:0;">
+                <table style="width:100%;">
+                    <thead><tr><th>Data</th><th>Cat.</th><th>Desc.</th><th>Valor</th><th>Ações</th></tr></thead>
+                    <tbody id="lista_despesas_corpo"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="fecharModal('modal-lista-despesas')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ADICIONAR/EDITAR DESPESA -->
     <div id="modal-despesa" class="modal-overlay">
         <div class="modal-content" style="max-width: 450px; height: auto;">
-            <div class="modal-header"><h2>🛒 Registar Despesa</h2></div>
+            <div class="modal-header"><h2 id="titulo_modal_despesa">🛒 Registar Despesa</h2></div>
             <div class="modal-body">
                 <div class="input-group" style="margin-bottom:15px;"><label>Data</label><input type="date" id="d_data"></div>
                 <div class="input-group" style="margin-bottom:15px;"><label>Categoria</label>
@@ -134,22 +151,22 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO DO BACKUP CSV -->
+    <!-- MODAL DE CONFIRMAÇÃO -->
     <div id="modal-confirm" class="modal-overlay">
         <div class="modal-content" style="height: auto; max-width: 500px;">
-            <div id="modal-title" class="modal-header">Confirmar Backup</div>
-            <div id="modal-text" class="modal-body" style="background: transparent;">Pretende descarregar o ficheiro CSV?</div>
+            <div id="modal-title" class="modal-header">Confirmar</div>
+            <div id="modal-text" class="modal-body" style="background: transparent;">Tem a certeza?</div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="fecharModal('modal-confirm')">Cancelar</button>
-                <button id="btn-confirm-action" class="btn-confirm">Gravar Ficheiro</button>
+                <button id="btn-confirm-action" class="btn-confirm">Confirmar</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DO DASHBOARD (GRÁFICOS) -->
+    <!-- MODAL DO DASHBOARD -->
     <div id="modal-dashboard" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header"><h2>📊 Estatísticas e Desempenho</h2></div>
+            <div class="modal-header"><h2>📊 Estatísticas</h2></div>
             <div class="modal-body">
                 <div class="dashboard-grid">
                     <div class="chart-container">
@@ -168,7 +185,6 @@
         </div>
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL DA APLICAÇÃO -->
     <div class="app-container">
         <div class="header">
             <h1 style="margin:0;">Gestão de Horas</h1>
@@ -188,7 +204,6 @@
         </div>
         <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">ADICIONAR REGISTO</button>
 
-        <!-- PAINEL ORIGINAL DE RESUMO -->
         <div class="summary-panel">
             <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
             <div class="summary-item"><span class="val" id="total_horas">0h</span><span class="lab">Total Horas</span></div>
@@ -198,16 +213,16 @@
                     <button class="btn-acao btn-graficos" onclick="abrirDashboard()">📊 Estatísticas</button>
                     <button class="btn-acao btn-pdf" onclick="preVisualizarPDF()">Gerar PDF</button>
                     <button class="btn-acao btn-csv" onclick="iniciarBackupCSV()">📥 Backup CSV</button>
+                    <button class="btn-acao btn-ver-despesas" onclick="abrirModalListaDespesas()">📋 Ver Despesas</button>
                 </div>
             </div>
         </div>
 
-        <!-- NOVO PAINEL FINANCEIRO DE DESPESAS E IMPOSTOS -->
         <div class="finance-panel">
             <div class="finance-item">
                 <span class="lab">Despesas Reais</span>
                 <span class="val" id="f_despesas_totais" style="font-size: 18px; margin: 5px 0;">0.00 €</span>
-                <button class="btn-acao" style="background:#ff3b30; width:90%;" onclick="abrirModalDespesa()">🛒 Registar</button>
+                <button class="btn-acao" style="background:#ff3b30; width:90%; padding:5px; font-size:10px;" onclick="abrirModalDespesa()">🛒 Registar</button>
             </div>
             <div class="finance-item">
                 <span class="lab">IRS (%)</span>
@@ -250,14 +265,11 @@
         let registos = [];
         let despesasRegistadas = []; 
         let idEmEdicao = null;
+        let idEmEdicaoDespesa = null;
         let documentoPDFFinal = null;
         let nomePDFFinal = "";
         let chartClientesInst = null;
         let chartMesesInst = null;
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(reg => reg.update());
-        }
 
         function alternarTema() {
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -275,23 +287,13 @@
             setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000);
         }
 
-        function formatDataBR(d) { 
-            if(!d) return '--';
-            return d.split('T')[0].split('-').reverse().join('/');
-        }
-        
-        function formatDataParaInput(d) {
-            if(!d) return '';
-            return d.split('T')[0];
-        }
-
+        function formatDataBR(d) { if(!d) return '--'; return d.split('T')[0].split('-').reverse().join('/'); }
+        function formatDataParaInput(d) { if(!d) return ''; return d.split('T')[0]; }
         function formatHora(h) {
             if(!h) return '--';
             if(h.includes('T')) {
                 const dataObj = new Date(h);
-                let mins = dataObj.getMinutes();
-                if(mins === 36 || mins === 37) mins = 0; 
-                return dataObj.getHours().toString().padStart(2, '0') + ':' + mins.toString().padStart(2, '0');
+                return dataObj.getHours().toString().padStart(2, '0') + ':' + dataObj.getMinutes().toString().padStart(2, '0');
             }
             return h.substring(0, 5);
         }
@@ -360,7 +362,6 @@
                     registos = json;
                     despesasRegistadas = [];
                 }
-                
                 atualizarDropdownsFiltros();
                 renderizarTabela();
             } catch (e) { console.error("Erro a ler base de dados."); }
@@ -376,7 +377,6 @@
                 if(r.data) dias.add(r.data.split('T')[0]);
                 sMin += parseInt(r.minutosTotais||0);
                 sVal += parseFloat(r.valorGasto||0);
-                
                 tbody.innerHTML += `<tr>
                     <td>${formatDataBR(r.data)}</td>
                     <td><strong>${r.cliente || '--'}</strong></td>
@@ -386,48 +386,75 @@
                     <td>${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
                     <td><strong>${parseFloat(r.valorGasto||0).toFixed(2)}€</strong></td>
                     <td class="action-btns">
-                        <button class="edit-btn" onclick="editarRegisto('${r.id}')" title="Editar">✏️</button>
-                        <button class="delete-btn" onclick="apagarRegisto('${r.id}')" title="Apagar">🗑️</button>
+                        <button class="edit-btn" onclick="editarRegisto('${r.id}')">✏️</button>
+                        <button class="delete-btn" onclick="apagarRegisto('${r.id}')">🗑️</button>
                     </td>
                 </tr>`;
             });
             document.getElementById('total_dias').innerText = dias.size;
             document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`;
             document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
-            
             calcularFinancas();
         }
 
         function calcularFinancas() {
             const fMes = document.getElementById('filtro_mes').value;
-            
             let despesasFiltradas = despesasRegistadas;
             if(fMes !== 'todos') {
                 despesasFiltradas = despesasRegistadas.filter(d => d.data && d.data.substring(0,7) === fMes);
             }
             const totalDespesasReais = despesasFiltradas.reduce((soma, d) => soma + parseFloat(d.valor || 0), 0);
-            
             document.getElementById('f_despesas_totais').innerText = totalDespesasReais.toFixed(2) + ' €';
 
-            const textoBruto = document.getElementById('total_ganho').innerText;
-            const bruto = parseFloat(textoBruto.replace('€', '').trim()) || 0;
-            
+            const bruto = parseFloat(document.getElementById('total_ganho').innerText.replace('€', '').trim()) || 0;
             const irs = (parseFloat(document.getElementById('inp_irs').value) || 0) / 100;
             const ss = (parseFloat(document.getElementById('inp_ss').value) || 0) / 100;
-            
             const totalImpostos = bruto * (irs + ss);
             const liquido = bruto - totalDespesasReais - totalImpostos;
             
             document.getElementById('f_impostos').innerText = totalImpostos.toFixed(2) + ' €';
             document.getElementById('f_liquido').innerText = liquido.toFixed(2) + ' €';
-            
             localStorage.setItem('tx_irs', document.getElementById('inp_irs').value);
             localStorage.setItem('tx_ss', document.getElementById('inp_ss').value);
         }
 
+        function abrirModalListaDespesas() {
+            const corpo = document.getElementById('lista_despesas_corpo');
+            corpo.innerHTML = '';
+            despesasRegistadas.forEach(d => {
+                corpo.innerHTML += `<tr>
+                    <td>${formatDataBR(d.data)}</td>
+                    <td>${d.categoria}</td>
+                    <td>${d.descricao}</td>
+                    <td>${parseFloat(d.valor).toFixed(2)}€</td>
+                    <td class="action-btns">
+                        <button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button>
+                        <button class="delete-btn" onclick="apagarRegisto('${d.id}')">🗑️</button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('modal-lista-despesas').classList.add('show');
+        }
+
         function abrirModalDespesa() {
-            document.getElementById('modal-despesa').classList.add('show');
+            idEmEdicaoDespesa = null;
+            document.getElementById('titulo_modal_despesa').innerText = "🛒 Registar Despesa";
             document.getElementById('d_data').valueAsDate = new Date();
+            document.getElementById('d_valor').value = '';
+            document.getElementById('d_descricao').value = '';
+            document.getElementById('modal-despesa').classList.add('show');
+        }
+
+        function editarDespesa(id) {
+            const despesa = despesasRegistadas.find(d => String(d.id) === String(id));
+            if(!despesa) return;
+            idEmEdicaoDespesa = id;
+            document.getElementById('titulo_modal_despesa').innerText = "✏️ Editar Despesa";
+            document.getElementById('d_data').value = despesa.data;
+            document.getElementById('d_categoria').value = despesa.categoria;
+            document.getElementById('d_descricao').value = despesa.descricao;
+            document.getElementById('d_valor').value = despesa.valor;
+            document.getElementById('modal-despesa').classList.add('show');
         }
 
         async function guardarDespesa() {
@@ -435,16 +462,14 @@
             const cat = document.getElementById('d_categoria').value;
             const desc = document.getElementById('d_descricao').value;
             const val = parseFloat(document.getElementById('d_valor').value);
-            
             if(!d || isNaN(val)) { showToast("Preencha a Data e o Valor!"); return; }
             
-            const req = { tipo: 'despesa', id: 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
-            
+            const req = { tipo: 'despesa', id: idEmEdicaoDespesa || 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
             showToast("A guardar despesa...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
                 window.location.reload();
-            } catch(e) { showToast("Erro ao guardar despesa"); }
+            } catch(e) { showToast("Erro ao guardar"); }
         }
 
         function editarRegisto(id) {
@@ -493,33 +518,21 @@
         function iniciarBackupCSV() {
             const dados = obterRegistosFiltrados();
             if(dados.length === 0) { showToast("Sem dados para exportar."); return; }
-            
             const nomeFicheiro = "Backup_Horas_" + new Date().toISOString().split('T')[0] + ".csv";
             document.getElementById('modal-title').innerText = "Confirmar Backup CSV";
             document.getElementById('modal-text').innerText = `Deseja gravar o ficheiro "${nomeFicheiro}" estruturado em colunas individuais?`;
-            
             const btnConfirmar = document.getElementById('btn-confirm-action');
-            
             btnConfirmar.onclick = function() {
                 let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Valor Hora;Valor\n";
                 dados.forEach(r => {
                     csvContent += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`;
                 });
-                
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = nomeFicheiro;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
+                const a = document.createElement("a"); a.href = url; a.download = nomeFicheiro; document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 fecharModal('modal-confirm');
                 showToast("Backup guardado com sucesso!");
             };
-            
             document.getElementById('modal-confirm').classList.add('show');
         }
 
@@ -528,32 +541,19 @@
             if(registosParaPDF.length === 0) { showToast("Sem dados."); return; }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
             doc.setFillColor(29, 29, 31); doc.rect(0, 0, 210, 35, 'F');
             doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("RELATÓRIO DE SERVIÇOS", 14, 22);
-            
             doc.setTextColor(80, 80, 80); doc.setFont("helvetica", "normal"); doc.setFontSize(10);
             doc.text(`Emitido em: ${new Date().toLocaleDateString('pt-PT')}`, 14, 48);
-            
             doc.autoTable({
                 startY: 60,
                 head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor Hora', 'Valor']],
-                body: registosParaPDF.map(r => [
-                    formatDataBR(r.data), 
-                    r.cliente || '-', 
-                    formatHora(r.inicio), 
-                    formatHora(r.fim), 
-                    r.duracaoTexto, 
-                    parseFloat(r.taxaUsada).toFixed(2)+'€', 
-                    parseFloat(r.valorGasto).toFixed(2)+'€'
-                ]),
+                body: registosParaPDF.map(r => [formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), formatHora(r.fim), r.duracaoTexto, parseFloat(r.taxaUsada).toFixed(2)+'€', parseFloat(r.valorGasto).toFixed(2)+'€']),
                 theme: 'plain',
                 headStyles: { fillColor: [245, 245, 247], textColor: [29, 29, 31], fontStyle: 'bold' }
             });
-            
             doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(29, 29, 31);
             doc.text(`Total a Receber: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY || 60) + 15);
-            
             documentoPDFFinal = doc;
             nomePDFFinal = "Relatorio_Servicos.pdf";
             document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob'));
@@ -571,26 +571,19 @@
         function gerarGraficos() {
             if(chartClientesInst) chartClientesInst.destroy();
             if(chartMesesInst) chartMesesInst.destroy();
-            
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const corTexto = isDark ? '#f5f5f7' : '#1d1d1f';
-            
             let rend = {}, horas = {};
             registos.forEach(r => {
                 let c = r.cliente || "S/ Nome";
                 rend[c] = (rend[c]||0) + parseFloat(r.valorGasto||0);
-                if(r.data) {
-                    let m = r.data.split('T')[0].substring(0,7);
-                    horas[m] = (horas[m]||0) + parseInt(r.minutosTotais||0);
-                }
+                if(r.data) { let m = r.data.split('T')[0].substring(0,7); horas[m] = (horas[m]||0) + parseInt(r.minutosTotais||0); }
             });
-            
             chartClientesInst = new Chart(document.getElementById('graficoClientes'), {
                 type: 'pie',
                 data: { labels: Object.keys(rend), datasets: [{ data: Object.values(rend), backgroundColor: ['#007aff','#34c759','#ff9500','#ff3b30','#5856d6'] }] },
                 options: { responsive: true, plugins: { legend: { labels: { color: corTexto } } } }
             });
-            
             chartMesesInst = new Chart(document.getElementById('graficoMeses'), {
                 type: 'bar',
                 data: { labels: Object.keys(horas), datasets: [{ label: 'Horas', data: Object.values(horas).map(m=>(m/60).toFixed(1)), backgroundColor: '#007aff' }] },
@@ -601,13 +594,10 @@
         window.onload = () => {
             if(localStorage.getItem('tema_final') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
-            
             const t = localStorage.getItem('taxa_hora_guardada');
             if (t) document.getElementById('taxa_hora').value = t;
-            
             if (localStorage.getItem('tx_irs')) document.getElementById('inp_irs').value = localStorage.getItem('tx_irs');
             if (localStorage.getItem('tx_ss')) document.getElementById('inp_ss').value = localStorage.getItem('tx_ss');
-            
             carregarDadosDoGoogle();
         };
     </script>
