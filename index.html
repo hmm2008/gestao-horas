@@ -8,8 +8,12 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     
+    <!-- Bibliotecas PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- Biblioteca Gráficos (Chart.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; --input-bg: #ffffff; }
@@ -36,8 +40,11 @@
         .val { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
         .lab { font-size: 12px; color: var(--text-muted); }
         
-        .btn-pdf { background: #34c759; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .botoes-topo { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-pdf { background: #34c759; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-pdf:hover { opacity: 0.8; }
+        .btn-graficos { background: #ff9500; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-graficos:hover { opacity: 0.8; }
         
         .filter-panel { display: flex; gap: 10px; margin-bottom: 15px; padding: 15px; background: rgba(128,128,128,0.05); border-radius: 10px; border: 1px solid var(--border-color); }
         .filter-panel select { flex: 1; font-weight: bold; }
@@ -53,18 +60,24 @@
         .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; font-size: 14px; }
         .toast.show { opacity: 1; }
 
-        /* --- ESTILOS DO NOVO MODAL DE PDF --- */
+        /* MODAL COMUM (Usado para PDF e Dashboard) */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
         .modal-content { background: var(--card-bg); width: 90%; max-width: 800px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s ease; }
         .modal-overlay.show .modal-content { transform: translateY(0); }
         .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { margin: 0; font-size: 18px; }
-        .modal-body { flex: 1; background: #e5e5ea; }
+        .modal-body { flex: 1; overflow-y: auto; background: var(--bg-color); }
         .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
         .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); }
         .btn-cancel { background: transparent; border: 1px solid var(--text-muted); color: var(--text-main); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-save-pdf { background: #34c759; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* ESTILOS DO DASHBOARD */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
+        .chart-container { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; }
+        .chart-container h3 { margin-top: 0; font-size: 14px; color: var(--text-muted); text-transform: uppercase; width: 100%; text-align: left; }
+        .chart-wrapper { width: 100%; max-width: 350px; height: 350px; position: relative; }
 
         @media (max-width: 700px) {
             .form-grid { grid-template-columns: 1fr 1fr; }
@@ -73,6 +86,7 @@
             .summary-item { border-right: none; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
             .summary-item:last-child { border-bottom: none; }
             .filter-panel { flex-direction: column; }
+            .dashboard-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -82,15 +96,33 @@
     <!-- JANELA DE PRÉ-VISUALIZAÇÃO DO PDF -->
     <div id="modal-pdf" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Pré-visualização do Documento</h2>
+            <div class="modal-header"><h2>Pré-visualização do Documento</h2></div>
+            <div class="modal-body"><iframe id="pdf-preview-frame"></iframe></div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="fecharModal('modal-pdf')">Cancelar</button>
+                <button class="btn-save-pdf" onclick="gravarPDFFinal()">Gravar PDF</button>
             </div>
+        </div>
+    </div>
+
+    <!-- JANELA DO DASHBOARD (GRÁFICOS) -->
+    <div id="modal-dashboard" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h2>📊 Estatísticas e Desempenho</h2></div>
             <div class="modal-body">
-                <iframe id="pdf-preview-frame"></iframe>
+                <div class="dashboard-grid">
+                    <div class="chart-container">
+                        <h3>Faturação por Cliente</h3>
+                        <div class="chart-wrapper"><canvas id="graficoClientes"></canvas></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Horas por Mês</h3>
+                        <div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModalPDF()">Cancelar</button>
-                <button class="btn-save-pdf" onclick="gravarPDFFinal()">Gravar PDF</button>
+                <button class="btn-cancel" onclick="fecharModal('modal-dashboard')">Fechar Painel</button>
             </div>
         </div>
     </div>
@@ -119,7 +151,10 @@
             <div class="summary-item"><span class="val" id="total_horas">0h</span><span class="lab">Total Horas</span></div>
             <div class="summary-item">
                 <span class="val" id="total_ganho">0.00 €</span><span class="lab">A Receber</span>
-                <button class="btn-pdf" onclick="preVisualizarPDF()">Gerar Relatório (PDF)</button>
+                <div class="botoes-topo">
+                    <button class="btn-graficos" onclick="abrirDashboard()">📊 Estatísticas</button>
+                    <button class="btn-pdf" onclick="preVisualizarPDF()">Gerar PDF</button>
+                </div>
             </div>
         </div>
 
@@ -142,14 +177,18 @@
 
     <script>
         // ==============================================================
-        // ⚠️ COLOQUE O SEU LINK DO APPS SCRIPT AQUI ABAIXO
+        // ⚠️ COLOQUE O SEU LINK NOVO DO APPS SCRIPT AQUI ABAIXO
         // ==============================================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwExURAlBK4X0UOpvMN7DJdT_D9uo0YBmYarmoMEY9kTPqdPjtQWRZBdaq3RZyGDDUSVw/exec";
         
         let registos = [];
         let idEmEdicao = null;
-        let documentoPDFFinal = null; // Guarda o documento gerado para o gravar mais tarde
+        let documentoPDFFinal = null;
         let nomePDFFinal = "";
+        
+        // Variáveis para guardar as instâncias dos gráficos (para os podermos destruir e redesenhar)
+        let chartClientesInst = null;
+        let chartMesesInst = null;
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').then(reg => reg.update());
@@ -159,6 +198,8 @@
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', t);
             localStorage.setItem('tema_final', t);
+            // Se o dashboard estiver aberto, redesenha os gráficos com as novas cores do tema
+            if (chartClientesInst) gerarGraficos();
         }
 
         function showToast(msg) {
@@ -353,8 +394,15 @@
             } catch(e) { showToast("Erro ao apagar"); }
         }
 
+        function fecharModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+            if(modalId === 'modal-pdf') {
+                setTimeout(() => { document.getElementById('pdf-preview-frame').src = ''; }, 300);
+            }
+        }
+
         // ============================================================
-        // NOVO DESIGN DO PDF E SISTEMA DE PRÉ-VISUALIZAÇÃO
+        // MÓDULO DE PDF
         // ============================================================
         function preVisualizarPDF() {
             const registosParaPDF = obterRegistosFiltrados();
@@ -369,8 +417,7 @@
             const fMes = document.getElementById('filtro_mes').selectedOptions[0].text;
             const fCli = document.getElementById('filtro_cliente').selectedOptions[0].text;
             
-            // Design Minimalista e Moderno - Cabeçalho
-            doc.setFillColor(29, 29, 31); // Fundo escuro e elegante
+            doc.setFillColor(29, 29, 31); 
             doc.rect(0, 0, 210, 35, 'F');
             
             doc.setTextColor(255, 255, 255);
@@ -378,7 +425,6 @@
             doc.setFontSize(18);
             doc.text("RELATÓRIO DE SERVIÇOS", 14, 22);
             
-            // Informações do Documento
             doc.setTextColor(80, 80, 80);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
@@ -387,11 +433,9 @@
             doc.text(`Período: ${fMes}`, 14, 54);
             doc.text(`Cliente: ${fCli}`, 14, 60);
             
-            // Linha Separadora Limpa
             doc.setDrawColor(220, 220, 225);
             doc.line(14, 65, 196, 65);
             
-            // Tabela com estilo 'plain' minimalista
             doc.autoTable({
                 startY: 70,
                 head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor']],
@@ -405,14 +449,12 @@
                 alternateRowStyles: { fillColor: [252, 252, 254] }
             });
             
-            // Total em Destaque no Fundo
             const finalY = doc.lastAutoTable.finalY || 70;
             doc.setFont("helvetica", "bold");
             doc.setFontSize(14);
             doc.setTextColor(29, 29, 31);
             doc.text(`Total a Receber: ${document.getElementById('total_ganho').innerText}`, 14, finalY + 15);
             
-            // Rodapé com Paginação
             const pageCount = doc.internal.getNumberOfPages();
             for(let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
@@ -421,29 +463,115 @@
                 doc.text(`Página ${i} de ${pageCount}`, 105, 285, {align: 'center'});
             }
             
-            // Guarda o documento em memória e gera o URL para a pré-visualização
             documentoPDFFinal = doc;
             nomePDFFinal = fCli === "Todos os Clientes" ? "Relatorio_Geral.pdf" : `Relatorio_${fCli.replace(/[^a-z0-9]/gi, '_')}.pdf`;
             
-            const pdfBlob = doc.output('blob');
-            const pdfUrl = URL.createObjectURL(pdfBlob);
-            
-            // Mostra o Modal
+            const pdfUrl = URL.createObjectURL(doc.output('blob'));
             document.getElementById('pdf-preview-frame').src = pdfUrl;
             document.getElementById('modal-pdf').classList.add('show');
-        }
-
-        function fecharModalPDF() {
-            document.getElementById('modal-pdf').classList.remove('show');
-            setTimeout(() => { document.getElementById('pdf-preview-frame').src = ''; }, 300); // Limpa a memória após a animação
         }
 
         function gravarPDFFinal() {
             if(documentoPDFFinal) {
                 documentoPDFFinal.save(nomePDFFinal);
-                fecharModalPDF();
+                fecharModal('modal-pdf');
                 showToast("Documento gravado com sucesso!");
             }
+        }
+
+        // ============================================================
+        // MÓDULO DO DASHBOARD (GRÁFICOS)
+        // ============================================================
+        function abrirDashboard() {
+            if(registos.length === 0) {
+                showToast("Sem dados suficientes para gerar gráficos.");
+                return;
+            }
+            document.getElementById('modal-dashboard').classList.add('show');
+            gerarGraficos();
+        }
+
+        function gerarGraficos() {
+            // Destrói os gráficos antigos se existirem, para não se sobreporem
+            if(chartClientesInst) chartClientesInst.destroy();
+            if(chartMesesInst) chartMesesInst.destroy();
+
+            // Lógica do Tema (Cores)
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const corTexto = isDark ? '#f5f5f7' : '#1d1d1f';
+            const paletaCores = ['#007aff', '#34c759', '#ff9500', '#ff3b30', '#5856d6', '#af52de', '#ff2d55'];
+
+            // 1. Processar dados para: Faturação por Cliente
+            let rendimentoPorCliente = {};
+            registos.forEach(r => {
+                let cli = (r.cliente && r.cliente.trim() !== "") ? r.cliente : "S/ Nome";
+                if(!rendimentoPorCliente[cli]) rendimentoPorCliente[cli] = 0;
+                rendimentoPorCliente[cli] += parseFloat(r.valorGasto || 0);
+            });
+            
+            const labelsClientes = Object.keys(rendimentoPorCliente);
+            const dadosClientes = Object.values(rendimentoPorCliente);
+
+            const ctxClientes = document.getElementById('graficoClientes').getContext('2d');
+            chartClientesInst = new Chart(ctxClientes, {
+                type: 'pie',
+                data: {
+                    labels: labelsClientes,
+                    datasets: [{
+                        data: dadosClientes,
+                        backgroundColor: paletaCores,
+                        borderWidth: 2,
+                        borderColor: isDark ? '#1c1c1e' : '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { color: corTexto } },
+                        tooltip: { callbacks: { label: function(context) { return ' ' + context.raw.toFixed(2) + ' €'; } } }
+                    }
+                }
+            });
+
+            // 2. Processar dados para: Horas por Mês
+            let horasPorMes = {};
+            registos.forEach(r => {
+                if(!r.data) return;
+                let mesAno = r.data.split('T')[0].substring(0,7); // YYYY-MM
+                if(!horasPorMes[mesAno]) horasPorMes[mesAno] = 0;
+                horasPorMes[mesAno] += parseInt(r.minutosTotais || 0);
+            });
+
+            // Ordenar meses cronologicamente
+            const mesesOrdenados = Object.keys(horasPorMes).sort();
+            const labelsMeses = mesesOrdenados.map(m => {
+                const [ano, mes] = m.split('-');
+                const dataObj = new Date(ano, mes-1, 1);
+                return dataObj.toLocaleString('pt-PT', { month: 'short' }) + ' ' + ano; // Ex: jul 2026
+            });
+            const dadosMeses = mesesOrdenados.map(m => (horasPorMes[m] / 60).toFixed(1)); // Convertido para horas
+
+            const ctxMeses = document.getElementById('graficoMeses').getContext('2d');
+            chartMesesInst = new Chart(ctxMeses, {
+                type: 'bar',
+                data: {
+                    labels: labelsMeses,
+                    datasets: [{
+                        label: 'Horas Trabalhadas',
+                        data: dadosMeses,
+                        backgroundColor: '#007aff',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: corTexto }, grid: { display: false } },
+                        y: { ticks: { color: corTexto }, grid: { color: isDark ? '#38383a' : '#e5e5ea' } }
+                    }
+                }
+            });
         }
 
         window.onload = () => {
