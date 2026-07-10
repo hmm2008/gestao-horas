@@ -238,16 +238,13 @@
 
         <div class="table-container">
             <table>
-                <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Taxa</th><th>Valor</th><th>Ações</th></tr></thead>
+                <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Valor Hora</th><th>Valor</th><th>Ações</th></tr></thead>
                 <tbody id="tabela_registos"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // ==============================================================
-        // ⚠️ COLOQUE O SEU NOVO LINK DO APPS SCRIPT AQUI ABAIXO
-        // ==============================================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNRyIBHuwG6SJ5NMT2ROw-9UcyhR75-Bdmdm6jte9uUsABDTjVriF0EaDaS-Cw7kRt5w/exec";
         
         let registos = [];
@@ -346,7 +343,6 @@
                 if(!res.ok) throw new Error("Erro");
                 const json = await res.json();
                 
-                // NOVO: Correção automática do fuso horário
                 const corrigirData = (r) => {
                     if (r.data && r.data.includes('T')) {
                         const dt = new Date(r.data);
@@ -505,7 +501,7 @@
             const btnConfirmar = document.getElementById('btn-confirm-action');
             
             btnConfirmar.onclick = function() {
-                let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
+                let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Valor Hora;Valor\n";
                 dados.forEach(r => {
                     csvContent += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`;
                 });
@@ -541,8 +537,16 @@
             
             doc.autoTable({
                 startY: 60,
-                head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor']],
-                body: registosParaPDF.map(r => [formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), formatHora(r.fim), r.duracaoTexto, parseFloat(r.valorGasto).toFixed(2)+'€']),
+                head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor Hora', 'Valor']],
+                body: registosParaPDF.map(r => [
+                    formatDataBR(r.data), 
+                    r.cliente || '-', 
+                    formatHora(r.inicio), 
+                    formatHora(r.fim), 
+                    r.duracaoTexto, 
+                    parseFloat(r.taxaUsada).toFixed(2)+'€', 
+                    parseFloat(r.valorGasto).toFixed(2)+'€'
+                ]),
                 theme: 'plain',
                 headStyles: { fillColor: [245, 245, 247], textColor: [29, 29, 31], fontStyle: 'bold' }
             });
