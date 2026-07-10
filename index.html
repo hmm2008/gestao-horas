@@ -127,30 +127,22 @@
 
         function iniciarBackupCSV() {
             const dados = obterRegistosFiltrados();
-            if(dados.length === 0) { showToast("Sem dados."); return; }
+            if(dados.length === 0) { showToast("Sem dados para exportar."); return; }
             
-            // Esta função executa o download diretamente
-            const fazerDownload = () => {
-                const nomeFicheiro = "Backup_Horas_" + new Date().toISOString().split('T')[0] + ".csv";
-                let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
-                
-                dados.forEach(r => {
-                    csvContent += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`;
-                });
-                
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = nomeFicheiro;
-                document.body.appendChild(a); // Garante que o elemento existe no DOM
-                a.click();
-                document.body.removeChild(a);
-                showToast("Backup descarregado!");
-            };
-
-            // Se quiser manter a elegância da caixa de confirmação:
-            abrirModal("Confirmar Backup CSV", "Deseja gravar o ficheiro CSV?", fazerDownload);
+            // Criamos o conteúdo do CSV
+            let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Taxa;Valor\n";
+            dados.forEach(r => {
+                csvContent += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`;
+            });
+            
+            // Convertemos para um link de dados
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            // Em vez de clicar, vamos simplesmente abrir essa URL numa nova janela
+            // O navegador não bloqueia aberturas de janelas se o utilizador acabou de clicar num botão (confirmar)
+            window.open(url, '_blank');
+            showToast("O ficheiro abriu numa nova aba. Guarde com Ctrl+S ou Cmd+S!");
         }
 
         function abrirDashboard() {
