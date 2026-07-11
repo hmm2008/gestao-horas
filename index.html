@@ -303,7 +303,7 @@
     </div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVVCdNXeAgAxVm3E67UeFoHOq2WFr4rysn3VqPvDvHA7RQy5pIw2ODI9_PglMAestWDw/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDaraEMPqCKwExYhaiu0To17HYCMoAyiMJomTjrXMrcLxMsH_dTl_3-nwbkVZK4-5epA/exec";
         
         let registos = [];
         let despesasRegistadas = []; 
@@ -392,37 +392,16 @@
             if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) return;
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL + "?nocache=" + Date.now());
-                if(!res.ok) throw new Error("Erro");
                 const json = await res.json();
                 
-                const corrigirData = (r) => {
-                    if (r.data && r.data.includes('T')) {
-                        const dt = new Date(r.data);
-                        r.data = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
-                    }
-                };
-                
-                if(json.registos) {
-                    json.registos.forEach(corrigirData);
-                    registos = json.registos;
-                    if(json.despesas) {
-                        json.despesas.forEach(corrigirData);
-                        despesasRegistadas = json.despesas;
-                    }
-                    if(json.agenda) {
-                        json.agenda.forEach(corrigirData);
-                        agendaRegistada = json.agenda;
-                    }
-                } else {
-                    json.forEach(corrigirData);
-                    registos = json;
-                    despesasRegistadas = [];
-                    agendaRegistada = [];
-                }
+                // Agora os dados já chegam formatados como "yyyy-MM-dd" pelo Apps Script
+                registos = json.registos || [];
+                despesasRegistadas = json.despesas || [];
+                agendaRegistada = json.agenda || [];
                 
                 atualizarDropdownsFiltros();
                 renderizarTabela();
-            } catch (e) { console.error("Erro a ler base de dados."); }
+            } catch (e) { console.error("Erro:", e); }
         }
 
         function renderizarTabela() {
