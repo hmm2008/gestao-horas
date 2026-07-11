@@ -8,19 +8,39 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     
+    <!-- Bibliotecas Externas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; --input-bg: #ffffff; --bottom-nav-bg: #ffffff; }
-        [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; --input-bg: #2c2c2e; --bottom-nav-bg: #1c1c1e; }
+        :root { 
+            --bg-color: #f7f7f9; 
+            --card-bg: #ffffff; 
+            --text-main: #1d1d1f; 
+            --text-muted: #86868b; 
+            --border-color: #e5e5ea; 
+            --accent-color: #007aff; 
+            --input-bg: #ffffff; 
+            --bottom-nav-bg: #ffffff; 
+        }
+        [data-theme="dark"] { 
+            --bg-color: #000000; 
+            --card-bg: #1c1c1e; 
+            --text-main: #f5f5f7; 
+            --text-muted: #98989d; 
+            --border-color: #38383a; 
+            --accent-color: #0a84ff; 
+            --input-bg: #2c2c2e; 
+            --bottom-nav-bg: #1c1c1e; 
+        }
         
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
         .app-container { background: var(--card-bg); max-width: 900px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .theme-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
         
+        /* Grid padrão Desktop */
         .form-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 10px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; }
@@ -43,7 +63,7 @@
         .finance-item input { text-align: center; margin-top: 5px; padding: 8px; font-size: 14px; width: 80%; }
         .finance-item.result-item { border-left: 1px solid var(--border-color); }
         .finance-item.highlight .val { color: var(--accent-color); }
-        .btn-toggle-finance { display: none; } 
+        .btn-toggle-finance { display: none; }
         
         .botoes-topo { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
         .btn-acao { border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
@@ -67,6 +87,7 @@
         .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .toast.show { opacity: 1; }
 
+        /* LOADING SPINNER */
         #global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(3px); }
         [data-theme="dark"] #global-loader { background: rgba(0, 0, 0, 0.85); }
         #global-loader.active { opacity: 1; pointer-events: auto; }
@@ -74,6 +95,7 @@
         #loader-text { font-weight: 600; font-size: 16px; color: var(--text-main); letter-spacing: 0.5px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* MODAIS GENERALIZADOS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
         .modal-content { background: var(--card-bg); width: 90%; max-width: 800px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s ease; }
@@ -83,52 +105,46 @@
         .modal-body { flex: 1; overflow-y: auto; background: var(--bg-color); padding: 20px;}
         .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
         .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); }
-        
-        .btn-cancel { background: transparent; border: 1px solid var(--text-muted); color: var(--text-main); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-cancel:hover { background: rgba(128,128,128,0.1); }
-        .btn-confirm { background: #007aff; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-confirm:hover { opacity: 0.9; }
-        .btn-save-pdf { background: #34c759; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
-        .chart-container { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; }
-        .chart-wrapper { width: 100%; max-width: 350px; height: 350px; position: relative; }
-
-        .quick-add-box { background: rgba(128,128,128,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); }
-
+        /* BOTTOM NAV BAR (MOBILE) */
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bottom-nav-bg); border-top: 1px solid var(--border-color); z-index: 1500; justify-content: space-around; padding: 12px 0; padding-bottom: env(safe-area-inset-bottom, 12px); box-shadow: 0 -4px 15px rgba(0,0,0,0.03); }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text-muted); font-size: 11px; font-weight: 500; cursor: pointer; gap: 4px; transition: 0.2s; }
         .nav-item.active { color: var(--accent-color); }
         .nav-icon { font-size: 22px; transition: transform 0.2s; }
         .nav-item.active .nav-icon { transform: scale(1.15); }
 
-        /* ---------- OTIMIZAÇÕES MOBILE ---------- */
+        /* ---------- CONFIGURAÇÕES E COMPACTAÇÃO MOBILE ---------- */
         @media (max-width: 700px) {
             body { padding: 8px; padding-bottom: 85px; } 
-            .app-container { padding: 12px; border-radius: 12px; }
+            .app-container { padding: 12px; border-radius: 12px; box-shadow: none; }
             .header h1 { font-size: 19px; }
             
-            /* Inputs mais compactos */
-            .form-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-            input, select { padding: 8px; font-size: 14px; border-radius: 6px; }
-            label { font-size: 9px; margin-bottom: 2px; }
-            .btn-add { padding: 10px; font-size: 14px; }
+            /* Grelha Otimizada de 4 colunas - Ajustada e mais estreita */
+            .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+            .cliente-grid { grid-column: span 4; } /* Ocupa a linha inteira */
+            input, select { padding: 7px; font-size: 13px; border-radius: 6px; }
+            label { font-size: 8px; margin-bottom: 2px; }
+            .btn-add { padding: 10px; font-size: 13px; }
             
-            /* Tabela em formato Cards */
+            /* Renderização em formato de Cartões (Cards) */
             table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
             thead tr { display: none; } 
-            tr { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; padding: 10px; }
+            tr { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
             td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(128,128,128,0.1); padding: 6px 0; font-size: 14px; }
             td:last-child { border-bottom: none; padding-bottom: 0; }
             td::before { content: attr(data-label); font-weight: bold; font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+            .action-btns { justify-content: flex-end; width: 100%; margin-top: 4px; }
+            .table-container { border: none; background: transparent; }
             
-            /* Ajustes Finanças */
-            .btn-toggle-finance { display: block; width: 100%; background: var(--accent-color); color: white; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; cursor: pointer; text-align: center; border: none; }
+            /* Finanças recolhidas */
+            .btn-toggle-finance { display: block; width: 100%; background: var(--accent-color); color: white; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; cursor: pointer; text-align: center; border: none; font-size: 13px; }
             .finance-panel-wrapper { display: none; } 
             .finance-panel { grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+            .finance-item.result-item { grid-column: span 2; border-left: none; border-top: 1px solid var(--border-color); padding-top: 10px; }
             
             .bottom-nav { display: flex; } 
             .botoes-topo .btn-graficos, .botoes-topo .btn-ver-despesas, .botoes-topo .btn-agenda { display: none; } 
+            .filter-panel { flex-direction: column; padding: 10px; gap: 8px; }
         }
         @media (min-width: 701px) {
             .finance-panel-wrapper { display: block !important; }
@@ -138,11 +154,13 @@
 <body>
     <div id="toast-container"></div>
     
+    <!-- Ecrã de Loading Spinner Global -->
     <div id="global-loader">
         <div class="spinner"></div>
         <div id="loader-text">A processar...</div>
     </div>
     
+    <!-- Menu de Navegação Inferior Móvel -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="navegarPara('home', this)">
             <span class="nav-icon">📝</span><span>Registo</span>
@@ -158,24 +176,29 @@
         </button>
     </nav>
 
-    <!-- [O RESTO DO CÓDIGO PERMANECE IGUAL AO ANTERIOR PARA GARANTIR FUNCIONALIDADE] -->
+    <!-- ========================================== -->
+    <!--          TODOS OS MODAIS EXPANDIDOS        -->
+    <!-- ========================================== -->
+
+    <!-- MODAL DE AGENDA -->
     <div id="modal-agenda" class="modal-overlay">
         <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header"><h2 id="titulo_modal_agenda">📅 Agenda</h2></div>
+            <div class="modal-header"><h2 id="titulo_modal_agenda">📅 Agenda de Compromissos</h2></div>
             <div class="modal-body">
                 <div class="quick-add-box">
                     <h3 id="titulo_form_agenda" style="margin-top:0; font-size:14px; color:var(--text-muted); text-transform:uppercase;">Novo Evento</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
                         <div class="input-group" style="flex: 1;"><label>Data</label><input type="date" id="a_data"></div>
                         <div class="input-group" style="flex: 1;"><label>Hora</label><input type="time" id="a_hora"></div>
-                        <div class="input-group" style="flex: 2; min-width: 200px;"><label>Cliente / Evento</label><input type="text" id="a_titulo" placeholder="Ex: Reunião"></div>
+                        <div class="input-group" style="flex: 2; min-width: 200px;"><label>Cliente / Evento</label><input type="text" id="a_titulo" placeholder="Ex: Reunião de Alinhamento"></div>
                     </div>
                     <div style="display:flex; gap:10px;">
-                        <button class="btn-cancel" id="btn_cancelar_agenda" onclick="limparFormularioAgenda()" style="display:none; flex:1;">Cancelar</button>
+                        <button class="btn-cancel" id="btn_cancelar_agenda" onclick="limparFormularioAgenda()" style="display:none; flex:1;">Cancelar Edição</button>
                         <button class="btn-confirm" id="btn_guardar_agenda" onclick="guardarAgenda()" style="flex:3;">+ Guardar na Agenda</button>
                     </div>
                 </div>
-                <div class="table-container">
+                <h3 style="font-size:14px; color:var(--text-muted); text-transform:uppercase; margin-bottom: 10px;">Próximos Eventos</h3>
+                <div class="table-container" style="background:var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">
                     <table>
                         <thead><tr><th>Data</th><th>Hora</th><th>Evento</th><th>Ações</th></tr></thead>
                         <tbody id="lista_agenda_corpo"></tbody>
@@ -188,13 +211,14 @@
         </div>
     </div>
 
+    <!-- MODAL HISTÓRICO DE DESPESAS -->
     <div id="modal-lista-despesas" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header"><h2>📋 Histórico de Despesas</h2></div>
+            <div class="modal-header"><h2>📋 Histórico de Despesas Registadas</h2></div>
             <div class="modal-body" style="padding:0;">
-                <div class="table-container" style="padding: 10px;">
+                <div class="table-container" style="padding: 15px;">
                     <table>
-                        <thead><tr><th>Data</th><th>Cat.</th><th>Desc.</th><th>Valor</th><th>Ações</th></tr></thead>
+                        <thead><tr><th>Data</th><th>Cat.</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead>
                         <tbody id="lista_despesas_corpo"></tbody>
                     </table>
                 </div>
@@ -205,9 +229,10 @@
         </div>
     </div>
 
+    <!-- MODAL ADICIONAR / EDITAR DESPESA -->
     <div id="modal-despesa" class="modal-overlay">
         <div class="modal-content" style="max-width: 450px; height: auto;">
-            <div class="modal-header"><h2 id="titulo_modal_despesa">🛒 Registar Despesa</h2></div>
+            <div class="modal-header"><h2 id="titulo_modal_despesa">🛒 Registar Nova Despesa</h2></div>
             <div class="modal-body">
                 <div class="input-group" style="margin-bottom:15px;"><label>Data</label><input type="date" id="d_data"></div>
                 <div class="input-group" style="margin-bottom:15px;"><label>Categoria</label>
@@ -219,31 +244,33 @@
                         <option value="Outros">Outros</option>
                     </select>
                 </div>
-                <div class="input-group" style="margin-bottom:15px;"><label>Descrição (Opcional)</label><input type="text" id="d_descricao" placeholder="Ex: Galp..."></div>
+                <div class="input-group" style="margin-bottom:15px;"><label>Descrição (Opcional)</label><input type="text" id="d_descricao" placeholder="Ex: Combustível Galp, Almoço..."></div>
                 <div class="input-group" style="margin-bottom:15px;"><label>Valor Gasto (€)</label><input type="number" id="d_valor" step="0.01"></div>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="fecharModal('modal-despesa')">Cancelar</button>
-                <button class="btn-confirm" onclick="guardarDespesa()">Guardar</button>
+                <button class="btn-confirm" onclick="guardarDespesa()">Guardar Despesa</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL PRÉ-VISUALIZAÇÃO DO PDF -->
     <div id="modal-pdf" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header"><h2>Pré-visualização PDF</h2></div>
+            <div class="modal-header"><h2>Pré-visualização do Relatório</h2></div>
             <div class="modal-body" style="padding:0;"><iframe id="pdf-preview-frame"></iframe></div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="fecharModal('modal-pdf')">Cancelar</button>
-                <button class="btn-save-pdf" onclick="gravarPDFFinal()">Transferir</button>
+                <button class="btn-save-pdf" onclick="gravarPDFFinal()">Transferir PDF</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL DE CONFIRMAÇÃO ELEGANTE -->
     <div id="modal-confirm" class="modal-overlay">
         <div class="modal-content" style="height: auto; max-width: 400px; padding: 20px;">
             <div id="modal-title" style="font-weight: bold; font-size: 18px; margin-bottom: 10px; text-align: center;">Atenção</div>
-            <div id="modal-text" style="font-size: 15px; margin-bottom: 20px; text-align: center; color: var(--text-muted);">Tem a certeza?</div>
+            <div id="modal-text" style="font-size: 15px; margin-bottom: 20px; text-align: center; color: var(--text-muted);">Tem a certeza que pretende executar esta ação?</div>
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button class="btn-cancel" onclick="fecharModal('modal-confirm')">Cancelar</button>
                 <button id="btn-confirm-action" class="btn-confirm" style="background: #ff3b30;">Confirmar</button>
@@ -251,9 +278,10 @@
         </div>
     </div>
 
+    <!-- MODAL DO DASHBOARD / ESTATÍSTICAS -->
     <div id="modal-dashboard" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header"><h2>📊 Estatísticas</h2></div>
+            <div class="modal-header"><h2>📊 Painel Estatístico</h2></div>
             <div class="modal-body">
                 <div class="dashboard-grid">
                     <div class="chart-container">
@@ -271,30 +299,35 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-dashboard'); sincronizarNavHome();">Fechar</button>
+                <button class="btn-cancel" onclick="fecharModal('modal-dashboard'); sincronizarNavHome();">Fechar Painel</button>
             </div>
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!--         CORPO PRINCIPAL DA APLICAÇÃO       -->
+    <!-- ========================================== -->
     <div class="app-container">
         <div class="header">
             <h1 style="margin:0;">Gestão de Horas</h1>
             <button class="theme-btn" onclick="alternarTema()">☀️/🌙</button>
         </div>
         
+        <!-- Grid de Introdução de Dados Otimizada -->
         <div class="form-grid">
             <div class="input-group"><label>Data</label><input type="date" id="data"></div>
+            <div class="input-group"><label>Início</label><input type="time" id="hora_inicio"></div>
+            <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
+            <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
             <div class="input-group cliente-grid">
                 <label>Cliente / Projeto</label>
                 <input type="text" id="cliente" list="lista_clientes" placeholder="Ex: João Silva">
                 <datalist id="lista_clientes"></datalist>
             </div>
-            <div class="input-group"><label>Início</label><input type="time" id="hora_inicio"></div>
-            <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
-            <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
         </div>
         <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">ADICIONAR REGISTO</button>
 
+        <!-- Painel Resumo Indicadores -->
         <div class="summary-panel">
             <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
             <div class="summary-item"><span class="val" id="total_horas">0h</span><span class="lab">Total Horas</span></div>
@@ -310,73 +343,103 @@
             </div>
         </div>
 
+        <!-- Botão Mobile para Expandir/Ocultar Finanças -->
         <button class="btn-toggle-finance" onclick="toggleFinancas()">💰 Mostrar Detalhes Financeiros</button>
 
+        <!-- Painel Financeiro Dinâmico -->
         <div class="finance-panel-wrapper" id="painel-financas">
             <div class="finance-panel">
                 <div class="finance-item">
                     <span class="lab">Despesas</span>
-                    <span class="val" id="f_despesas_totais" style="font-size: 18px; margin: 5px 0;">0.00 €</span>
-                    <button class="btn-acao" style="background:#ff3b30; width:90%; padding:5px; font-size:10px;" onclick="abrirModalDespesa()">Registar</button>
+                    <span class="val" id="f_despesas_totais" style="font-size: 16px; margin: 3px 0;">0.00 €</span>
+                    <button class="btn-acao" style="background:#ff3b30; width:95%; padding:4px; font-size:9px;" onclick="abrirModalDespesa()">Registar</button>
                 </div>
                 <div class="finance-item">
                     <span class="lab">IRS (%)</span>
                     <input type="number" id="inp_irs" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
                 </div>
                 <div class="finance-item">
-                    <span class="lab">Seg. Social (%)</span>
+                    <span class="lab">SS (%)</span>
                     <input type="number" id="inp_ss" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
                 </div>
                 <div class="finance-item result-item">
                     <span class="lab">Impostos</span>
-                    <span class="val" id="f_impostos" style="font-size: 18px; margin-top:5px; display:block;">0.00 €</span>
+                    <span class="val" id="f_impostos" style="font-size: 16px;">0.00 €</span>
                 </div>
                 <div class="finance-item result-item highlight">
                     <span class="lab">Líquido</span>
-                    <span class="val" id="f_liquido" style="margin-top:5px; display:block;">0.00 €</span>
+                    <span class="val" id="f_liquido" style="font-size: 16px;">0.00 €</span>
                 </div>
             </div>
         </div>
 
+        <!-- Filtros Rápidos -->
         <div class="filter-panel">
-            <select id="filtro_mes" onchange="renderizarTabela()">
-                <option value="todos">Todos os Meses</option>
-            </select>
-            <select id="filtro_cliente" onchange="renderizarTabela()">
-                <option value="todos">Todos os Clientes</option>
-            </select>
+            <select id="filtro_mes" onchange="renderizarTabela()"><option value="todos">Todos os Meses</option></select>
+            <select id="filtro_cliente" onchange="renderizarTabela()"><option value="todos">Todos os Clientes</option></select>
         </div>
 
+        <!-- Lista e Tabela Principal -->
         <div class="table-container">
             <table>
-                <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Valor/h</th><th>Valor</th><th>Ações</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Cliente</th>
+                        <th>Início</th>
+                        <th>Fim</th>
+                        <th>Duração</th>
+                        <th>Valor/h</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
                 <tbody id="tabela_registos"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- SCRIPT (MESMA LÓGICA DE FUNCIONAMENTO ANTERIOR) -->
+    <!-- ========================================== -->
+    <!--               MOTOR JAVASCRIPT             -->
+    <!-- ========================================== -->
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby79VLDar06A1_aTtxD0D-mRpSNtsJ3cCLyDkmEwWqA1oOPYdciR2zm7WBYj28xSjDt3g/exec";
         
-        let registos = []; let despesasRegistadas = []; let agendaRegistada = []; 
-        let idEmEdicao = null; let idEmEdicaoDespesa = null; let idEmEdicaoAgenda = null; 
-        let documentoPDFFinal = null; let nomePDFFinal = "";
-        let chartClientesInst = null; let chartMesesInst = null; let chartDespesasInst = null;
+        let registos = []; 
+        let despesasRegistadas = []; 
+        let agendaRegistada = []; 
+        let idEmEdicao = null; 
+        let idEmEdicaoDespesa = null; 
+        let idEmEdicaoAgenda = null; 
+        let documentoPDFFinal = null; 
+        let nomePDFFinal = ""; 
+        let chartClientesInst = null; 
+        let chartMesesInst = null; 
+        let chartDespesasInst = null;
 
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').then(reg => reg.update()); }
+        if ('serviceWorker' in navigator) { 
+            navigator.serviceWorker.register('sw.js').then(reg => reg.update()); 
+        }
 
+        // --- SISTEMA INTERFACES CARREGAMENTO ---
         function setCarregando(ativo, mensagem = "A processar...") {
             const loader = document.getElementById('global-loader');
             const loaderText = document.getElementById('loader-text');
-            if (ativo) { loaderText.innerText = mensagem; loader.classList.add('active'); } 
-            else { loader.classList.remove('active'); }
+            if (ativo) { 
+                loaderText.innerText = mensagem; 
+                loader.classList.add('active'); 
+            } else { 
+                loader.classList.remove('active'); 
+            }
         }
 
+        // --- CONTROLO NAVEGAÇÃO MOBILE ---
         function navegarPara(seccao, botaoClick) {
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             if(botaoClick) botaoClick.classList.add('active');
-            fecharModal('modal-lista-despesas'); fecharModal('modal-agenda'); fecharModal('modal-dashboard');
+            fecharModal('modal-lista-despesas'); 
+            fecharModal('modal-agenda'); 
+            fecharModal('modal-dashboard');
             if (seccao === 'home') { window.scrollTo({ top: 0, behavior: 'smooth' }); } 
             else if (seccao === 'despesas') { abrirModalListaDespesas(); } 
             else if (seccao === 'agenda') { abrirModalAgenda(); } 
@@ -391,11 +454,15 @@
         function toggleFinancas() {
             const painel = document.getElementById('painel-financas');
             const btn = document.querySelector('.btn-toggle-finance');
-            if (painel.style.display === 'block') { painel.style.display = 'none'; btn.innerText = '💰 Mostrar Detalhes Financeiros'; } 
-            else { painel.style.display = 'block'; btn.innerText = '🔼 Ocultar Detalhes Financeiros'; }
+            if (painel.style.display === 'block') { 
+                painel.style.display = 'none'; 
+                btn.innerText = '💰 Mostrar Detalhes Financeiros'; 
+            } else { 
+                painel.style.display = 'block'; 
+                btn.innerText = '🔼 Ocultar Detalhes Financeiros'; 
+            }
         }
 
-        // --- (Restantes funções mantêm-se iguais para garantir estabilidade) ---
         function alternarTema() {
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', t);
@@ -412,6 +479,7 @@
             setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000);
         }
 
+        // --- FORMATADORES ---
         function formatDataBR(d) { if(!d) return '--'; return d.split('T')[0].split('-').reverse().join('/'); }
         function formatDataParaInput(d) { if(!d) return ''; return d.split('T')[0]; }
         function formatHora(h) {
@@ -435,10 +503,12 @@
         function atualizarDropdownsFiltros() {
             const clientesUnicos = [...new Set(registos.map(r => r.cliente).filter(c => c && c.trim() !== ''))].sort();
             document.getElementById('lista_clientes').innerHTML = clientesUnicos.map(c => `<option value="${c}">`).join('');
+            
             const selCliente = document.getElementById('filtro_cliente');
             const clienteAtual = selCliente.value;
             selCliente.innerHTML = '<option value="todos">Todos os Clientes</option>' + clientesUnicos.map(c => `<option value="${c}">${c}</option>`).join('');
             if(clientesUnicos.includes(clienteAtual)) selCliente.value = clienteAtual;
+
             const mesesUnicos = [...new Set(registos.map(r => r.data ? r.data.split('T')[0].substring(0,7) : ''))].filter(m => m !== '').sort().reverse();
             const selMes = document.getElementById('filtro_mes');
             const mesAtual = selMes.value;
@@ -461,12 +531,13 @@
             });
         }
 
+        // --- CHAMADAS À BASE DE DADOS (API) ---
         async function carregarDadosDoGoogle() {
-            if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) { showToast("Erro: Link em falta!"); return; }
-            setCarregando(true, "A sincronizar...");
+            if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) { showToast("ID do App Script ausente!"); return; }
+            setCarregando(true, "A sincronizar dados da nuvem...");
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL + "?nocache=" + Date.now());
-                if(!res.ok) throw new Error("Erro");
+                if(!res.ok) throw new Error("Erro de resposta do servidor");
                 const json = await res.json();
                 
                 const corrigirData = (r) => {
@@ -487,7 +558,9 @@
                     if(json.agenda && Array.isArray(json.agenda)) { json.agenda.forEach(corrigirData); agendaRegistada = json.agenda; }
                 }
                 atualizarDropdownsFiltros();
-            } catch (e) { console.error(e); } finally { setCarregando(false); }
+            } catch (e) { 
+                console.error(e); showToast("Não foi possível carregar os dados.");
+            } finally { setCarregando(false); }
         }
 
         function renderizarTabela() {
@@ -498,6 +571,7 @@
                 if(r.data) dias.add(r.data.split('T')[0]);
                 sMin += parseInt(r.minutosTotais||0);
                 sVal += parseFloat(r.valorGasto||0);
+                
                 tbody.innerHTML += `<tr>
                     <td data-label="Data">${formatDataBR(r.data)}</td>
                     <td data-label="Cliente"><strong>${r.cliente || '--'}</strong></td>
@@ -508,7 +582,7 @@
                     <td data-label="Total"><strong>${parseFloat(r.valorGasto||0).toFixed(2)}€</strong></td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="editarRegisto('${r.id}')">✏️</button>
-                        <button class="delete-btn" onclick="apagarRegisto('${r.id}', 'este registo')">🗑️</button>
+                        <button class="delete-btn" onclick="apagarRegisto('${r.id}', 'este registo de horas')">🗑️</button>
                     </td>
                 </tr>`;
             });
@@ -535,40 +609,44 @@
             localStorage.setItem('tx_ss', document.getElementById('inp_ss').value);
         }
 
+        // --- LOGICA DA AGENDA COMPROMISSOS ---
         function abrirModalAgenda() { limparFormularioAgenda(); renderizarAgenda(); document.getElementById('modal-agenda').classList.add('show'); }
-        function limparFormularioAgenda() { idEmEdicaoAgenda = null; document.getElementById('titulo_form_agenda').innerText = "Novo Evento"; document.getElementById('a_data').valueAsDate = new Date(); document.getElementById('a_hora').value = ''; document.getElementById('a_titulo').value = ''; document.getElementById('btn_guardar_agenda').innerText = "+ Guardar"; document.getElementById('btn_cancelar_agenda').style.display = "none"; }
+        function limparFormularioAgenda() { idEmEdicaoAgenda = null; document.getElementById('titulo_form_agenda').innerText = "Novo Evento"; document.getElementById('a_data').valueAsDate = new Date(); document.getElementById('a_hora').value = ''; document.getElementById('a_titulo').value = ''; document.getElementById('btn_guardar_agenda').innerText = "+ Guardar na Agenda"; document.getElementById('btn_cancelar_agenda').style.display = "none"; }
         function renderizarAgenda() {
             const corpo = document.getElementById('lista_agenda_corpo'); corpo.innerHTML = '';
             let agendaOrdenada = [...agendaRegistada].sort((a,b) => new Date(a.data) - new Date(b.data));
-            if(agendaOrdenada.length === 0) { corpo.innerHTML = `<tr><td colspan="4" style="text-align:center;">Sem eventos.</td></tr>`; return; }
+            if(agendaOrdenada.length === 0) { corpo.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Sem eventos futuros.</td></tr>`; return; }
             agendaOrdenada.forEach(a => {
                 corpo.innerHTML += `<tr>
                     <td data-label="Data">${formatDataBR(a.data)}</td>
                     <td data-label="Hora">${a.hora || '--:--'}</td>
                     <td data-label="Evento"><strong>${a.titulo}</strong></td>
-                    <td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${a.id}', 'este evento')">🗑️</button></td>
+                    <td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${a.id}', 'este evento da agenda')">🗑️</button></td>
                 </tr>`;
             });
         }
         function editarAgenda(id) {
             const evento = agendaRegistada.find(a => String(a.id) === String(id));
             if(!evento) return;
-            idEmEdicaoAgenda = id; document.getElementById('titulo_form_agenda').innerText = "✏️ Editar"; document.getElementById('a_data').value = formatDataParaInput(evento.data); document.getElementById('a_hora').value = formatHora(evento.hora) !== '--:--' ? formatHora(evento.hora) : ''; document.getElementById('a_titulo').value = evento.titulo; document.getElementById('btn_guardar_agenda').innerText = "Atualizar"; document.getElementById('btn_cancelar_agenda').style.display = "block";
+            idEmEdicaoAgenda = id; document.getElementById('titulo_form_agenda').innerText = "✏️ Editar Evento"; document.getElementById('a_data').value = formatDataParaInput(evento.data); document.getElementById('a_hora').value = formatHora(evento.hora) !== '--:--' ? formatHora(evento.hora) : ''; document.getElementById('a_titulo').value = evento.titulo; document.getElementById('btn_guardar_agenda').innerText = "Atualizar Evento"; document.getElementById('btn_cancelar_agenda').style.display = "block";
         }
         async function guardarAgenda() {
             const d = document.getElementById('a_data').value; const h = document.getElementById('a_hora').value; const t = document.getElementById('a_titulo').value;
-            if(!d || !t) return;
+            if(!d || !t) { showToast("Preencha a Data e o Nome do Evento!"); return; }
             const req = { tipo: 'agenda', id: idEmEdicaoAgenda || 'A'+Date.now().toString(), data: d, hora: h, titulo: t };
-            setCarregando(true);
-            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); renderizarAgenda(); limparFormularioAgenda(); } catch(e) { showToast("Erro"); } finally { setCarregando(false); }
+            setCarregando(true, "A comunicar com Google Calendar...");
+            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); renderizarAgenda(); limparFormularioAgenda(); showToast("Evento guardado!"); } catch(e) { showToast("Erro de rede"); } finally { setCarregando(false); }
         }
+
+        // --- GESTÃO GERAL DESPESAS ---
         function abrirModalListaDespesas() {
             const corpo = document.getElementById('lista_despesas_corpo'); corpo.innerHTML = '';
+            if(despesasRegistadas.length === 0) { corpo.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Sem despesas registadas.</td></tr>`; }
             despesasRegistadas.forEach(d => {
                 corpo.innerHTML += `<tr>
                     <td data-label="Data">${formatDataBR(d.data)}</td>
-                    <td data-label="Cat">${d.categoria}</td>
-                    <td data-label="Desc">${d.descricao}</td>
+                    <td data-label="Categoria">${d.categoria}</td>
+                    <td data-label="Descrição">${d.descricao}</td>
                     <td data-label="Valor">${parseFloat(d.valor).toFixed(2)}€</td>
                     <td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${d.id}', 'esta despesa')">🗑️</button></td>
                 </tr>`;
@@ -581,15 +659,17 @@
         function editarDespesa(id) {
             const despesa = despesasRegistadas.find(d => String(d.id) === String(id));
             if(!despesa) return;
-            idEmEdicaoDespesa = id; document.getElementById('titulo_modal_despesa').innerText = "✏️ Editar"; document.getElementById('d_data').value = formatDataParaInput(despesa.data); document.getElementById('d_categoria').value = despesa.categoria; document.getElementById('d_descricao').value = despesa.descricao; document.getElementById('d_valor').value = despesa.valor; document.getElementById('modal-despesa').classList.add('show');
+            idEmEdicaoDespesa = id; document.getElementById('titulo_modal_despesa').innerText = "✏️ Editar Despesa"; document.getElementById('d_data').value = formatDataParaInput(despesa.data); document.getElementById('d_categoria').value = despesa.categoria; document.getElementById('d_descricao').value = despesa.descricao; document.getElementById('d_valor').value = despesa.valor; document.getElementById('modal-despesa').classList.add('show');
         }
         async function guardarDespesa() {
             const d = document.getElementById('d_data').value; const cat = document.getElementById('d_categoria').value; const desc = document.getElementById('d_descricao').value; const val = parseFloat(document.getElementById('d_valor').value);
-            if(!d || isNaN(val)) return;
+            if(!d || isNaN(val)) { showToast("Preencha data e valor corretamente!"); return; }
             const req = { tipo: 'despesa', id: idEmEdicaoDespesa || 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
-            setCarregando(true);
-            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); fecharModal('modal-despesa'); abrirModalListaDespesas(); renderizarTabela(); } catch(e) { showToast("Erro"); } finally { setCarregando(false); }
+            setCarregando(true, "A registar despesa...");
+            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); fecharModal('modal-despesa'); abrirModalListaDespesas(); renderizarTabela(); showToast("Despesa guardada!"); } catch(e) { showToast("Erro ao guardar"); } finally { setCarregando(false); }
         }
+
+        // --- SISTEMAS DE CONFIRMAÇÃO E SUPRESSÃO ---
         function confirmarAcao(titulo, mensagem, corBotao, textoBotao, callbackConfirmar) {
             document.getElementById('modal-title').innerText = titulo; document.getElementById('modal-text').innerText = mensagem;
             const btn = document.getElementById('btn-confirm-action'); btn.style.background = corBotao; btn.innerText = textoBotao;
@@ -598,61 +678,93 @@
             document.getElementById('modal-confirm').classList.add('show');
         }
         async function apagarRegisto(id, nomeItem = "este item") {
-            confirmarAcao("Eliminar", `Tem a certeza que pretende apagar ${nomeItem}?`, "#ff3b30", "Sim", 
+            confirmarAcao("Eliminar Registo", `Tem a certeza absoluta que pretende apagar permanentemente ${nomeItem}?`, "#ff3b30", "Sim, Eliminar", 
                 async () => {
-                    setCarregando(true);
-                    try { await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`); await carregarDadosDoGoogle(); renderizarTabela(); renderizarAgenda(); if(document.getElementById('modal-lista-despesas').classList.contains('show')) abrirModalListaDespesas(); } catch(e) { showToast("Erro"); } finally { setCarregando(false); }
+                    setCarregando(true, "A apagar da base de dados...");
+                    try { await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`); await carregarDadosDoGoogle(); renderizarTabela(); renderizarAgenda(); if(document.getElementById('modal-lista-despesas').classList.contains('show')) abrirModalListaDespesas(); showToast("Removido com sucesso!"); } catch(e) { showToast("Erro ao apagar"); } finally { setCarregando(false); }
                 }
             );
         }
+
+        // --- CONTROLO INTERFACE DE HORAS ---
         function editarRegisto(id) {
-            const registo = registos.find(r => String(r.id) === String(id)); 
-            if (!registo) return;
+            const registo = registos.find(r => String(r.id) === String(id)); if (!registo) return;
             document.getElementById('data').value = formatDataParaInput(registo.data); document.getElementById('cliente').value = registo.cliente || ''; document.getElementById('hora_inicio').value = formatHora(registo.inicio); document.getElementById('hora_fim').value = formatHora(registo.fim); document.getElementById('taxa_hora').value = registo.taxaUsada;
-            idEmEdicao = id; const btn = document.getElementById('btn_submit'); btn.innerText = "ATUALIZAR"; btn.style.backgroundColor = "#ff9500"; window.scrollTo({ top: 0, behavior: 'smooth' });
+            idEmEdicao = id; const btn = document.getElementById('btn_submit'); btn.innerText = "ATUALIZAR REGISTO"; btn.style.backgroundColor = "#ff9500"; window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         async function adicionarRegisto() {
             const d=document.getElementById('data').value; const cli=document.getElementById('cliente').value; const i=document.getElementById('hora_inicio').value; const f=document.getElementById('hora_fim').value; const t=parseFloat(document.getElementById('taxa_hora').value);
-            if(!d || !i || !f || isNaN(t)) return;
+            if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos obrigatórios!"); return; }
             const c = calcDiferenca(i,f);
             const req = { tipo: 'registo', id: idEmEdicao ? idEmEdicao : 'R_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: cli };
-            setCarregando(true, "A guardar...");
-            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); localStorage.setItem('taxa_hora_guardada', t); await carregarDadosDoGoogle(); renderizarTabela(); idEmEdicao = null; document.getElementById('btn_submit').innerText = "ADICIONAR REGISTO"; document.getElementById('btn_submit').style.backgroundColor = "#007aff"; } catch(e) { showToast("Erro"); } finally { setCarregando(false); }
+            setCarregando(true, "A enviar dados de horas...");
+            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); localStorage.setItem('taxa_hora_guardada', t); await carregarDadosDoGoogle(); renderizarTabela(); showToast("Horas gravadas!"); idEmEdicao = null; document.getElementById('btn_submit').innerText = "ADICIONAR REGISTO"; document.getElementById('btn_submit').style.backgroundColor = "#007aff"; } catch(e) { showToast("Erro"); } finally { setCarregando(false); }
         }
+        
         function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
+
+        // --- SISTEMAS DE EXPORTAÇÃO ---
         function iniciarBackupCSV() {
-            const dados = obterRegistosFiltrados();
-            if(dados.length === 0) return;
-            confirmarAcao("Exportar CSV", "Deseja transferir o ficheiro?", "#5856d6", "Sim", 
+            const dados = obterRegistosFiltrados(); if(dados.length === 0) { showToast("Sem dados filtrados para exportar."); return; }
+            confirmarAcao("Exportar para CSV", "Deseja transferir o ficheiro de backup em colunas (Excel)?", "#5856d6", "Transferir", 
                 () => {
                     let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Valor Hora;Valor\n";
                     dados.forEach(r => { csvContent += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`; });
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a"); a.href = url; a.download = "Backup.csv"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    const a = document.createElement("a"); a.href = url; a.download = "Relatorio_Exportado.csv"; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast("CSV Guardado!");
                 }
             );
         }
+
         function preVisualizarPDF() {
-            const registosParaPDF = obterRegistosFiltrados();
-            if(registosParaPDF.length === 0) return;
+            const registosParaPDF = obterRegistosFiltrados(); if(registosParaPDF.length === 0) { showToast("Tabela vazia."); return; }
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            doc.autoTable({ head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor', 'Total']], body: registosParaPDF.map(r => [formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), formatHora(r.fim), r.duracaoTexto, parseFloat(r.taxaUsada).toFixed(2)+'€', parseFloat(r.valorGasto).toFixed(2)+'€']) });
-            documentoPDFFinal = doc; nomePDFFinal = "Relatorio.pdf"; document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob')); document.getElementById('modal-pdf').classList.add('show');
+            doc.setFillColor(29, 29, 31); doc.rect(0, 0, 210, 35, 'F');
+            doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("RELATÓRIO DE SERVIÇOS", 14, 22);
+            doc.setTextColor(80, 80, 80); doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.text(`Emitido em: ${new Date().toLocaleDateString('pt-PT')}`, 14, 48);
+            
+            doc.autoTable({
+                startY: 60,
+                head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor/h', 'Total']],
+                body: registosParaPDF.map(r => [formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), formatHora(r.fim), r.duracaoTexto, parseFloat(r.taxaUsada).toFixed(2)+'€', parseFloat(r.valorGasto).toFixed(2)+'€']),
+                theme: 'plain', headStyles: { fillColor: [245, 245, 247], textColor: [29, 29, 31], fontStyle: 'bold' }
+            });
+            
+            doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(29, 29, 31);
+            doc.text(`Total Bruto: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY || 60) + 15);
+            documentoPDFFinal = doc; nomePDFFinal = "Relatorio_Atividades.pdf"; 
+            document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob')); 
+            document.getElementById('modal-pdf').classList.add('show');
         }
-        function gravarPDFFinal() { if(documentoPDFFinal) { documentoPDFFinal.save(nomePDFFinal); fecharModal('modal-pdf'); } }
-        function abrirDashboard() { if(registos.length === 0) return; document.getElementById('modal-dashboard').classList.add('show'); gerarGraficos(); }
+        function gravarPDFFinal() { if(documentoPDFFinal) { documentoPDFFinal.save(nomePDFFinal); fecharModal('modal-pdf'); showToast("PDF Descarregado!"); } }
+
+        // --- SISTEMAS DE GRÁFICOS (CHART.JS) ---
+        function abrirDashboard() { if(registos.length === 0) { showToast("Não existem dados suficientes."); return; } document.getElementById('modal-dashboard').classList.add('show'); gerarGraficos(); }
         function gerarGraficos() {
             if(chartClientesInst) chartClientesInst.destroy(); if(chartMesesInst) chartMesesInst.destroy(); if(chartDespesasInst) chartDespesasInst.destroy();
-            let rend = {}, horas = {}, desp = {}; registos.forEach(r => { let c = r.cliente || "S/ Nome"; rend[c] = (rend[c]||0) + parseFloat(r.valorGasto||0); if(r.data) { let m = r.data.split('T')[0].substring(0,7); horas[m] = (horas[m]||0) + parseInt(r.minutosTotais||0); } });
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark'; const corTexto = isDark ? '#f5f5f7' : '#1d1d1f';
+            let rend = {}, horas = {}, desp = {}; 
+            
+            registos.forEach(r => { 
+                let c = r.cliente || "S/ Nome"; rend[c] = (rend[c]||0) + parseFloat(r.valorGasto||0); 
+                if(r.data) { let m = r.data.split('T')[0].substring(0,7); horas[m] = (horas[m]||0) + parseInt(r.minutosTotais||0); } 
+            });
             despesasRegistadas.forEach(d => { let cat = d.categoria || "Outras"; desp[cat] = (desp[cat] || 0) + parseFloat(d.valor || 0); });
-            chartClientesInst = new Chart(document.getElementById('graficoClientes'), { type: 'pie', data: { labels: Object.keys(rend), datasets: [{ data: Object.values(rend), backgroundColor: ['#007aff','#34c759','#ff9500','#ff3b30','#5856d6'] }] } });
-            chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type: 'bar', data: { labels: Object.keys(horas), datasets: [{ label: 'Horas', data: Object.values(horas).map(m=>(m/60).toFixed(1)), backgroundColor: '#007aff' }] } });
-            chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type: 'doughnut', data: { labels: Object.keys(desp), datasets: [{ data: Object.values(desp), backgroundColor: ['#ff3b30','#ff9500','#34c759','#5856d6','#007aff'] }] } });
+            
+            chartClientesInst = new Chart(document.getElementById('graficoClientes'), { type: 'pie', data: { labels: Object.keys(rend), datasets: [{ data: Object.values(rend), backgroundColor: ['#007aff','#34c759','#ff9500','#ff3b30','#5856d6'] }] }, options: { plugins: { legend: { labels: { color: corTexto } } } } });
+            chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type: 'bar', data: { labels: Object.keys(horas), datasets: [{ label: 'Horas Efetivas', data: Object.values(horas).map(m=>(m/60).toFixed(1)), backgroundColor: '#007aff' }] }, options: { scales: { x: { ticks: { color: corTexto } }, y: { ticks: { color: corTexto } } } } });
+            chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type: 'doughnut', data: { labels: Object.keys(desp), datasets: [{ data: Object.values(desp), backgroundColor: ['#ff3b30','#ff9500','#34c759','#5856d6','#007aff'] }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: corTexto } } } } });
         }
+
+        // --- ARRANQUE DA APP ---
         window.onload = async () => {
             if(localStorage.getItem('tema_final') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
-            await carregarDadosDoGoogle(); renderizarTabela();
+            const t = localStorage.getItem('taxa_hora_guardada'); if (t) document.getElementById('taxa_hora').value = t;
+            if (localStorage.getItem('tx_irs')) document.getElementById('inp_irs').value = localStorage.getItem('tx_irs');
+            if (localStorage.getItem('tx_ss')) document.getElementById('inp_ss').value = localStorage.getItem('tx_ss');
+            await carregarDadosDoGoogle(); 
+            renderizarTabela();
         };
     </script>
 </body>
