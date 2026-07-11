@@ -119,22 +119,60 @@
             .app-container { padding: 12px; border-radius: 12px; box-shadow: none; }
             .header h1 { font-size: 19px; }
             
-            /* Grelha Otimizada de 4 colunas - Ajustada e mais estreita */
-            .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
-            .cliente-grid { grid-column: span 4; } /* Ocupa a linha inteira */
-            input, select { padding: 7px; font-size: 13px; border-radius: 6px; }
-            label { font-size: 8px; margin-bottom: 2px; }
-            .btn-add { padding: 10px; font-size: 13px; }
+            /* Melhoria na Grid: 2 colunas para campos pequenos, Cliente em linha cheia */
+            .form-grid { 
+                display: grid; 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 8px; 
+                margin-bottom: 12px; 
+            }
+            /* Garantir que o Cliente e o Preço/h ocupem o espaço total se necessário */
+            .input-group:nth-child(4), 
+            .cliente-grid { 
+                grid-column: span 2; 
+            }
+            
+            input, select { padding: 10px; font-size: 14px; border-radius: 6px; width: 100%; box-sizing: border-box; }
+            label { font-size: 9px; margin-bottom: 2px; }
+            .btn-add { padding: 12px; font-size: 14px; }
             
             /* Renderização em formato de Cartões (Cards) */
             table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
             thead tr { display: none; } 
-            tr { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-            td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(128,128,128,0.1); padding: 6px 0; font-size: 14px; }
-            td:last-child { border-bottom: none; padding-bottom: 0; }
-            td::before { content: attr(data-label); font-weight: bold; font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
-            .action-btns { justify-content: flex-end; width: 100%; margin-top: 4px; }
-            .table-container { border: none; background: transparent; }
+            
+            tr { 
+                background: var(--input-bg); 
+                border: 1px solid var(--border-color); 
+                border-radius: 8px; 
+                margin-bottom: 10px; 
+                padding: 12px; 
+                box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
+            }
+            
+            /* Permitir que o texto quebre para evitar scroll */
+            td { 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                border-bottom: 1px solid rgba(128,128,128,0.1); 
+                padding: 8px 0; 
+                font-size: 14px; 
+                white-space: normal; /* Permite que o texto quebre */
+                word-wrap: break-word; /* Força quebra de palavras longas */
+            }
+            
+            td::before { 
+                content: attr(data-label); 
+                font-weight: bold; 
+                font-size: 10px; 
+                color: var(--text-muted); 
+                text-transform: uppercase;
+                margin-right: 10px;
+                flex-shrink: 0;
+            }
+            
+            .action-btns { justify-content: flex-end; width: 100%; margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; }
+            .table-container { border: none; background: transparent; overflow-x: hidden; }
             
             /* Finanças recolhidas */
             .btn-toggle-finance { display: block; width: 100%; background: var(--accent-color); color: white; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; cursor: pointer; text-align: center; border: none; font-size: 13px; }
