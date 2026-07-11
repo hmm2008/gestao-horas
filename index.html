@@ -40,12 +40,38 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .theme-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
         
-        /* Grid padrão Desktop */
-        .form-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
+        /* --- LAYOUT CENTRALIZADO DO FORMULÁRIO (Desktop) --- */
+        .form-centralized {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+        .form-wrapper-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            /* A largura max-content dita que o bloco terá exatamente a largura natural da primeira linha */
+            width: max-content;
+            max-width: 100%;
+        }
+        .form-row-top {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .form-row-bottom {
+            width: 100%;
+        }
+        .preco-input {
+            width: 75px;
+            text-align: center;
+        }
+        
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 10px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; }
         
-        input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); outline: none; color-scheme: light dark; }
+        input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); outline: none; color-scheme: light dark; box-sizing: border-box; }
         input:focus, select:focus { border-color: var(--accent-color); }
         
         .btn-add { background: var(--accent-color); color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
@@ -101,10 +127,8 @@
         .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 340px; border: 1px solid var(--border-color); }
         .login-box h2 { margin-top: 0; margin-bottom: 20px; font-size: 20px; color: var(--text-main); }
         
-        /* Input Readonly (para não abrir teclado nativo) */
         .login-box input { width: 100%; padding: 15px; margin-bottom: 5px; text-align: center; font-size: 28px; letter-spacing: 12px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: bold; outline: none; caret-color: transparent; transition: 0.2s; }
         
-        /* Mensagem de Erro e Animação */
         #pin-error-msg { background: #ffe5e5; color: #ff3b30; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 15px; display: none; border: 1px solid #ff3b30; }
         [data-theme="dark"] #pin-error-msg { background: rgba(255, 59, 48, 0.15); }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
@@ -140,8 +164,10 @@
             .app-container { padding: 12px; border-radius: 12px; box-shadow: none; }
             .header h1 { font-size: 19px; }
             
-            .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
-            .cliente-grid { grid-column: span 2; }
+            /* Ajustes do Formulário para Mobile */
+            .form-wrapper-inner { width: 100%; }
+            .form-row-top { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .preco-input { width: 100%; } /* No telemóvel volta a ocupar o espaço total da grelha */
             
             input, select { padding: 10px; font-size: 14px; border-radius: 6px; width: 100%; box-sizing: border-box; }
             label { font-size: 9px; margin-bottom: 2px; }
@@ -153,7 +179,6 @@
             tr { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
             
             td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(128,128,128,0.1); padding: 8px 0; font-size: 14px; white-space: normal; word-wrap: break-word; }
-            
             td::before { content: attr(data-label); font-weight: bold; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-right: 10px; flex-shrink: 0; }
             
             .action-btns { justify-content: flex-end; width: 100%; margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; }
@@ -189,10 +214,8 @@
             
             <div id="pin-error-msg">⚠️ PIN Incorreto. Tente novamente.</div>
             
-            <!-- Readonly para evitar o teclado nativo do telemóvel -->
             <input type="password" id="pin-input" placeholder="••••" readonly>
             
-            <!-- Teclado Numérico -->
             <div class="keypad">
                 <button class="key" onclick="teclarPIN('1')">1</button>
                 <button class="key" onclick="teclarPIN('2')">2</button>
@@ -230,6 +253,7 @@
 
     <!-- MODAL DE AGENDA -->
     <div id="modal-agenda" class="modal-overlay">
+        <!-- (Mantido igual ao anterior) -->
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header"><h2 id="titulo_modal_agenda">📅 Agenda de Compromissos</h2></div>
             <div class="modal-body">
@@ -364,18 +388,28 @@
             </div>
         </div>
         
-        <div class="form-grid">
-            <div class="input-group"><label>Data</label><input type="date" id="data"></div>
-            <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
-            <div class="input-group"><label>Início</label><input type="time" id="hora_inicio"></div>
-            <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
-            <div class="input-group cliente-grid" style="grid-column: span 2;">
-                <label>Cliente / Projeto</label>
-                <input type="text" id="cliente" list="lista_clientes" placeholder="Ex: João Silva">
-                <datalist id="lista_clientes"></datalist>
+        <!-- --- NOVO FORMULÁRIO CENTRALIZADO --- -->
+        <div class="form-centralized">
+            <div class="form-wrapper-inner">
+                <!-- Linha 1: Fica centrada -->
+                <div class="form-row-top">
+                    <div class="input-group"><label>Data</label><input type="date" id="data"></div>
+                    <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" class="preco-input" step="0.5"></div>
+                    <div class="input-group"><label>Início</label><input type="time" id="hora_inicio"></div>
+                    <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
+                </div>
+                <!-- Linha 2: Cliente / Projeto acompanha 100% da largura da Linha 1 -->
+                <div class="form-row-bottom">
+                    <div class="input-group">
+                        <label>Cliente / Projeto</label>
+                        <input type="text" id="cliente" list="lista_clientes" placeholder="Ex: João Silva" style="width: 100%;">
+                        <datalist id="lista_clientes"></datalist>
+                    </div>
+                </div>
+                <!-- Botão acompanha 100% da largura -->
+                <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()" style="width: 100%;">ADICIONAR REGISTO</button>
             </div>
         </div>
-        <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">ADICIONAR REGISTO</button>
 
         <div class="summary-panel">
             <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
@@ -483,9 +517,8 @@
         // --- LÓGICA DO TECLADO VIRTUAL ---
         function teclarPIN(numero) {
             const input = document.getElementById('pin-input');
-            if (input.value.length < 8) { // Limite visual
+            if (input.value.length < 8) { 
                 input.value += numero;
-                // Remove o alerta de erro ao começar a digitar
                 document.getElementById('pin-error-msg').style.display = 'none';
                 input.classList.remove('shake-error');
             }
@@ -522,17 +555,14 @@
                 renderizarTabela();
             } else {
                 document.getElementById('login-overlay').classList.remove('hidden');
-                
-                // Exibe a mensagem de Erro na Caixa de Diálogo do Login e agita o input
                 erroMsg.style.display = 'block';
                 input.classList.add('shake-error');
                 
-                // Remove a classe de animação para poder repetir caso o utilizador falhe novamente
                 setTimeout(() => { input.classList.remove('shake-error'); }, 400); 
 
                 pinApp = '';
                 localStorage.removeItem('app_pin');
-                input.value = ''; // Limpa o input automaticamente após erro
+                input.value = ''; 
             }
         }
         
