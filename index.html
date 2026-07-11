@@ -13,8 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; --input-bg: #ffffff; }
-        [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; --input-bg: #2c2c2e; }
+        :root { --bg-color: #f7f7f9; --card-bg: #ffffff; --text-main: #1d1d1f; --text-muted: #86868b; --border-color: #e5e5ea; --accent-color: #007aff; --input-bg: #ffffff; --bottom-nav-bg: #ffffff; }
+        [data-theme="dark"] { --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #f5f5f7; --text-muted: #98989d; --border-color: #38383a; --accent-color: #0a84ff; --input-bg: #2c2c2e; --bottom-nav-bg: #1c1c1e; }
         
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
         .app-container { background: var(--card-bg); max-width: 900px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -61,10 +61,19 @@
         .edit-btn { background: none; border: none; color: #ff9500; cursor: pointer; font-size: 16px; padding: 0; }
         .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 16px; padding: 0; }
 
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; }
         .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .toast.show { opacity: 1; }
 
+        /* LOADING SPINNER */
+        #global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(3px); }
+        [data-theme="dark"] #global-loader { background: rgba(0, 0, 0, 0.85); }
+        #global-loader.active { opacity: 1; pointer-events: auto; }
+        .spinner { border: 4px solid var(--border-color); border-top: 4px solid var(--accent-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        #loader-text { font-weight: 600; font-size: 16px; color: var(--text-main); letter-spacing: 0.5px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* MODAIS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
         .modal-content { background: var(--card-bg); width: 90%; max-width: 800px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s ease; }
@@ -87,7 +96,16 @@
 
         .quick-add-box { background: rgba(128,128,128,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); }
 
+        /* BOTTOM NAVIGATION BAR (Oculta em Desktop) */
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bottom-nav-bg); border-top: 1px solid var(--border-color); z-index: 1500; justify-content: space-around; padding: 12px 0; padding-bottom: env(safe-area-inset-bottom, 12px); box-shadow: 0 -4px 15px rgba(0,0,0,0.03); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text-muted); font-size: 11px; font-weight: 500; cursor: pointer; gap: 4px; transition: 0.2s; }
+        .nav-item.active { color: var(--accent-color); }
+        .nav-icon { font-size: 22px; transition: transform 0.2s; }
+        .nav-item.active .nav-icon { transform: scale(1.15); }
+
         @media (max-width: 700px) {
+            body { padding-bottom: 85px; } /* Evita que o footer tape o conteúdo no mobile */
+            .app-container { padding: 20px; border-radius: 0; box-shadow: none; }
             .form-grid { grid-template-columns: 1fr 1fr; }
             .cliente-grid { grid-column: span 2; }
             .summary-panel { grid-template-columns: 1fr; }
@@ -97,12 +115,38 @@
             .finance-item.result-item { grid-column: span 2; border-left: none; border-top: 1px solid var(--border-color); padding-top: 10px; }
             .filter-panel { flex-direction: column; }
             .dashboard-grid { grid-template-columns: 1fr; }
+            
+            .bottom-nav { display: flex; } /* Ativa a navegação mobile */
+            /* Esconde botões redundantes no topo porque já estão na barra de baixo */
+            .botoes-topo .btn-graficos, .botoes-topo .btn-ver-despesas, .botoes-topo .btn-agenda { display: none; }
         }
     </style>
 </head>
 <body>
     <div id="toast-container"></div>
     
+    <!-- ECRÃ DE CARREGAMENTO GLOBAL -->
+    <div id="global-loader">
+        <div class="spinner"></div>
+        <div id="loader-text">A processar...</div>
+    </div>
+    
+    <!-- BARRA DE NAVEGAÇÃO MOBILE (BOTTOM NAV) -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="navegarPara('home', this)">
+            <span class="nav-icon">📝</span><span>Registo</span>
+        </button>
+        <button class="nav-item" onclick="navegarPara('despesas', this)">
+            <span class="nav-icon">🛒</span><span>Despesas</span>
+        </button>
+        <button class="nav-item" onclick="navegarPara('agenda', this)">
+            <span class="nav-icon">📅</span><span>Agenda</span>
+        </button>
+        <button class="nav-item" onclick="navegarPara('dashboard', this)">
+            <span class="nav-icon">📊</span><span>Dashboard</span>
+        </button>
+    </nav>
+
     <!-- MODAL DE AGENDA -->
     <div id="modal-agenda" class="modal-overlay">
         <div class="modal-content" style="max-width: 700px;">
@@ -129,7 +173,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-agenda'); limparFormularioAgenda();">Fechar</button>
+                <button class="btn-cancel" onclick="fecharModal('modal-agenda'); limparFormularioAgenda(); sincronizarNavHome();">Fechar</button>
             </div>
         </div>
     </div>
@@ -145,7 +189,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-lista-despesas')">Fechar</button>
+                <button class="btn-cancel" onclick="fecharModal('modal-lista-despesas'); sincronizarNavHome();">Fechar</button>
             </div>
         </div>
     </div>
@@ -220,7 +264,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-dashboard')">Fechar Painel</button>
+                <button class="btn-cancel" onclick="fecharModal('modal-dashboard'); sincronizarNavHome();">Fechar Painel</button>
             </div>
         </div>
     </div>
@@ -320,6 +364,46 @@
             navigator.serviceWorker.register('sw.js').then(reg => reg.update());
         }
 
+        // --- SISTEMA DE LOADING ---
+        function setCarregando(ativo, mensagem = "A processar...") {
+            const loader = document.getElementById('global-loader');
+            const loaderText = document.getElementById('loader-text');
+            if (ativo) {
+                loaderText.innerText = mensagem;
+                loader.classList.add('active');
+            } else {
+                loader.classList.remove('active');
+            }
+        }
+
+        // --- NAVEGAÇÃO BOTTOM (MOBILE) ---
+        function navegarPara(seccao, botaoClick) {
+            // Atualiza classe "active" nos botões
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            if(botaoClick) botaoClick.classList.add('active');
+
+            // Fecha modais principais que possam estar abertas
+            fecharModal('modal-lista-despesas');
+            fecharModal('modal-agenda');
+            fecharModal('modal-dashboard');
+
+            if (seccao === 'home') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (seccao === 'despesas') {
+                abrirModalListaDespesas();
+            } else if (seccao === 'agenda') {
+                abrirModalAgenda();
+            } else if (seccao === 'dashboard') {
+                abrirDashboard();
+            }
+        }
+        
+        // Garante que a barra de navegação volta ao "Registo" se fecharmos modais via botão "Fechar"
+        function sincronizarNavHome() {
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.nav-item').classList.add('active'); // O primeiro é o Registo
+        }
+
         function alternarTema() {
             const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', t);
@@ -392,6 +476,7 @@
                 showToast("Erro: Link do App Script em falta!");
                 return;
             }
+            setCarregando(true, "A sincronizar dados...");
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL + "?nocache=" + Date.now());
                 if(!res.ok) throw new Error("Erro de Rede");
@@ -428,11 +513,12 @@
                         agendaRegistada = json.agenda;
                     }
                 }
-                
                 atualizarDropdownsFiltros();
             } catch (e) { 
                 console.error("Erro a ler base de dados:", e); 
                 showToast("Erro na obtenção dos dados.");
+            } finally {
+                setCarregando(false);
             }
         }
 
@@ -545,14 +631,14 @@
             
             const req = { tipo: 'agenda', id: idEmEdicaoAgenda || 'A'+Date.now().toString(), data: d, hora: h, titulo: t };
             
-            showToast("A guardar evento...");
+            setCarregando(true, "A gravar na Agenda...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
-                await carregarDadosDoGoogle();
+                await carregarDadosDoGoogle(); // Já possui o setLoading no fetch, mas não choca.
                 renderizarAgenda();
                 limparFormularioAgenda();
                 showToast("Evento guardado!");
-            } catch(e) { showToast("Erro ao guardar evento"); }
+            } catch(e) { showToast("Erro ao guardar evento"); } finally { setCarregando(false); }
         }
 
         // --- GESTÃO DE DESPESAS ---
@@ -607,15 +693,16 @@
             const val = parseFloat(document.getElementById('d_valor').value);
             if(!d || isNaN(val)) { showToast("Preencha a Data e o Valor!"); return; }
             const req = { tipo: 'despesa', id: idEmEdicaoDespesa || 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
-            showToast("A guardar despesa...");
+            
+            setCarregando(true, "A registar despesa...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
                 await carregarDadosDoGoogle();
                 fecharModal('modal-despesa');
-                abrirModalListaDespesas(); // Atualiza a lista caso aberta
-                renderizarTabela(); // Atualiza o dashboard
+                abrirModalListaDespesas();
+                renderizarTabela();
                 showToast("Despesa guardada!");
-            } catch(e) { showToast("Erro ao guardar"); }
+            } catch(e) { showToast("Erro ao guardar"); } finally { setCarregando(false); }
         }
 
         // --- CAIXAS DE CONFIRMAÇÃO ELEGANTE E APAGAR ---
@@ -641,22 +728,18 @@
                 "#ff3b30", 
                 "Eliminar", 
                 async () => {
-                    showToast("A apagar...");
+                    setCarregando(true, "A apagar...");
                     try {
                         await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`);
-                        
-                        // Atualização fluida: refaz o fetch e renderiza tudo
                         await carregarDadosDoGoogle();
                         renderizarTabela();
                         renderizarAgenda();
                         
-                        // Se a modal de despesas estiver aberta, atualiza-a
                         if(document.getElementById('modal-lista-despesas').classList.contains('show')) {
                             abrirModalListaDespesas();
                         }
-                        
                         showToast("Eliminado com sucesso!");
-                    } catch(e) { showToast("Erro ao apagar"); }
+                    } catch(e) { showToast("Erro ao apagar"); } finally { setCarregando(false); }
                 }
             );
         }
@@ -685,7 +768,8 @@
             if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos obrigatórios."); return; }
             const c = calcDiferenca(i,f);
             const req = { tipo: 'registo', id: idEmEdicao ? idEmEdicao : 'R_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: cli };
-            showToast("A guardar...");
+            
+            setCarregando(true, "A guardar registo...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
                 localStorage.setItem('taxa_hora_guardada', t);
@@ -696,7 +780,7 @@
                 idEmEdicao = null;
                 document.getElementById('btn_submit').innerText = "ADICIONAR REGISTO"; 
                 document.getElementById('btn_submit').style.backgroundColor = "#007aff";
-            } catch(e) { showToast("Erro ao guardar"); }
+            } catch(e) { showToast("Erro ao guardar"); } finally { setCarregando(false); }
         }
 
         function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
