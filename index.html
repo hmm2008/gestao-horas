@@ -40,12 +40,33 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .theme-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
         
-        /* Layout Centralizado */
-        .form-centralized { display: flex; justify-content: center; margin-bottom: 25px; width: 100%; }
-        .form-wrapper-inner { display: flex; flex-direction: column; gap: 15px; width: max-content; max-width: 100%; }
-        .form-row-top { display: flex; gap: 10px; justify-content: center; }
-        .form-row-bottom { width: 100%; }
-        .preco-input { width: 85px; text-align: center; }
+        /* --- LAYOUT CENTRALIZADO DO FORMULÁRIO (Desktop) --- */
+        .form-centralized {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+        .form-wrapper-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            /* A largura max-content dita que o bloco terá exatamente a largura natural da primeira linha */
+            width: max-content;
+            max-width: 100%;
+        }
+        .form-row-top {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .form-row-bottom {
+            width: 100%;
+        }
+        .preco-input {
+            width: 75px;
+            text-align: center;
+        }
         
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 10px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; }
@@ -100,22 +121,26 @@
         #loader-text { font-weight: 600; font-size: 16px; color: var(--text-main); letter-spacing: 0.5px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* LOGIN E TECLADO */
+        /* OVERLAY DO LOGIN COM PIN E TECLADO VIRTUAL */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s; }
         #login-overlay.hidden { opacity: 0; pointer-events: none; }
         .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 340px; border: 1px solid var(--border-color); }
         .login-box h2 { margin-top: 0; margin-bottom: 20px; font-size: 20px; color: var(--text-main); }
+        
         .login-box input { width: 100%; padding: 15px; margin-bottom: 5px; text-align: center; font-size: 28px; letter-spacing: 12px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: bold; outline: none; caret-color: transparent; transition: 0.2s; }
+        
         #pin-error-msg { background: #ffe5e5; color: #ff3b30; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 15px; display: none; border: 1px solid #ff3b30; }
         [data-theme="dark"] #pin-error-msg { background: rgba(255, 59, 48, 0.15); }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
         .shake-error { animation: shake 0.4s; border-color: #ff3b30 !important; color: #ff3b30 !important; }
+
+        /* Teclado Numérico Virtual */
         .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
         .key { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px 0; font-size: 22px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; user-select: none; -webkit-tap-highlight-color: transparent; }
         .key:active { background: var(--border-color); transform: scale(0.95); }
         .key-action { background: rgba(128,128,128,0.1); font-size: 18px; color: var(--text-muted); }
 
-        /* MODAIS */
+        /* MODAIS GENERALIZADOS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
         .modal-content { background: var(--card-bg); width: 90%; max-width: 800px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s ease; }
@@ -123,88 +148,257 @@
         .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { margin: 0; font-size: 18px; }
         .modal-body { flex: 1; overflow-y: auto; background: var(--bg-color); padding: 20px;}
+        .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
         .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); }
 
-        /* NAV */
+        /* BOTTOM NAV BAR (MOBILE) */
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bottom-nav-bg); border-top: 1px solid var(--border-color); z-index: 1500; justify-content: space-around; padding: 12px 0; padding-bottom: env(safe-area-inset-bottom, 12px); box-shadow: 0 -4px 15px rgba(0,0,0,0.03); }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text-muted); font-size: 11px; font-weight: 500; cursor: pointer; gap: 4px; transition: 0.2s; }
         .nav-item.active { color: var(--accent-color); }
+        .nav-icon { font-size: 22px; transition: transform 0.2s; }
+        .nav-item.active .nav-icon { transform: scale(1.15); }
 
-        /* RESPONSIVO */
+        /* ---------- CONFIGURAÇÕES E COMPACTAÇÃO MOBILE ---------- */
         @media (max-width: 700px) {
             body { padding: 8px; padding-bottom: 85px; } 
             .app-container { padding: 12px; border-radius: 12px; box-shadow: none; }
+            .header h1 { font-size: 19px; }
+            
+            /* Ajustes do Formulário para Mobile */
             .form-wrapper-inner { width: 100%; }
             .form-row-top { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .preco-input { width: 100%; } 
-            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            .preco-input { width: 100%; } /* No telemóvel volta a ocupar o espaço total da grelha */
+            
+            input, select { padding: 10px; font-size: 14px; border-radius: 6px; width: 100%; box-sizing: border-box; }
+            label { font-size: 9px; margin-bottom: 2px; }
+            .btn-add { padding: 12px; font-size: 14px; }
+            
+            table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
             thead tr { display: none; } 
-            tr { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; padding: 12px; }
-            td { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
-            td::before { content: attr(data-label); font-weight: bold; font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+            
+            tr { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+            
+            td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(128,128,128,0.1); padding: 8px 0; font-size: 14px; white-space: normal; word-wrap: break-word; }
+            td::before { content: attr(data-label); font-weight: bold; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-right: 10px; flex-shrink: 0; }
+            
+            .action-btns { justify-content: flex-end; width: 100%; margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; }
+            .table-container { border: none; background: transparent; overflow-x: hidden; }
+            
+            .btn-toggle-finance { display: block; width: 100%; background: var(--accent-color); color: white; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; cursor: pointer; text-align: center; border: none; font-size: 13px; }
+            .finance-panel-wrapper { display: none; } 
+            .finance-panel { grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+            .finance-item.result-item { grid-column: span 2; border-left: none; border-top: 1px solid var(--border-color); padding-top: 10px; }
+            
             .bottom-nav { display: flex; } 
+            .botoes-topo .btn-graficos, .botoes-topo .btn-ver-despesas, .botoes-topo .btn-agenda { display: none; } 
+            .filter-panel { flex-direction: column; padding: 10px; gap: 8px; }
+        }
+        @media (min-width: 701px) {
+            .finance-panel-wrapper { display: block !important; }
         }
     </style>
 </head>
 <body>
     <div id="toast-container"></div>
-    <div id="global-loader"><div class="spinner"></div><div id="loader-text">A processar...</div></div>
     
+    <!-- Ecrã de Loading Spinner Global -->
+    <div id="global-loader">
+        <div class="spinner"></div>
+        <div id="loader-text">A processar...</div>
+    </div>
+    
+    <!-- ECRÃ DE LOGIN PIN COM TECLADO VIRTUAL -->
     <div id="login-overlay" class="hidden">
         <div class="login-box">
             <h2>🔒 Acesso Restrito</h2>
+            
             <div id="pin-error-msg">⚠️ PIN Incorreto. Tente novamente.</div>
+            
             <input type="password" id="pin-input" placeholder="••••" readonly>
+            
             <div class="keypad">
-                <button class="key" onclick="teclarPIN('1')">1</button><button class="key" onclick="teclarPIN('2')">2</button><button class="key" onclick="teclarPIN('3')">3</button>
-                <button class="key" onclick="teclarPIN('4')">4</button><button class="key" onclick="teclarPIN('5')">5</button><button class="key" onclick="teclarPIN('6')">6</button>
-                <button class="key" onclick="teclarPIN('7')">7</button><button class="key" onclick="teclarPIN('8')">8</button><button class="key" onclick="teclarPIN('9')">9</button>
-                <button class="key key-action" onclick="limparPIN()">C</button><button class="key" onclick="teclarPIN('0')">0</button><button class="key key-action" onclick="apagarUltimoPIN()">⌫</button>
+                <button class="key" onclick="teclarPIN('1')">1</button>
+                <button class="key" onclick="teclarPIN('2')">2</button>
+                <button class="key" onclick="teclarPIN('3')">3</button>
+                <button class="key" onclick="teclarPIN('4')">4</button>
+                <button class="key" onclick="teclarPIN('5')">5</button>
+                <button class="key" onclick="teclarPIN('6')">6</button>
+                <button class="key" onclick="teclarPIN('7')">7</button>
+                <button class="key" onclick="teclarPIN('8')">8</button>
+                <button class="key" onclick="teclarPIN('9')">9</button>
+                <button class="key key-action" onclick="limparPIN()">C</button>
+                <button class="key" onclick="teclarPIN('0')">0</button>
+                <button class="key key-action" onclick="apagarUltimoPIN()">⌫</button>
             </div>
+
             <button class="btn-add" onclick="verificarPinLogin()">ENTRAR</button>
         </div>
     </div>
     
+    <!-- Menu de Navegação Inferior Móvel -->
     <nav class="bottom-nav">
-        <button class="nav-item active" onclick="navegarPara('home', this)"><span class="nav-icon">📝</span><span>Registo</span></button>
-        <button class="nav-item" onclick="navegarPara('despesas', this)"><span class="nav-icon">🛒</span><span>Despesas</span></button>
-        <button class="nav-item" onclick="navegarPara('agenda', this)"><span class="nav-icon">📅</span><span>Agenda</span></button>
-        <button class="nav-item" onclick="navegarPara('dashboard', this)"><span class="nav-icon">📊</span><span>Estatísticas</span></button>
+        <button class="nav-item active" onclick="navegarPara('home', this)">
+            <span class="nav-icon">📝</span><span>Registo</span>
+        </button>
+        <button class="nav-item" onclick="navegarPara('despesas', this)">
+            <span class="nav-icon">🛒</span><span>Despesas</span>
+        </button>
+        <button class="nav-item" onclick="navegarPara('agenda', this)">
+            <span class="nav-icon">📅</span><span>Agenda</span>
+        </button>
+        <button class="nav-item" onclick="navegarPara('dashboard', this)">
+            <span class="nav-icon">📊</span><span>Estatísticas</span>
+        </button>
     </nav>
 
-    <!-- Modais: Mantidos iguais -->
-    <div id="modal-agenda" class="modal-overlay">...</div>
-    <div id="modal-lista-despesas" class="modal-overlay">...</div>
-    <div id="modal-despesa" class="modal-overlay">...</div>
-    <div id="modal-pdf" class="modal-overlay">...</div>
-    <div id="modal-confirm" class="modal-overlay">...</div>
-    <div id="modal-dashboard" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header"><h2>📊 Painel Estatístico</h2></div>
-            <div class="modal-body"><div class="dashboard-grid">...</div></div>
+    <!-- MODAL DE AGENDA -->
+    <div id="modal-agenda" class="modal-overlay">
+        <!-- (Mantido igual ao anterior) -->
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header"><h2 id="titulo_modal_agenda">📅 Agenda de Compromissos</h2></div>
+            <div class="modal-body">
+                <div class="quick-add-box">
+                    <h3 id="titulo_form_agenda" style="margin-top:0; font-size:14px; color:var(--text-muted); text-transform:uppercase;">Novo Evento</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                        <div class="input-group" style="flex: 1;"><label>Data</label><input type="date" id="a_data"></div>
+                        <div class="input-group" style="flex: 1;"><label>Hora</label><input type="time" id="a_hora"></div>
+                        <div class="input-group" style="flex: 2; min-width: 200px;"><label>Cliente / Evento</label><input type="text" id="a_titulo" placeholder="Ex: Reunião de Alinhamento"></div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-cancel" id="btn_cancelar_agenda" onclick="limparFormularioAgenda()" style="display:none; flex:1;">Cancelar Edição</button>
+                        <button class="btn-confirm" id="btn_guardar_agenda" onclick="guardarAgenda()" style="flex:3;">+ Guardar na Agenda</button>
+                    </div>
+                </div>
+                <h3 style="font-size:14px; color:var(--text-muted); text-transform:uppercase; margin-bottom: 10px;">Próximos Eventos</h3>
+                <div class="table-container" style="background:var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+                    <table>
+                        <thead><tr><th>Data</th><th>Hora</th><th>Evento</th><th>Ações</th></tr></thead>
+                        <tbody id="lista_agenda_corpo"></tbody>
+                    </table>
+                </div>
+            </div>
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-dashboard'); sincronizarNavHome();">Fechar/Voltar</button>
+                <button class="btn-cancel" onclick="fecharModal('modal-agenda'); limparFormularioAgenda(); sincronizarNavHome();">Fechar</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL HISTÓRICO DE DESPESAS -->
+    <div id="modal-lista-despesas" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h2>📋 Histórico de Despesas Registadas</h2></div>
+            <div class="modal-body" style="padding:0;">
+                <div class="table-container" style="padding: 15px;">
+                    <table>
+                        <thead><tr><th>Data</th><th>Cat.</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead>
+                        <tbody id="lista_despesas_corpo"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="fecharModal('modal-lista-despesas'); sincronizarNavHome();">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADICIONAR / EDITAR DESPESA -->
+    <div id="modal-despesa" class="modal-overlay">
+        <div class="modal-content" style="max-width: 450px; height: auto;">
+            <div class="modal-header"><h2 id="titulo_modal_despesa">🛒 Registar Nova Despesa</h2></div>
+            <div class="modal-body">
+                <div class="input-group" style="margin-bottom:15px;"><label>Data</label><input type="date" id="d_data"></div>
+                <div class="input-group" style="margin-bottom:15px;"><label>Categoria</label>
+                    <select id="d_categoria">
+                        <option value="Combustível">Combustível</option>
+                        <option value="Portagens">Portagens</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Materiais">Materiais</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="input-group" style="margin-bottom:15px;"><label>Descrição (Opcional)</label><input type="text" id="d_descricao" placeholder="Ex: Combustível Galp, Almoço..."></div>
+                <div class="input-group" style="margin-bottom:15px;"><label>Valor Gasto (€)</label><input type="number" id="d_valor" step="0.01"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="fecharModal('modal-despesa')">Cancelar</button>
+                <button class="btn-confirm" onclick="guardarDespesa()">Guardar Despesa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PRÉ-VISUALIZAÇÃO DO PDF -->
+    <div id="modal-pdf" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Pré-visualização do Relatório</h2></div>
+            <div class="modal-body" style="padding:0;"><iframe id="pdf-preview-frame"></iframe></div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="fecharModal('modal-pdf')">Cancelar</button>
+                <button class="btn-save-pdf" onclick="gravarPDFFinal()">Transferir PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO ELEGANTE -->
+    <div id="modal-confirm" class="modal-overlay">
+        <div class="modal-content" style="height: auto; max-width: 400px; padding: 20px;">
+            <div id="modal-title" style="font-weight: bold; font-size: 18px; margin-bottom: 10px; text-align: center;">Atenção</div>
+            <div id="modal-text" style="font-size: 15px; margin-bottom: 20px; text-align: center; color: var(--text-muted);">Tem a certeza que pretende executar esta ação?</div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn-cancel" onclick="fecharModal('modal-confirm')">Cancelar</button>
+                <button id="btn-confirm-action" class="btn-confirm" style="background: #ff3b30;">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DO DASHBOARD / ESTATÍSTICAS -->
+    <div id="modal-dashboard" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h2>📊 Painel Estatístico</h2></div>
+            <div class="modal-body">
+                <div class="dashboard-grid">
+                    <div class="chart-container">
+                        <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Faturação por Cliente</h3>
+                        <div class="chart-wrapper"><canvas id="graficoClientes"></canvas></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Horas por Mês</h3>
+                        <div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div>
+                    </div>
+                    <div class="chart-container" style="grid-column: 1 / -1;">
+                        <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Despesas por Categoria</h3>
+                        <div class="chart-wrapper"><canvas id="graficoDespesas"></canvas></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="fecharModal('modal-dashboard'); sincronizarNavHome();">Fechar Painel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!--         CORPO PRINCIPAL DA APLICAÇÃO       -->
+    <!-- ========================================== -->
     <div class="app-container">
         <div class="header">
             <h1 style="margin:0;">Gestão de Horas</h1>
             <div style="display: flex; align-items: center;">
                 <button class="theme-btn" onclick="alternarTema()">☀️/🌙</button>
-                <button class="theme-btn" onclick="sairApp()" style="margin-left: 10px; font-size: 20px;">🚪</button>
+                <button class="theme-btn" onclick="sairApp()" style="margin-left: 10px; font-size: 20px;" title="Terminar Sessão">🚪</button>
             </div>
         </div>
         
+        <!-- --- NOVO FORMULÁRIO CENTRALIZADO --- -->
         <div class="form-centralized">
             <div class="form-wrapper-inner">
+                <!-- Linha 1: Fica centrada -->
                 <div class="form-row-top">
                     <div class="input-group"><label>Data</label><input type="date" id="data"></div>
+                    <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" class="preco-input" step="0.5"></div>
                     <div class="input-group"><label>Início</label><input type="time" id="hora_inicio"></div>
                     <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
-                    <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" class="preco-input" step="0.5"></div>
                 </div>
+                <!-- Linha 2: Cliente / Projeto acompanha 100% da largura da Linha 1 -->
                 <div class="form-row-bottom">
                     <div class="input-group">
                         <label>Cliente / Projeto</label>
@@ -212,6 +406,7 @@
                         <datalist id="lista_clientes"></datalist>
                     </div>
                 </div>
+                <!-- Botão acompanha 100% da largura -->
                 <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()" style="width: 100%;">ADICIONAR REGISTO</button>
             </div>
         </div>
