@@ -57,9 +57,11 @@
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; white-space: nowrap; }
-        .action-btns { display: flex; gap: 10px; }
-        .edit-btn { background: none; border: none; color: #ff9500; cursor: pointer; font-size: 16px; }
-        .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 16px; }
+        .action-btns { display: flex; gap: 10px; align-items: center; }
+        .edit-btn { background: none; border: none; color: #ff9500; cursor: pointer; font-size: 16px; padding: 0; }
+        .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 16px; padding: 0; }
+        .gcal-btn { font-size: 16px; text-decoration: none; cursor: pointer; transition: 0.2s; }
+        .gcal-btn:hover { transform: scale(1.1); }
 
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
         .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
@@ -302,7 +304,7 @@
     </div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWeFvz9g66O14tyL5qQF0ZcLeFK0KeKYnqyGwb4kc6TYnmY3__gLj7lw03GnBZG5shBA/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxT8ZVw2Hf0B7D_a8hKD-nOck-qiJccAFtvFsl5eZmaPlGxaYko0CA9VEf3rOyJdC6MmA/exec";
         
         let registos = [];
         let despesasRegistadas = []; 
@@ -512,11 +514,37 @@
             }
             
             agendaOrdenada.forEach(a => {
+                // Lógica de geração do Link do Google Calendar
+                let linkGCal = "#";
+                if(a.data) {
+                    const dataStr = a.data.split('T')[0].replace(/-/g, '');
+                    const textoEncoded = encodeURIComponent(a.titulo || "Evento");
+                    
+                    if(a.hora && a.hora !== '--:--') {
+                        // Se tem hora marcada, assumimos 1 hora de duração padrão para o evento
+                        const horaInicioInt = parseInt(a.hora.split(':')[0]);
+                        const minStr = a.hora.split(':')[1];
+                        
+                        const horaInicioFormatada = a.hora.replace(':', '') + '00';
+                        const horaFimFormatada = String(horaInicioInt + 1).padStart(2, '0') + minStr + '00';
+                        
+                        linkGCal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${textoEncoded}&dates=${dataStr}T${horaInicioFormatada}/${dataStr}T${horaFimFormatada}`;
+                    } else {
+                        // Se não tem hora, é tratado como evento de dia inteiro
+                        let dataFim = new Date(a.data.split('T')[0]);
+                        dataFim.setDate(dataFim.getDate() + 1); // Dia seguinte
+                        const dataFimStr = dataFim.toISOString().split('T')[0].replace(/-/g, '');
+                        
+                        linkGCal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${textoEncoded}&dates=${dataStr}/${dataFimStr}`;
+                    }
+                }
+
                 corpo.innerHTML += `<tr>
                     <td>${formatDataBR(a.data)}</td>
                     <td>${a.hora || '--:--'}</td>
                     <td><strong>${a.titulo}</strong></td>
                     <td class="action-btns">
+                        ${linkGCal !== "#" ? `<a href="${linkGCal}" target="_blank" class="gcal-btn" title="Adicionar ao Google Calendar">🗓️</a>` : ''}
                         <button class="edit-btn" onclick="editarAgenda('${a.id}')" title="Editar">✏️</button>
                         <button class="delete-btn" onclick="apagarRegisto('${a.id}', 'este evento da agenda')" title="Apagar">🗑️</button>
                     </td>
@@ -645,12 +673,10 @@
                     try {
                         await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`);
                         
-                        // Atualização fluida: refaz o fetch e renderiza tudo
                         await carregarDadosDoGoogle();
                         renderizarTabela();
                         renderizarAgenda();
                         
-                        // Se a modal de despesas estiver aberta, atualiza-a
                         if(document.getElementById('modal-lista-despesas').classList.contains('show')) {
                             abrirModalListaDespesas();
                         }
