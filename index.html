@@ -213,9 +213,10 @@
         </button>
     </nav>
 
-    <!-- MODAIS -->
-    <!-- [Resto dos modais omitido para brevidade, manter igual ao original do ficheiro fornecido em[cite: 2]] -->
-    
+    <!-- ========================================== -->
+    <!--          TODOS OS MODAIS EXPANDIDOS        -->
+    <!-- ========================================== -->
+
     <!-- MODAL DE AGENDA -->
     <div id="modal-agenda" class="modal-overlay">
         <div class="modal-content" style="max-width: 700px;">
@@ -302,7 +303,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO -->
+    <!-- MODAL DE CONFIRMAÇÃO ELEGANTE -->
     <div id="modal-confirm" class="modal-overlay">
         <div class="modal-content" style="height: auto; max-width: 400px; padding: 20px;">
             <div id="modal-title" style="font-weight: bold; font-size: 18px; margin-bottom: 10px; text-align: center;">Atenção</div>
@@ -314,7 +315,7 @@
         </div>
     </div>
 
-    <!-- MODAL DO DASHBOARD -->
+    <!-- MODAL DO DASHBOARD / ESTATÍSTICAS -->
     <div id="modal-dashboard" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header"><h2>📊 Painel Estatístico</h2></div>
@@ -340,7 +341,9 @@
         </div>
     </div>
 
-    <!-- CORPO PRINCIPAL -->
+    <!-- ========================================== -->
+    <!--         CORPO PRINCIPAL DA APLICAÇÃO       -->
+    <!-- ========================================== -->
     <div class="app-container">
         <div class="header">
             <h1 style="margin:0;">Gestão de Horas</h1>
@@ -377,8 +380,10 @@
             </div>
         </div>
 
+        <!-- Botão Mobile para Expandir/Ocultar Finanças -->
         <button class="btn-toggle-finance" onclick="toggleFinancas()">💰 Mostrar Detalhes Financeiros</button>
 
+        <!-- Painel Financeiro Dinâmico -->
         <div class="finance-panel-wrapper" id="painel-financas">
             <div class="finance-panel">
                 <div class="finance-item">
@@ -405,11 +410,13 @@
             </div>
         </div>
 
+        <!-- Filtros Rápidos -->
         <div class="filter-panel">
             <select id="filtro_mes" onchange="renderizarTabela()"><option value="todos">Todos os Meses</option></select>
             <select id="filtro_cliente" onchange="renderizarTabela()"><option value="todos">Todos os Clientes</option></select>
         </div>
 
+        <!-- Lista e Tabela Principal -->
         <div class="table-container">
             <table>
                 <thead>
@@ -429,6 +436,9 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!--               MOTOR JAVASCRIPT             -->
+    <!-- ========================================== -->
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby79VLDar06A1_aTtxD0D-mRpSNtsJ3cCLyDkmEwWqA1oOPYdciR2zm7WBYj28xSjDt3g/exec";
         
@@ -448,17 +458,25 @@
             navigator.serviceWorker.register('sw.js').then(reg => reg.update()); 
         }
 
+        // --- SISTEMA INTERFACES CARREGAMENTO ---
         function setCarregando(ativo, mensagem = "A processar...") {
             const loader = document.getElementById('global-loader');
             const loaderText = document.getElementById('loader-text');
-            if (ativo) { loaderText.innerText = mensagem; loader.classList.add('active'); } 
-            else { loader.classList.remove('active'); }
+            if (ativo) { 
+                loaderText.innerText = mensagem; 
+                loader.classList.add('active'); 
+            } else { 
+                loader.classList.remove('active'); 
+            }
         }
 
+        // --- CONTROLO NAVEGAÇÃO MOBILE ---
         function navegarPara(seccao, botaoClick) {
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             if(botaoClick) botaoClick.classList.add('active');
-            fecharModal('modal-lista-despesas'); fecharModal('modal-agenda'); fecharModal('modal-dashboard');
+            fecharModal('modal-lista-despesas'); 
+            fecharModal('modal-agenda'); 
+            fecharModal('modal-dashboard');
             if (seccao === 'home') { window.scrollTo({ top: 0, behavior: 'smooth' }); } 
             else if (seccao === 'despesas') { abrirModalListaDespesas(); } 
             else if (seccao === 'agenda') { abrirModalAgenda(); } 
@@ -473,8 +491,13 @@
         function toggleFinancas() {
             const painel = document.getElementById('painel-financas');
             const btn = document.querySelector('.btn-toggle-finance');
-            if (painel.style.display === 'block') { painel.style.display = 'none'; btn.innerText = '💰 Mostrar Detalhes Financeiros'; } 
-            else { painel.style.display = 'block'; btn.innerText = '🔼 Ocultar Detalhes Financeiros'; }
+            if (painel.style.display === 'block') { 
+                painel.style.display = 'none'; 
+                btn.innerText = '💰 Mostrar Detalhes Financeiros'; 
+            } else { 
+                painel.style.display = 'block'; 
+                btn.innerText = '🔼 Ocultar Detalhes Financeiros'; 
+            }
         }
 
         function alternarTema() {
@@ -493,6 +516,7 @@
             setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000);
         }
 
+        // --- FORMATADORES ---
         function formatDataBR(d) { if(!d) return '--'; return d.split('T')[0].split('-').reverse().join('/'); }
         function formatDataParaInput(d) { if(!d) return ''; return d.split('T')[0]; }
         function formatHora(h) {
@@ -544,35 +568,47 @@
             });
         }
 
+        // --- CHAMADAS À BASE DE DADOS (API) ---
         async function carregarDadosDoGoogle() {
-            setCarregando(true, "A sincronizar...");
+            if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) { showToast("ID do App Script ausente!"); return; }
+            setCarregando(true, "A sincronizar dados da nuvem...");
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL + "?nocache=" + Date.now());
+                if(!res.ok) throw new Error("Erro de resposta do servidor");
                 const json = await res.json();
+                
                 const corrigirData = (r) => {
-                    if (r && r.data && String(r.data).includes('T')) {
-                        const dt = new Date(r.data);
-                        if(!isNaN(dt.getTime())) r.data = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+                    if (r && r.data) {
+                        const strData = String(r.data);
+                        if (strData.includes('T')) {
+                            const dt = new Date(r.data);
+                            if(!isNaN(dt.getTime())) r.data = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+                        }
                     }
                 };
-                if (Array.isArray(json)) { json.forEach(corrigirData); registos = json; }
-                else if (json && typeof json === 'object') {
-                    if(json.registos) { json.registos.forEach(corrigirData); registos = json.registos; }
-                    if(json.despesas) { json.despesas.forEach(corrigirData); despesasRegistadas = json.despesas; }
-                    if(json.agenda) { json.agenda.forEach(corrigirData); agendaRegistada = json.agenda; }
+                
+                if (Array.isArray(json)) {
+                    json.forEach(corrigirData); registos = json; despesasRegistadas = []; agendaRegistada = [];
+                } else if (json && typeof json === 'object') {
+                    if(json.registos && Array.isArray(json.registos)) { json.registos.forEach(corrigirData); registos = json.registos; }
+                    if(json.despesas && Array.isArray(json.despesas)) { json.despesas.forEach(corrigirData); despesasRegistadas = json.despesas; }
+                    if(json.agenda && Array.isArray(json.agenda)) { json.agenda.forEach(corrigirData); agendaRegistada = json.agenda; }
                 }
                 atualizarDropdownsFiltros();
-            } catch (e) { console.error(e); showToast("Erro a carregar."); } finally { setCarregando(false); }
+            } catch (e) { 
+                console.error(e); showToast("Não foi possível carregar os dados.");
+            } finally { setCarregando(false); }
         }
 
         function renderizarTabela() {
             const tbody = document.getElementById('tabela_registos'); tbody.innerHTML = '';
-            const rE = obterRegistosFiltrados();
+            const registosExibidos = obterRegistosFiltrados();
             let sMin=0, sVal=0; const dias = new Set();
-            rE.forEach(r => {
+            registosExibidos.forEach(r => {
                 if(r.data) dias.add(r.data.split('T')[0]);
                 sMin += parseInt(r.minutosTotais||0);
                 sVal += parseFloat(r.valorGasto||0);
+                
                 tbody.innerHTML += `<tr>
                     <td data-label="Data">${formatDataBR(r.data)}</td>
                     <td data-label="Cliente"><strong>${r.cliente || '--'}</strong></td>
@@ -581,7 +617,10 @@
                     <td data-label="Duração">${r.duracaoTexto||'--'}</td>
                     <td data-label="Valor/h">${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
                     <td data-label="Total"><strong>${parseFloat(r.valorGasto||0).toFixed(2)}€</strong></td>
-                    <td class="action-btns"><button class="edit-btn" onclick="editarRegisto('${r.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${r.id}', 'este registo')">🗑️</button></td>
+                    <td class="action-btns">
+                        <button class="edit-btn" onclick="editarRegisto('${r.id}')">✏️</button>
+                        <button class="delete-btn" onclick="apagarRegisto('${r.id}', 'este registo de horas')">🗑️</button>
+                    </td>
                 </tr>`;
             });
             document.getElementById('total_dias').innerText = dias.size;
@@ -592,70 +631,177 @@
 
         function calcularFinancas() {
             const fMes = document.getElementById('filtro_mes').value;
-            let dF = despesasRegistadas;
-            if(fMes !== 'todos') dF = despesasRegistadas.filter(d => d.data && d.data.substring(0,7) === fMes);
-            const tDR = dF.reduce((soma, d) => soma + parseFloat(d.valor || 0), 0);
-            document.getElementById('f_despesas_totais').innerText = tDR.toFixed(2) + ' €';
+            let despesasFiltradas = despesasRegistadas;
+            if(fMes !== 'todos') despesasFiltradas = despesasRegistadas.filter(d => d.data && d.data.substring(0,7) === fMes);
+            const totalDespesasReais = despesasFiltradas.reduce((soma, d) => soma + parseFloat(d.valor || 0), 0);
+            document.getElementById('f_despesas_totais').innerText = totalDespesasReais.toFixed(2) + ' €';
             const bruto = parseFloat(document.getElementById('total_ganho').innerText.replace('€', '').trim()) || 0;
             const irs = (parseFloat(document.getElementById('inp_irs').value) || 0) / 100;
             const ss = (parseFloat(document.getElementById('inp_ss').value) || 0) / 100;
-            const tI = bruto * (irs + ss);
-            document.getElementById('f_impostos').innerText = tI.toFixed(2) + ' €';
-            document.getElementById('f_liquido').innerText = (bruto - tDR - tI).toFixed(2) + ' €';
+            const totalImpostos = bruto * (irs + ss);
+            const liquido = bruto - totalDespesasReais - totalImpostos;
+            document.getElementById('f_impostos').innerText = totalImpostos.toFixed(2) + ' €';
+            document.getElementById('f_liquido').innerText = liquido.toFixed(2) + ' €';
+            localStorage.setItem('tx_irs', document.getElementById('inp_irs').value);
+            localStorage.setItem('tx_ss', document.getElementById('inp_ss').value);
         }
 
-        function abrirModalAgenda() { renderizarAgenda(); document.getElementById('modal-agenda').classList.add('show'); }
-        function limparFormularioAgenda() { idEmEdicaoAgenda = null; document.getElementById('a_data').valueAsDate = new Date(); document.getElementById('a_hora').value = ''; document.getElementById('a_titulo').value = ''; document.getElementById('btn_cancelar_agenda').style.display = "none"; }
+        // --- LOGICA DA AGENDA COMPROMISSOS ---
+        function abrirModalAgenda() { limparFormularioAgenda(); renderizarAgenda(); document.getElementById('modal-agenda').classList.add('show'); }
+        function limparFormularioAgenda() { idEmEdicaoAgenda = null; document.getElementById('titulo_form_agenda').innerText = "Novo Evento"; document.getElementById('a_data').valueAsDate = new Date(); document.getElementById('a_hora').value = ''; document.getElementById('a_titulo').value = ''; document.getElementById('btn_guardar_agenda').innerText = "+ Guardar na Agenda"; document.getElementById('btn_cancelar_agenda').style.display = "none"; }
         function renderizarAgenda() {
             const corpo = document.getElementById('lista_agenda_corpo'); corpo.innerHTML = '';
-            agendaRegistada.forEach(a => {
-                corpo.innerHTML += `<tr><td data-label="Data">${formatDataBR(a.data)}</td><td data-label="Hora">${a.hora || '--:--'}</td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${a.id}', 'este evento')">🗑️</button></td></tr>`;
+            let agendaOrdenada = [...agendaRegistada].sort((a,b) => new Date(a.data) - new Date(b.data));
+            if(agendaOrdenada.length === 0) { corpo.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Sem eventos futuros.</td></tr>`; return; }
+            agendaOrdenada.forEach(a => {
+                corpo.innerHTML += `<tr>
+                    <td data-label="Data">${formatDataBR(a.data)}</td>
+                    <td data-label="Hora">${a.hora || '--:--'}</td>
+                    <td data-label="Evento"><strong>${a.titulo}</strong></td>
+                    <td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${a.id}', 'este evento da agenda')">🗑️</button></td>
+                </tr>`;
             });
+        }
+        function editarAgenda(id) {
+            const evento = agendaRegistada.find(a => String(a.id) === String(id));
+            if(!evento) return;
+            idEmEdicaoAgenda = id; document.getElementById('titulo_form_agenda').innerText = "✏️ Editar Evento"; document.getElementById('a_data').value = formatDataParaInput(evento.data); document.getElementById('a_hora').value = formatHora(evento.hora) !== '--:--' ? formatHora(evento.hora) : ''; document.getElementById('a_titulo').value = evento.titulo; document.getElementById('btn_guardar_agenda').innerText = "Atualizar Evento"; document.getElementById('btn_cancelar_agenda').style.display = "block";
         }
         async function guardarAgenda() {
             const d = document.getElementById('a_data').value; const h = document.getElementById('a_hora').value; const t = document.getElementById('a_titulo').value;
+            if(!d || !t) { showToast("Preencha a Data e o Nome do Evento!"); return; }
             const req = { tipo: 'agenda', id: idEmEdicaoAgenda || 'A'+Date.now().toString(), data: d, hora: h, titulo: t };
-            setCarregando(true, "A guardar...");
-            await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); renderizarAgenda(); limparFormularioAgenda(); setCarregando(false);
+            setCarregando(true, "A comunicar com Google Calendar...");
+            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); renderizarAgenda(); limparFormularioAgenda(); showToast("Evento guardado!"); } catch(e) { showToast("Erro de rede"); } finally { setCarregando(false); }
         }
 
+        // --- GESTÃO GERAL DESPESAS ---
         function abrirModalListaDespesas() {
             const corpo = document.getElementById('lista_despesas_corpo'); corpo.innerHTML = '';
+            if(despesasRegistadas.length === 0) { corpo.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Sem despesas registadas.</td></tr>`; }
             despesasRegistadas.forEach(d => {
-                corpo.innerHTML += `<tr><td data-label="Data">${formatDataBR(d.data)}</td><td data-label="Cat">${d.categoria}</td><td data-label="Desc">${d.descricao}</td><td data-label="Val">${parseFloat(d.valor).toFixed(2)}€</td><td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${d.id}', 'esta despesa')">🗑️</button></td></tr>`;
+                corpo.innerHTML += `<tr>
+                    <td data-label="Data">${formatDataBR(d.data)}</td>
+                    <td data-label="Categoria">${d.categoria}</td>
+                    <td data-label="Descrição">${d.descricao}</td>
+                    <td data-label="Valor">${parseFloat(d.valor).toFixed(2)}€</td>
+                    <td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${d.id}', 'esta despesa')">🗑️</button></td>
+                </tr>`;
             });
             document.getElementById('modal-lista-despesas').classList.add('show');
         }
+        function abrirModalDespesa() {
+            idEmEdicaoDespesa = null; document.getElementById('titulo_modal_despesa').innerText = "🛒 Registar Despesa"; document.getElementById('d_data').valueAsDate = new Date(); document.getElementById('d_valor').value = ''; document.getElementById('d_descricao').value = ''; document.getElementById('modal-despesa').classList.add('show');
+        }
+        function editarDespesa(id) {
+            const despesa = despesasRegistadas.find(d => String(d.id) === String(id));
+            if(!despesa) return;
+            idEmEdicaoDespesa = id; document.getElementById('titulo_modal_despesa').innerText = "✏️ Editar Despesa"; document.getElementById('d_data').value = formatDataParaInput(despesa.data); document.getElementById('d_categoria').value = despesa.categoria; document.getElementById('d_descricao').value = despesa.descricao; document.getElementById('d_valor').value = despesa.valor; document.getElementById('modal-despesa').classList.add('show');
+        }
         async function guardarDespesa() {
-            const req = { tipo: 'despesa', id: idEmEdicaoDespesa || 'D'+Date.now().toString(), data: document.getElementById('d_data').value, categoria: document.getElementById('d_categoria').value, descricao: document.getElementById('d_descricao').value, valor: document.getElementById('d_valor').value };
-            setCarregando(true, "A guardar...");
-            await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); fecharModal('modal-despesa'); renderizarTabela(); setCarregando(false);
+            const d = document.getElementById('d_data').value; const cat = document.getElementById('d_categoria').value; const desc = document.getElementById('d_descricao').value; const val = parseFloat(document.getElementById('d_valor').value);
+            if(!d || isNaN(val)) { showToast("Preencha data e valor corretamente!"); return; }
+            const req = { tipo: 'despesa', id: idEmEdicaoDespesa || 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
+            setCarregando(true, "A registar despesa...");
+            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); fecharModal('modal-despesa'); abrirModalListaDespesas(); renderizarTabela(); showToast("Despesa guardada!"); } catch(e) { showToast("Erro ao guardar"); } finally { setCarregando(false); }
         }
 
-        async function adicionarRegisto() {
-            const d=document.getElementById('data').value; const i=document.getElementById('hora_inicio').value; const f=document.getElementById('hora_fim').value; const t=parseFloat(document.getElementById('taxa_hora').value);
-            const c = calcDiferenca(i,f);
-            const req = { tipo: 'registo', id: idEmEdicao || 'R_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: document.getElementById('cliente').value };
-            setCarregando(true, "A guardar...");
-            await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); renderizarTabela(); setCarregando(false);
-        }
-        
-        function apagarRegisto(id, msg) {
-            confirmarAcao("Eliminar", `Deseja apagar ${msg}?`, "#ff3b30", "Sim", async () => {
-                await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}`); await carregarDadosDoGoogle(); renderizarTabela();
-            });
-        }
-        function confirmarAcao(t, m, c, b, cb) {
-            document.getElementById('modal-title').innerText = t; document.getElementById('modal-text').innerText = m;
-            const btn = document.getElementById('btn-confirm-action'); btn.style.background = c; btn.innerText = b;
-            btn.onclick = () => { fecharModal('modal-confirm'); cb(); };
+        // --- SISTEMAS DE CONFIRMAÇÃO E SUPRESSÃO ---
+        function confirmarAcao(titulo, mensagem, corBotao, textoBotao, callbackConfirmar) {
+            document.getElementById('modal-title').innerText = titulo; document.getElementById('modal-text').innerText = mensagem;
+            const btn = document.getElementById('btn-confirm-action'); btn.style.background = corBotao; btn.innerText = textoBotao;
+            const newBtn = btn.cloneNode(true); btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.onclick = () => { fecharModal('modal-confirm'); callbackConfirmar(); };
             document.getElementById('modal-confirm').classList.add('show');
         }
+        async function apagarRegisto(id, nomeItem = "este item") {
+            confirmarAcao("Eliminar Registo", `Tem a certeza absoluta que pretende apagar permanentemente ${nomeItem}?`, "#ff3b30", "Sim, Eliminar", 
+                async () => {
+                    setCarregando(true, "A apagar da base de dados...");
+                    try { await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`); await carregarDadosDoGoogle(); renderizarTabela(); renderizarAgenda(); if(document.getElementById('modal-lista-despesas').classList.contains('show')) abrirModalListaDespesas(); showToast("Removido com sucesso!"); } catch(e) { showToast("Erro ao apagar"); } finally { setCarregando(false); }
+                }
+            );
+        }
+
+        // --- CONTROLO INTERFACE DE HORAS ---
+        function editarRegisto(id) {
+            const registo = registos.find(r => String(r.id) === String(id)); if (!registo) return;
+            document.getElementById('data').value = formatDataParaInput(registo.data); document.getElementById('cliente').value = registo.cliente || ''; document.getElementById('hora_inicio').value = formatHora(registo.inicio); document.getElementById('hora_fim').value = formatHora(registo.fim); document.getElementById('taxa_hora').value = registo.taxaUsada;
+            idEmEdicao = id; const btn = document.getElementById('btn_submit'); btn.innerText = "ATUALIZAR REGISTO"; btn.style.backgroundColor = "#ff9500"; window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        async function adicionarRegisto() {
+            const d=document.getElementById('data').value; const cli=document.getElementById('cliente').value; const i=document.getElementById('hora_inicio').value; const f=document.getElementById('hora_fim').value; const t=parseFloat(document.getElementById('taxa_hora').value);
+            if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos obrigatórios!"); return; }
+            const c = calcDiferenca(i,f);
+            const req = { tipo: 'registo', id: idEmEdicao ? idEmEdicao : 'R_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: cli };
+            setCarregando(true, "A enviar dados de horas...");
+            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); localStorage.setItem('taxa_hora_guardada', t); await carregarDadosDoGoogle(); renderizarTabela(); showToast("Horas gravadas!"); idEmEdicao = null; document.getElementById('btn_submit').innerText = "ADICIONAR REGISTO"; document.getElementById('btn_submit').style.backgroundColor = "#007aff"; } catch(e) { showToast("Erro"); } finally { setCarregando(false); }
+        }
+        
         function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
 
+        // --- SISTEMAS DE EXPORTAÇÃO ---
+        function iniciarBackupCSV() {
+            const dados = obterRegistosFiltrados(); if(dados.length === 0) { showToast("Sem dados filtrados para exportar."); return; }
+            confirmarAcao("Exportar para CSV", "Deseja transferir o ficheiro de backup em colunas (Excel)?", "#5856d6", "Transferir", 
+                () => {
+                    let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Valor Hora;Valor\n";
+                    dados.forEach(r => { csvContent += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`; });
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a"); a.href = url; a.download = "Relatorio_Exportado.csv"; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast("CSV Guardado!");
+                }
+            );
+        }
+
+        function preVisualizarPDF() {
+            const registosParaPDF = obterRegistosFiltrados(); if(registosParaPDF.length === 0) { showToast("Tabela vazia."); return; }
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            doc.setFillColor(29, 29, 31); doc.rect(0, 0, 210, 35, 'F');
+            doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("RELATÓRIO DE SERVIÇOS", 14, 22);
+            doc.setTextColor(80, 80, 80); doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.text(`Emitido em: ${new Date().toLocaleDateString('pt-PT')}`, 14, 48);
+            
+            doc.autoTable({
+                startY: 60,
+                head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor/h', 'Total']],
+                body: registosParaPDF.map(r => [formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), formatHora(r.fim), r.duracaoTexto, parseFloat(r.taxaUsada).toFixed(2)+'€', parseFloat(r.valorGasto).toFixed(2)+'€']),
+                theme: 'plain', headStyles: { fillColor: [245, 245, 247], textColor: [29, 29, 31], fontStyle: 'bold' }
+            });
+            
+            doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(29, 29, 31);
+            doc.text(`Total Bruto: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY || 60) + 15);
+            documentoPDFFinal = doc; nomePDFFinal = "Relatorio_Atividades.pdf"; 
+            document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob')); 
+            document.getElementById('modal-pdf').classList.add('show');
+        }
+        function gravarPDFFinal() { if(documentoPDFFinal) { documentoPDFFinal.save(nomePDFFinal); fecharModal('modal-pdf'); showToast("PDF Descarregado!"); } }
+
+        // --- SISTEMAS DE GRÁFICOS (CHART.JS) ---
+        function abrirDashboard() { if(registos.length === 0) { showToast("Não existem dados suficientes."); return; } document.getElementById('modal-dashboard').classList.add('show'); gerarGraficos(); }
+        function gerarGraficos() {
+            if(chartClientesInst) chartClientesInst.destroy(); if(chartMesesInst) chartMesesInst.destroy(); if(chartDespesasInst) chartDespesasInst.destroy();
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark'; const corTexto = isDark ? '#f5f5f7' : '#1d1d1f';
+            let rend = {}, horas = {}, desp = {}; 
+            
+            registos.forEach(r => { 
+                let c = r.cliente || "S/ Nome"; rend[c] = (rend[c]||0) + parseFloat(r.valorGasto||0); 
+                if(r.data) { let m = r.data.split('T')[0].substring(0,7); horas[m] = (horas[m]||0) + parseInt(r.minutosTotais||0); } 
+            });
+            despesasRegistadas.forEach(d => { let cat = d.categoria || "Outras"; desp[cat] = (desp[cat] || 0) + parseFloat(d.valor || 0); });
+            
+            chartClientesInst = new Chart(document.getElementById('graficoClientes'), { type: 'pie', data: { labels: Object.keys(rend), datasets: [{ data: Object.values(rend), backgroundColor: ['#007aff','#34c759','#ff9500','#ff3b30','#5856d6'] }] }, options: { plugins: { legend: { labels: { color: corTexto } } } } });
+            chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type: 'bar', data: { labels: Object.keys(horas), datasets: [{ label: 'Horas Efetivas', data: Object.values(horas).map(m=>(m/60).toFixed(1)), backgroundColor: '#007aff' }] }, options: { scales: { x: { ticks: { color: corTexto } }, y: { ticks: { color: corTexto } } } } });
+            chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type: 'doughnut', data: { labels: Object.keys(desp), datasets: [{ data: Object.values(desp), backgroundColor: ['#ff3b30','#ff9500','#34c759','#5856d6','#007aff'] }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: corTexto } } } } });
+        }
+
+        // --- ARRANQUE DA APP ---
         window.onload = async () => {
+            if(localStorage.getItem('tema_final') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
-            await carregarDadosDoGoogle(); renderizarTabela();
+            const t = localStorage.getItem('taxa_hora_guardada'); if (t) document.getElementById('taxa_hora').value = t;
+            if (localStorage.getItem('tx_irs')) document.getElementById('inp_irs').value = localStorage.getItem('tx_irs');
+            if (localStorage.getItem('tx_ss')) document.getElementById('inp_ss').value = localStorage.getItem('tx_ss');
+            await carregarDadosDoGoogle(); 
+            renderizarTabela();
         };
     </script>
 </body>
