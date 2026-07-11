@@ -85,6 +85,7 @@
         .chart-container { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; }
         .chart-wrapper { width: 100%; max-width: 350px; height: 350px; position: relative; }
 
+        /* Estilos extra para a box de inserção rápida (Agenda) */
         .quick-add-box { background: rgba(128,128,128,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); }
 
         @media (max-width: 700px) {
@@ -187,7 +188,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO -->
+    <!-- MODAL DE CONFIRMAÇÃO (ELEGANTE) -->
     <div id="modal-confirm" class="modal-overlay">
         <div class="modal-content" style="height: auto; max-width: 400px; padding: 20px;">
             <div id="modal-title" style="font-weight: bold; font-size: 18px; margin-bottom: 10px; text-align: center;">Atenção</div>
@@ -298,15 +299,15 @@
     </div>
 
     <script>
-        // ⚠️ COLOQUE O SEU LINK DO APPS SCRIPT AQUI ABAIXO
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBjBICkDUrKgZXCvv8bAIVRkImIVDmytCgHQ8WF0XYeyeV-f3ToXyDRpcMQUqFJWaKbw/exec";
+        // ⚠️ COLOQUE O SEU NOVO LINK DO APPS SCRIPT AQUI ABAIXO
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvFfknC6CQ2SEblIZBOwfN3Yj1NJq_xCbazO5iz7Xx-ZNhMXI9k_YBRmfN735vi6izxA/exec";
         
         let registos = [];
         let despesasRegistadas = []; 
-        let agendaRegistada = [];
+        let agendaRegistada = []; // Nova Array para a Agenda
         let idEmEdicao = null;
         let idEmEdicaoDespesa = null;
-        let idEmEdicaoAgenda = null;
+        let idEmEdicaoAgenda = null; // ID para edicao da Agenda
         let documentoPDFFinal = null;
         let nomePDFFinal = "";
         let chartClientesInst = null;
@@ -334,16 +335,13 @@
 
         function formatDataBR(d) { if(!d) return '--'; return d.split('T')[0].split('-').reverse().join('/'); }
         function formatDataParaInput(d) { if(!d) return ''; return d.split('T')[0]; }
-        
-        // FUNÇÃO ATUALIZADA - Protege contra erros e lida com o formato estranho do Excel
         function formatHora(h) {
             if(!h) return '--';
-            let strH = String(h);
-            if(strH.includes('T')) {
-                const dataObj = new Date(strH);
+            if(h.includes('T')) {
+                const dataObj = new Date(h);
                 return dataObj.getHours().toString().padStart(2, '0') + ':' + dataObj.getMinutes().toString().padStart(2, '0');
             }
-            return strH.substring(0, 5);
+            return h.substring(0, 5) || '--:--';
         }
 
         function calcDiferenca(ini, fim) {
@@ -488,22 +486,10 @@
             document.getElementById('btn_cancelar_agenda').style.display = "none";
         }
 
-        // FUNÇÃO ATUALIZADA - Organiza por data e hora crescentes + aplica o formatHora na tabela
         function renderizarAgenda() {
             const corpo = document.getElementById('lista_agenda_corpo');
             corpo.innerHTML = '';
-            
-            // Lógica de ordenação (Data e Hora)
-            let agendaOrdenada = [...agendaRegistada].sort((a,b) => {
-                let dataA = a.data ? a.data.split('T')[0] : '9999-12-31';
-                let dataB = b.data ? b.data.split('T')[0] : '9999-12-31';
-                
-                let horaA = (a.hora && formatHora(a.hora) !== '--') ? formatHora(a.hora) : '00:00';
-                let horaB = (b.hora && formatHora(b.hora) !== '--') ? formatHora(b.hora) : '00:00';
-                
-                // Constrói uma data virtual completa para comparar corretamente
-                return new Date(`${dataA}T${horaA}`) - new Date(`${dataB}T${horaB}`);
-            });
+            let agendaOrdenada = [...agendaRegistada].sort((a,b) => new Date(a.data) - new Date(b.data));
             
             if(agendaOrdenada.length === 0) {
                 corpo.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Sem eventos na agenda.</td></tr>`;
@@ -513,7 +499,7 @@
             agendaOrdenada.forEach(a => {
                 corpo.innerHTML += `<tr>
                     <td>${formatDataBR(a.data)}</td>
-                    <td>${formatHora(a.hora)}</td>
+                    <td>${a.hora || '--:--'}</td>
                     <td><strong>${a.titulo}</strong></td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="editarAgenda('${a.id}')" title="Editar">✏️</button>
@@ -529,7 +515,7 @@
             idEmEdicaoAgenda = id;
             document.getElementById('titulo_form_agenda').innerText = "✏️ Editar Evento";
             document.getElementById('a_data').value = formatDataParaInput(evento.data);
-            document.getElementById('a_hora').value = formatHora(evento.hora) !== '--' ? formatHora(evento.hora) : '';
+            document.getElementById('a_hora').value = formatHora(evento.hora) !== '--:--' ? formatHora(evento.hora) : '';
             document.getElementById('a_titulo').value = evento.titulo;
             
             document.getElementById('btn_guardar_agenda').innerText = "Atualizar Evento";
@@ -648,8 +634,8 @@
             if (!registo) return;
             document.getElementById('data').value = formatDataParaInput(registo.data);
             document.getElementById('cliente').value = registo.cliente || '';
-            document.getElementById('hora_inicio').value = formatHora(registo.inicio) !== '--' ? formatHora(registo.inicio) : '';
-            document.getElementById('hora_fim').value = formatHora(registo.fim) !== '--' ? formatHora(registo.fim) : '';
+            document.getElementById('hora_inicio').value = formatHora(registo.inicio);
+            document.getElementById('hora_fim').value = formatHora(registo.fim);
             document.getElementById('taxa_hora').value = registo.taxaUsada;
             idEmEdicao = id;
             const btn = document.getElementById('btn_submit');
