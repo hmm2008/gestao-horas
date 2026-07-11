@@ -333,8 +333,8 @@
             setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000);
         }
 
-        function formatDataBR(d) { if(!d) return '--'; return d.split('T')[0].split('-').reverse().join('/'); }
-        function formatDataParaInput(d) { if(!d) return ''; return d.split('T')[0]; }
+        function formatDataBR(d) { if(!d) return '--'; if(d.includes('T')) return d.split('T')[0].split('-').reverse().join('/'); return d.split('-').reverse().join('/'); }
+        function formatDataParaInput(d) { if(!d) return ''; if(d.includes('T')) return d.split('T')[0]; return d; }
         function formatHora(h) {
             if(!h) return '--';
             if(h.includes('T')) {
