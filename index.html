@@ -85,7 +85,6 @@
         .chart-container { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; }
         .chart-wrapper { width: 100%; max-width: 350px; height: 350px; position: relative; }
 
-        /* Estilos extra para a box de inserção rápida (Agenda) */
         .quick-add-box { background: rgba(128,128,128,0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); }
 
         @media (max-width: 700px) {
@@ -214,6 +213,11 @@
                         <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Horas por Mês</h3>
                         <div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div>
                     </div>
+                    <!-- NOVO GRÁFICO DE DESPESAS -->
+                    <div class="chart-container" style="grid-column: 1 / -1;">
+                        <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Despesas por Categoria</h3>
+                        <div class="chart-wrapper"><canvas id="graficoDespesas"></canvas></div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -299,19 +303,19 @@
     </div>
 
     <script>
-        // ⚠️ COLOQUE O SEU NOVO LINK DO APPS SCRIPT AQUI ABAIXO
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvFfknC6CQ2SEblIZBOwfN3Yj1NJq_xCbazO5iz7Xx-ZNhMXI9k_YBRmfN735vi6izxA/exec";
         
         let registos = [];
         let despesasRegistadas = []; 
-        let agendaRegistada = []; // Nova Array para a Agenda
+        let agendaRegistada = []; 
         let idEmEdicao = null;
         let idEmEdicaoDespesa = null;
-        let idEmEdicaoAgenda = null; // ID para edicao da Agenda
+        let idEmEdicaoAgenda = null; 
         let documentoPDFFinal = null;
         let nomePDFFinal = "";
         let chartClientesInst = null;
         let chartMesesInst = null;
+        let chartDespesasInst = null;
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').then(reg => reg.update());
@@ -333,8 +337,8 @@
             setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000);
         }
 
-        function formatDataBR(d) { if(!d) return '--'; if(d.includes('T')) return d.split('T')[0].split('-').reverse().join('/'); return d.split('-').reverse().join('/'); }
-        function formatDataParaInput(d) { if(!d) return ''; if(d.includes('T')) return d.split('T')[0]; return d; }
+        function formatDataBR(d) { if(!d) return '--'; return d.split('T')[0].split('-').reverse().join('/'); }
+        function formatDataParaInput(d) { if(!d) return ''; return d.split('T')[0]; }
         function formatHora(h) {
             if(!h) return '--';
             if(h.includes('T')) {
@@ -575,7 +579,7 @@
             if(!despesa) return;
             idEmEdicaoDespesa = id;
             document.getElementById('titulo_modal_despesa').innerText = "✏️ Editar Despesa";
-            document.getElementById('d_data').value = despesa.data;
+            document.getElementById('d_data').value = formatDataParaInput(despesa.data);
             document.getElementById('d_categoria').value = despesa.categoria;
             document.getElementById('d_descricao').value = despesa.descricao;
             document.getElementById('d_valor').value = despesa.valor;
@@ -720,23 +724,40 @@
         function gerarGraficos() {
             if(chartClientesInst) chartClientesInst.destroy();
             if(chartMesesInst) chartMesesInst.destroy();
+            if(chartDespesasInst) chartDespesasInst.destroy();
+            
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const corTexto = isDark ? '#f5f5f7' : '#1d1d1f';
-            let rend = {}, horas = {};
+            
+            let rend = {}, horas = {}, desp = {};
+            
             registos.forEach(r => {
                 let c = r.cliente || "S/ Nome";
                 rend[c] = (rend[c]||0) + parseFloat(r.valorGasto||0);
                 if(r.data) { let m = r.data.split('T')[0].substring(0,7); horas[m] = (horas[m]||0) + parseInt(r.minutosTotais||0); }
             });
+            
+            despesasRegistadas.forEach(d => {
+                let cat = d.categoria || "Outras";
+                desp[cat] = (desp[cat] || 0) + parseFloat(d.valor || 0);
+            });
+
             chartClientesInst = new Chart(document.getElementById('graficoClientes'), {
                 type: 'pie',
                 data: { labels: Object.keys(rend), datasets: [{ data: Object.values(rend), backgroundColor: ['#007aff','#34c759','#ff9500','#ff3b30','#5856d6'] }] },
                 options: { responsive: true, plugins: { legend: { labels: { color: corTexto } } } }
             });
+            
             chartMesesInst = new Chart(document.getElementById('graficoMeses'), {
                 type: 'bar',
                 data: { labels: Object.keys(horas), datasets: [{ label: 'Horas', data: Object.values(horas).map(m=>(m/60).toFixed(1)), backgroundColor: '#007aff' }] },
                 options: { responsive: true, scales: { x: { ticks: { color: corTexto } }, y: { ticks: { color: corTexto } } } }
+            });
+
+            chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), {
+                type: 'doughnut',
+                data: { labels: Object.keys(desp), datasets: [{ data: Object.values(desp), backgroundColor: ['#ff3b30','#ff9500','#34c759','#5856d6','#007aff'] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: corTexto } } } }
             });
         }
 
