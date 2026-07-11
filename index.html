@@ -95,6 +95,13 @@
         #loader-text { font-weight: 600; font-size: 16px; color: var(--text-main); letter-spacing: 0.5px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* OVERLAY DO LOGIN COM PIN */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s; }
+        #login-overlay.hidden { opacity: 0; pointer-events: none; }
+        .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 320px; border: 1px solid var(--border-color); }
+        .login-box h2 { margin-top: 0; margin-bottom: 20px; font-size: 20px; color: var(--text-main); }
+        .login-box input { width: 100%; padding: 15px; margin-bottom: 15px; text-align: center; font-size: 24px; letter-spacing: 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: bold; }
+        
         /* MODAIS GENERALIZADOS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
@@ -119,61 +126,25 @@
             .app-container { padding: 12px; border-radius: 12px; box-shadow: none; }
             .header h1 { font-size: 19px; }
             
-            /* Melhoria na Grid: 2 colunas para campos pequenos */
-            .form-grid { 
-                display: grid; 
-                grid-template-columns: repeat(2, 1fr); 
-                gap: 8px; 
-                margin-bottom: 12px; 
-            }
-            /* Garantir que o Cliente ocupe o espaço total */
-            .cliente-grid { 
-                grid-column: span 2; 
-            }
+            .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+            .cliente-grid { grid-column: span 2; }
             
             input, select { padding: 10px; font-size: 14px; border-radius: 6px; width: 100%; box-sizing: border-box; }
             label { font-size: 9px; margin-bottom: 2px; }
             .btn-add { padding: 12px; font-size: 14px; }
             
-            /* Renderização em formato de Cartões (Cards) */
             table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
             thead tr { display: none; } 
             
-            tr { 
-                background: var(--input-bg); 
-                border: 1px solid var(--border-color); 
-                border-radius: 8px; 
-                margin-bottom: 10px; 
-                padding: 12px; 
-                box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
-            }
+            tr { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
             
-            /* Permitir que o texto quebre */
-            td { 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                border-bottom: 1px solid rgba(128,128,128,0.1); 
-                padding: 8px 0; 
-                font-size: 14px; 
-                white-space: normal; 
-                word-wrap: break-word; 
-            }
+            td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(128,128,128,0.1); padding: 8px 0; font-size: 14px; white-space: normal; word-wrap: break-word; }
             
-            td::before { 
-                content: attr(data-label); 
-                font-weight: bold; 
-                font-size: 10px; 
-                color: var(--text-muted); 
-                text-transform: uppercase;
-                margin-right: 10px;
-                flex-shrink: 0;
-            }
+            td::before { content: attr(data-label); font-weight: bold; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-right: 10px; flex-shrink: 0; }
             
             .action-btns { justify-content: flex-end; width: 100%; margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; }
             .table-container { border: none; background: transparent; overflow-x: hidden; }
             
-            /* Finanças recolhidas */
             .btn-toggle-finance { display: block; width: 100%; background: var(--accent-color); color: white; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; cursor: pointer; text-align: center; border: none; font-size: 13px; }
             .finance-panel-wrapper { display: none; } 
             .finance-panel { grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
@@ -197,6 +168,15 @@
         <div id="loader-text">A processar...</div>
     </div>
     
+    <!-- ECRÃ DE LOGIN PIN -->
+    <div id="login-overlay" class="hidden">
+        <div class="login-box">
+            <h2>🔒 Acesso Restrito</h2>
+            <input type="password" id="pin-input" placeholder="****" inputmode="numeric">
+            <button class="btn-add" onclick="verificarPinLogin()">ENTRAR</button>
+        </div>
+    </div>
+    
     <!-- Menu de Navegação Inferior Móvel -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="navegarPara('home', this)">
@@ -212,10 +192,6 @@
             <span class="nav-icon">📊</span><span>Estatísticas</span>
         </button>
     </nav>
-
-    <!-- ========================================== -->
-    <!--          TODOS OS MODAIS EXPANDIDOS        -->
-    <!-- ========================================== -->
 
     <!-- MODAL DE AGENDA -->
     <div id="modal-agenda" class="modal-overlay">
@@ -347,10 +323,12 @@
     <div class="app-container">
         <div class="header">
             <h1 style="margin:0;">Gestão de Horas</h1>
-            <button class="theme-btn" onclick="alternarTema()">☀️/🌙</button>
+            <div style="display: flex; align-items: center;">
+                <button class="theme-btn" onclick="alternarTema()">☀️/🌙</button>
+                <button class="theme-btn" onclick="sairApp()" style="margin-left: 10px; font-size: 20px;" title="Terminar Sessão">🚪</button>
+            </div>
         </div>
         
-        <!-- Nova ordem solicitada: 1. Data/Preço, 2. Início/Fim, 3. Cliente -->
         <div class="form-grid">
             <div class="input-group"><label>Data</label><input type="date" id="data"></div>
             <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
@@ -364,7 +342,6 @@
         </div>
         <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">ADICIONAR REGISTO</button>
 
-        <!-- Painel Resumo Indicadores -->
         <div class="summary-panel">
             <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
             <div class="summary-item"><span class="val" id="total_horas">0h</span><span class="lab">Total Horas</span></div>
@@ -380,10 +357,8 @@
             </div>
         </div>
 
-        <!-- Botão Mobile para Expandir/Ocultar Finanças -->
         <button class="btn-toggle-finance" onclick="toggleFinancas()">💰 Mostrar Detalhes Financeiros</button>
 
-        <!-- Painel Financeiro Dinâmico -->
         <div class="finance-panel-wrapper" id="painel-financas">
             <div class="finance-panel">
                 <div class="finance-item">
@@ -410,13 +385,11 @@
             </div>
         </div>
 
-        <!-- Filtros Rápidos -->
         <div class="filter-panel">
             <select id="filtro_mes" onchange="renderizarTabela()"><option value="todos">Todos os Meses</option></select>
             <select id="filtro_cliente" onchange="renderizarTabela()"><option value="todos">Todos os Clientes</option></select>
         </div>
 
-        <!-- Lista e Tabela Principal -->
         <div class="table-container">
             <table>
                 <thead>
@@ -440,7 +413,7 @@
     <!--               MOTOR JAVASCRIPT             -->
     <!-- ========================================== -->
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby79VLDar06A1_aTtxD0D-mRpSNtsJ3cCLyDkmEwWqA1oOPYdciR2zm7WBYj28xSjDt3g/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx96D0N_JpJOz9IJyYQr3rA0YtuN6rJw_BClAGGTrgr04ML0QDC5wZKJLErfBqQMBZfRw/exec";
         
         let registos = []; 
         let despesasRegistadas = []; 
@@ -453,6 +426,9 @@
         let chartClientesInst = null; 
         let chartMesesInst = null; 
         let chartDespesasInst = null;
+        
+        // NOVIDADE: GESTÃO DO PIN
+        let pinApp = localStorage.getItem('app_pin') || '';
 
         if ('serviceWorker' in navigator) { 
             navigator.serviceWorker.register('sw.js').then(reg => reg.update()); 
@@ -468,6 +444,36 @@
             } else { 
                 loader.classList.remove('active'); 
             }
+        }
+
+        // --- AUTENTICAÇÃO PIN ---
+        async function verificarPinLogin() {
+            const p = document.getElementById('pin-input').value;
+            if(!p) { showToast("Insira o PIN!"); return; }
+            pinApp = p;
+            localStorage.setItem('app_pin', pinApp);
+            await iniciarAppApósLogin();
+        }
+
+        async function iniciarAppApósLogin() {
+            const sucesso = await carregarDadosDoGoogle();
+            if (sucesso) {
+                document.getElementById('login-overlay').classList.add('hidden');
+                renderizarTabela();
+            } else {
+                document.getElementById('login-overlay').classList.remove('hidden');
+                pinApp = '';
+                localStorage.removeItem('app_pin');
+            }
+        }
+        
+        function sairApp() {
+            pinApp = '';
+            localStorage.removeItem('app_pin');
+            document.getElementById('login-overlay').classList.remove('hidden');
+            document.getElementById('pin-input').value = '';
+            registos = []; despesasRegistadas = []; agendaRegistada = [];
+            renderizarTabela();
         }
 
         // --- CONTROLO NAVEGAÇÃO MOBILE ---
@@ -570,12 +576,18 @@
 
         // --- CHAMADAS À BASE DE DADOS (API) ---
         async function carregarDadosDoGoogle() {
-            if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) { showToast("ID do App Script ausente!"); return; }
+            if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) { showToast("ID do App Script ausente!"); return false; }
             setCarregando(true, "A sincronizar dados da nuvem...");
             try {
-                const res = await fetch(GOOGLE_SCRIPT_URL + "?nocache=" + Date.now());
+                // Adicionamos o pin na querystring do GET
+                const res = await fetch(`${GOOGLE_SCRIPT_URL}?nocache=${Date.now()}&pin=${pinApp}`);
                 if(!res.ok) throw new Error("Erro de resposta do servidor");
                 const json = await res.json();
+                
+                if (json.erro && json.erro === "PIN incorreto") {
+                    showToast("PIN Incorreto ou Acesso Negado!");
+                    return false;
+                }
                 
                 const corrigirData = (r) => {
                     if (r && r.data) {
@@ -595,8 +607,9 @@
                     if(json.agenda && Array.isArray(json.agenda)) { json.agenda.forEach(corrigirData); agendaRegistada = json.agenda; }
                 }
                 atualizarDropdownsFiltros();
+                return true;
             } catch (e) { 
-                console.error(e); showToast("Não foi possível carregar os dados.");
+                console.error(e); showToast("Não foi possível carregar os dados."); return false;
             } finally { setCarregando(false); }
         }
 
@@ -670,7 +683,8 @@
         async function guardarAgenda() {
             const d = document.getElementById('a_data').value; const h = document.getElementById('a_hora').value; const t = document.getElementById('a_titulo').value;
             if(!d || !t) { showToast("Preencha a Data e o Nome do Evento!"); return; }
-            const req = { tipo: 'agenda', id: idEmEdicaoAgenda || 'A'+Date.now().toString(), data: d, hora: h, titulo: t };
+            // Adicionado envio do pinApp
+            const req = { pin: pinApp, tipo: 'agenda', id: idEmEdicaoAgenda || 'A'+Date.now().toString(), data: d, hora: h, titulo: t };
             setCarregando(true, "A comunicar com Google Calendar...");
             try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); renderizarAgenda(); limparFormularioAgenda(); showToast("Evento guardado!"); } catch(e) { showToast("Erro de rede"); } finally { setCarregando(false); }
         }
@@ -701,7 +715,8 @@
         async function guardarDespesa() {
             const d = document.getElementById('d_data').value; const cat = document.getElementById('d_categoria').value; const desc = document.getElementById('d_descricao').value; const val = parseFloat(document.getElementById('d_valor').value);
             if(!d || isNaN(val)) { showToast("Preencha data e valor corretamente!"); return; }
-            const req = { tipo: 'despesa', id: idEmEdicaoDespesa || 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
+            // Adicionado envio do pinApp
+            const req = { pin: pinApp, tipo: 'despesa', id: idEmEdicaoDespesa || 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
             setCarregando(true, "A registar despesa...");
             try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); fecharModal('modal-despesa'); abrirModalListaDespesas(); renderizarTabela(); showToast("Despesa guardada!"); } catch(e) { showToast("Erro ao guardar"); } finally { setCarregando(false); }
         }
@@ -718,7 +733,15 @@
             confirmarAcao("Eliminar Registo", `Tem a certeza absoluta que pretende apagar permanentemente ${nomeItem}?`, "#ff3b30", "Sim, Eliminar", 
                 async () => {
                     setCarregando(true, "A apagar da base de dados...");
-                    try { await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`); await carregarDadosDoGoogle(); renderizarTabela(); renderizarAgenda(); if(document.getElementById('modal-lista-despesas').classList.contains('show')) abrirModalListaDespesas(); showToast("Removido com sucesso!"); } catch(e) { showToast("Erro ao apagar"); } finally { setCarregando(false); }
+                    try { 
+                        // Adicionado envio do pin na string do GET
+                        await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`); 
+                        await carregarDadosDoGoogle(); 
+                        renderizarTabela(); 
+                        renderizarAgenda(); 
+                        if(document.getElementById('modal-lista-despesas').classList.contains('show')) abrirModalListaDespesas(); 
+                        showToast("Removido com sucesso!"); 
+                    } catch(e) { showToast("Erro ao apagar"); } finally { setCarregando(false); }
                 }
             );
         }
@@ -733,7 +756,8 @@
             const d=document.getElementById('data').value; const cli=document.getElementById('cliente').value; const i=document.getElementById('hora_inicio').value; const f=document.getElementById('hora_fim').value; const t=parseFloat(document.getElementById('taxa_hora').value);
             if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos obrigatórios!"); return; }
             const c = calcDiferenca(i,f);
-            const req = { tipo: 'registo', id: idEmEdicao ? idEmEdicao : 'R_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: cli };
+            // Adicionado envio do pinApp
+            const req = { pin: pinApp, tipo: 'registo', id: idEmEdicao ? idEmEdicao : 'R_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: cli };
             setCarregando(true, "A enviar dados de horas...");
             try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); localStorage.setItem('taxa_hora_guardada', t); await carregarDadosDoGoogle(); renderizarTabela(); showToast("Horas gravadas!"); idEmEdicao = null; document.getElementById('btn_submit').innerText = "ADICIONAR REGISTO"; document.getElementById('btn_submit').style.backgroundColor = "#007aff"; } catch(e) { showToast("Erro"); } finally { setCarregando(false); }
         }
@@ -800,8 +824,14 @@
             const t = localStorage.getItem('taxa_hora_guardada'); if (t) document.getElementById('taxa_hora').value = t;
             if (localStorage.getItem('tx_irs')) document.getElementById('inp_irs').value = localStorage.getItem('tx_irs');
             if (localStorage.getItem('tx_ss')) document.getElementById('inp_ss').value = localStorage.getItem('tx_ss');
-            await carregarDadosDoGoogle(); 
-            renderizarTabela();
+            
+            // Verifica se o utilizador já tem um PIN guardado
+            if (pinApp) {
+                await iniciarAppApósLogin();
+            } else {
+                // Se não tem PIN guardado, mostra a janela de Login
+                document.getElementById('login-overlay').classList.remove('hidden');
+            }
         };
     </script>
 </body>
