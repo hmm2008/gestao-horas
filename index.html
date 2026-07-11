@@ -389,19 +389,55 @@
         }
 
         async function carregarDadosDoGoogle() {
-            if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) return;
+            if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) {
+                showToast("Erro: Link do App Script em falta!");
+                return;
+            }
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL + "?nocache=" + Date.now());
+                if(!res.ok) throw new Error("Erro de Rede");
                 const json = await res.json();
                 
-                // Agora os dados já chegam formatados como "yyyy-MM-dd" pelo Apps Script
-                registos = json.registos || [];
-                despesasRegistadas = json.despesas || [];
-                agendaRegistada = json.agenda || [];
+                const corrigirData = (r) => {
+                    if (r && r.data) {
+                        const strData = String(r.data);
+                        if (strData.includes('T')) {
+                            const dt = new Date(r.data);
+                            if(!isNaN(dt.getTime())) {
+                                r.data = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+                            }
+                        }
+                    }
+                };
+                
+                if (Array.isArray(json)) {
+                    // Backend antigo (retorna array simples)
+                    json.forEach(corrigirData);
+                    registos = json;
+                    despesasRegistadas = [];
+                    agendaRegistada = [];
+                } else if (json && typeof json === 'object') {
+                    // Backend novo (retorna objecto com arrays)
+                    if(json.registos && Array.isArray(json.registos)) {
+                        json.registos.forEach(corrigirData);
+                        registos = json.registos;
+                    }
+                    if(json.despesas && Array.isArray(json.despesas)) {
+                        json.despesas.forEach(corrigirData);
+                        despesasRegistadas = json.despesas;
+                    }
+                    if(json.agenda && Array.isArray(json.agenda)) {
+                        json.agenda.forEach(corrigirData);
+                        agendaRegistada = json.agenda;
+                    }
+                }
                 
                 atualizarDropdownsFiltros();
                 renderizarTabela();
-            } catch (e) { console.error("Erro:", e); }
+            } catch (e) { 
+                console.error("Erro a ler base de dados:", e); 
+                showToast("Erro na obtenção dos dados.");
+            }
         }
 
         function renderizarTabela() {
