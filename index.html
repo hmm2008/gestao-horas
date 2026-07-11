@@ -3,15 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Horas Cloud</title>
+    <title>Gestão de Horas Cloud Pro</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
-    
-    <!-- Bibliotecas Externas -->
-    <script src="[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js)"></script>
-    <script src="[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js)"></script>
-    <script src="[cdn.jsdelivr.net](https://cdn.jsdelivr.net/npm/chart.js)"></script>
     
     <style>
         :root { 
@@ -23,6 +18,7 @@
             --accent-color: #007aff; 
             --input-bg: #ffffff; 
             --bottom-nav-bg: #ffffff; 
+            --hover-bg: rgba(0, 122, 255, 0.08);
         }
         [data-theme="dark"] { 
             --bg-color: #000000; 
@@ -33,189 +29,174 @@
             --accent-color: #0a84ff; 
             --input-bg: #2c2c2e; 
             --bottom-nav-bg: #1c1c1e; 
+            --hover-bg: rgba(10, 132, 255, 0.15);
         }
         
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
-        .app-container { background: var(--card-bg); max-width: 900px; margin: auto; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .theme-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; transition: background 0.3s; display: flex; height: 100vh; overflow: hidden; }
         
-        /* --- LAYOUT CENTRALIZADO DO FORMULÁRIO (Desktop) --- */
-        .form-centralized {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 25px;
-            width: 100%;
-        }
-        .form-wrapper-inner {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            /* A largura max-content dita que o bloco terá exatamente a largura natural da primeira linha */
-            width: max-content;
-            max-width: 100%;
-        }
-        .form-row-top {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        .form-row-bottom {
-            width: 100%;
-        }
-        .preco-input {
-            width: 75px;
-            text-align: center;
-        }
+        /* ---------- ESTRUTURA DASHBOARD (DESKTOP) ---------- */
+        .sidebar { width: 240px; background: var(--card-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 25px 15px; box-sizing: border-box; z-index: 100; transition: background 0.3s, border 0.3s; }
+        .sidebar .brand { font-size: 18px; font-weight: 800; margin-bottom: 35px; padding: 0 10px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.3px; }
         
-        .input-group { display: flex; flex-direction: column; }
-        label { font-size: 10px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; }
+        .nav-item-desk { padding: 12px 15px; border-radius: 10px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; border: none; background: transparent; text-align: left; width: 100%; margin-bottom: 8px; }
+        .nav-item-desk:hover { background: rgba(128,128,128,0.08); color: var(--text-main); }
+        .nav-item-desk.active { background: var(--accent-color); color: white; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); }
         
-        input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); outline: none; color-scheme: light dark; box-sizing: border-box; }
-        input:focus, select:focus { border-color: var(--accent-color); }
+        .main-content { flex: 1; overflow-y: auto; padding: 30px; box-sizing: border-box; }
+        .app-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
         
-        .btn-add { background: var(--accent-color); color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
-        .btn-add:hover { opacity: 0.9; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .theme-btn { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; font-size: 16px; cursor: pointer; color: var(--text-main); transition: 0.2s; }
+        .theme-btn:hover { background: var(--border-color); }
+
+        /* ---------- FORMULÁRIOS E INPUTS ---------- */
+        .form-centralized { display: flex; justify-content: flex-start; width: 100%; background: var(--card-bg); padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid var(--border-color); box-sizing: border-box; }
+        .form-wrapper-inner { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .form-row-top { display: flex; gap: 12px; flex-wrap: wrap; }
         
-        .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: rgba(128,128,128,0.1); padding: 20px; border-radius: 12px; margin: 25px 0 10px 0; border: 1px solid var(--border-color); }
-        .summary-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-right: 1px solid var(--border-color); }
+        .input-group { display: flex; flex-direction: column; flex: 1; min-width: 120px; }
+        label { font-size: 10px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; letter-spacing: 0.5px;}
+        input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box; color-scheme: light dark; }
+        input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--hover-bg); }
+        
+        .btn-add { background: var(--accent-color); color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2); }
+        .btn-add:hover { transform: translateY(-1px); box-shadow: 0 6px 15px rgba(0, 122, 255, 0.3); }
+
+        /* ---------- PAINÉIS DE RESUMO E FINANÇAS ---------- */
+        .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .summary-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-right: 1px solid var(--border-color); padding: 25px 15px; }
         .summary-item:last-child { border-right: none; }
-        .val { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
-        .lab { font-size: 12px; color: var(--text-muted); }
-        
-        .finance-panel-wrapper { margin-bottom: 25px; transition: 0.3s; }
-        .finance-panel { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; background: rgba(0, 122, 255, 0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); align-items: center; }
+        .val { font-size: 26px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .lab { font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+
+        .finance-panel-wrapper { transition: 0.3s; }
+        .finance-panel { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--hover-bg); padding: 20px; border-radius: 12px; border: 1px dashed rgba(0, 122, 255, 0.2); align-items: center; }
         .finance-item { display: flex; flex-direction: column; text-align: center; justify-content: center; align-items: center;}
-        .finance-item input { text-align: center; margin-top: 5px; padding: 8px; font-size: 14px; width: 80%; }
-        .finance-item.result-item { border-left: 1px solid var(--border-color); }
+        .finance-item input { text-align: center; margin-top: 5px; padding: 8px; font-size: 14px; width: 80%; background: var(--card-bg); }
+        .finance-item.result-item { border-left: 1px dashed rgba(0, 122, 255, 0.3); }
         .finance-item.highlight .val { color: var(--accent-color); }
         .btn-toggle-finance { display: none; }
-        
-        .botoes-topo { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
-        .btn-acao { border: none; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
-        .btn-pdf { background: #34c759; }
-        .btn-graficos { background: #ff9500; }
-        .btn-csv { background: #5856d6; }
-        .btn-ver-despesas { background: #8e8e93; }
-        .btn-agenda { background: #af52de; }
-        
-        .filter-panel { display: flex; gap: 10px; margin-bottom: 15px; padding: 15px; background: rgba(128,128,128,0.05); border-radius: 10px; border: 1px solid var(--border-color); }
-        .filter-panel select { flex: 1; font-weight: bold; }
 
-        .table-container { overflow-x: auto; border-radius: 8px; }
+        /* ---------- BARRA DE PESQUISA & FILTROS ---------- */
+        .search-filter-bar { display: flex; gap: 10px; margin-top: 5px; background: var(--card-bg); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); flex-wrap: wrap; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .search-box { flex: 2; min-width: 200px; display: flex; align-items: center; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 0 12px; transition: 0.2s;}
+        .search-box:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--hover-bg); }
+        .search-box input { border: none; padding: 12px 10px; outline: none; background: transparent; font-size: 14px;}
+        .filter-selects { flex: 1; min-width: 250px; display: flex; gap: 10px; }
+        .filter-selects select { flex: 1; font-weight: 500; font-size: 13px; }
+
+        /* ---------- TABELA & PAGINAÇÃO ---------- */
+        .table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
         table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; white-space: nowrap; }
-        .action-btns { display: flex; gap: 10px; align-items: center; }
-        .edit-btn { background: none; border: none; color: #ff9500; cursor: pointer; font-size: 16px; padding: 0; }
-        .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 16px; padding: 0; }
+        th, td { text-align: left; padding: 15px 15px; border-bottom: 1px solid var(--border-color); font-size: 14px; white-space: nowrap; }
+        th { background: rgba(128,128,128,0.03); color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        .action-btns { display: flex; gap: 12px; align-items: center; justify-content: flex-end; }
+        .edit-btn { background: none; border: none; color: #ff9500; cursor: pointer; font-size: 16px; padding: 0; transition: transform 0.2s; }
+        .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 16px; padding: 0; transition: transform 0.2s; }
+        .edit-btn:hover, .delete-btn:hover { transform: scale(1.15); }
 
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; }
-        .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; opacity: 0; transition: 0.3s; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .toast.show { opacity: 1; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--card-bg); border-top: 1px solid var(--border-color); }
+        .btn-acao { border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); }
+        .btn-acao:hover:not(:disabled) { background: var(--border-color); }
+        .btn-acao:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-download { background: #34c759; color: white; border: none; margin-left: auto; }
+        .btn-download:hover { background: #28a745; color: white; }
 
-        /* LOADING SPINNER */
-        #global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(3px); }
-        [data-theme="dark"] #global-loader { background: rgba(0, 0, 0, 0.85); }
-        #global-loader.active { opacity: 1; pointer-events: auto; }
-        .spinner { border: 4px solid var(--border-color); border-top: 4px solid var(--accent-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        #loader-text { font-weight: 600; font-size: 16px; color: var(--text-main); letter-spacing: 0.5px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* ---------- SISTEMA DE NOTIFICAÇÕES TOAST ---------- */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 8000; }
+        .toast { background: var(--text-main); color: var(--bg-color); padding: 14px 24px; border-radius: 10px; margin-bottom: 10px; opacity: 0; transform: translateY(-10px); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-weight: 500; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.sync { background: var(--accent-color); color: white; }
 
-        /* OVERLAY DO LOGIN COM PIN E TECLADO VIRTUAL */
+        /* ---------- SPINNER SILENCIOSO ---------- */
+        #sync-indicador { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 7000; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        #sync-indicador.active { opacity: 1; }
+        .mini-spinner { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite; }
+
+        /* ---------- LOGIN & OVERLAYS GERAIS ---------- */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s; }
         #login-overlay.hidden { opacity: 0; pointer-events: none; }
-        .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 340px; border: 1px solid var(--border-color); }
-        .login-box h2 { margin-top: 0; margin-bottom: 20px; font-size: 20px; color: var(--text-main); }
-        
-        .login-box input { width: 100%; padding: 15px; margin-bottom: 5px; text-align: center; font-size: 28px; letter-spacing: 12px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: bold; outline: none; caret-color: transparent; transition: 0.2s; }
-        
+        .login-box { background: var(--card-bg); padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; width: 90%; max-width: 340px; border: 1px solid var(--border-color); }
+        .login-box h2 { margin-top: 0; margin-bottom: 25px; font-size: 22px; color: var(--text-main); }
+        .login-box input { width: 100%; padding: 15px; margin-bottom: 10px; text-align: center; font-size: 32px; letter-spacing: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: bold; outline: none; caret-color: transparent; }
         #pin-error-msg { background: #ffe5e5; color: #ff3b30; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 15px; display: none; border: 1px solid #ff3b30; }
-        [data-theme="dark"] #pin-error-msg { background: rgba(255, 59, 48, 0.15); }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
-        .shake-error { animation: shake 0.4s; border-color: #ff3b30 !important; color: #ff3b30 !important; }
-
-        /* Teclado Numérico Virtual */
-        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
-        .key { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px 0; font-size: 22px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 25px 0; }
+        .key { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px 0; font-size: 24px; font-weight: 600; cursor: pointer; transition: 0.1s; -webkit-tap-highlight-color: transparent; }
         .key:active { background: var(--border-color); transform: scale(0.95); }
-        .key-action { background: rgba(128,128,128,0.1); font-size: 18px; color: var(--text-muted); }
+        .key-action { background: rgba(128,128,128,0.05); font-size: 20px; color: var(--text-muted); }
 
         /* MODAIS GENERALIZADOS */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
-        .modal-content { background: var(--card-bg); width: 90%; max-width: 800px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s ease; }
-        .modal-overlay.show .modal-content { transform: translateY(0); }
-        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { margin: 0; font-size: 22px; font-weight: 900; color: var(--accent-color); letter-spacing: 0.5px; }
-        .modal-body { flex: 1; overflow-y: auto; background: var(--bg-color); padding: 20px;}
-        .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
-        .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); }
+        .modal-content { background: var(--card-bg); width: 90%; max-width: 800px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.3); transform: scale(0.98); transition: transform 0.3s ease; }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-header { padding: 18px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { margin: 0; font-size: 20px; font-weight: 800; color: var(--accent-color); letter-spacing: -0.3px; }
+        .modal-body { flex: 1; overflow-y: auto; background: var(--bg-color); padding: 25px;}
+        .modal-footer { padding: 15px 25px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); }
+        .btn-cancel { border: 1px solid var(--border-color); padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: bold; background: var(--input-bg); color: var(--text-main); cursor: pointer; }
+        .btn-cancel:hover { background: var(--border-color); }
+        .btn-confirm { background: var(--accent-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .btn-confirm:hover { background: #006ce4; }
+        
+        .dashboard-grid { display: grid; gap: 30px; grid-template-columns: 1fr 1fr; }
+        .chart-container { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .chart-wrapper { width: 100%; height: 250px; position: relative; margin-top: 15px; }
 
-        /* BOTTOM NAV BAR (MOBILE) */
-        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bottom-nav-bg); border-top: 1px solid var(--border-color); z-index: 1500; justify-content: space-around; padding: 12px 0; padding-bottom: env(safe-area-inset-bottom, 12px); box-shadow: 0 -4px 15px rgba(0,0,0,0.03); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text-muted); font-size: 11px; font-weight: 500; cursor: pointer; gap: 4px; transition: 0.2s; }
-        .nav-item.active { color: var(--accent-color); }
-        .nav-icon { font-size: 22px; transition: transform 0.2s; }
-        .nav-item.active .nav-icon { transform: scale(1.15); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ---------- CONFIGURAÇÕES E COMPACTAÇÃO MOBILE ---------- */
-        @media (max-width: 700px) {
-            body { padding: 8px; padding-bottom: 85px; } 
-            .app-container { padding: 12px; border-radius: 12px; box-shadow: none; }
-            .header h1 { font-size: 19px; }
+        /* ---------- COMPACTAÇÃO MOBILE ---------- */
+        @media (max-width: 800px) {
+            body { display: block; height: auto; overflow: auto; padding-bottom: 85px; } 
+            .sidebar { display: none; }
+            .header h1 { font-size: 20px; }
+            .main-content { padding: 15px; }
             
-            /* Ajustes do Formulário para Mobile */
-            .form-wrapper-inner { width: 100%; }
-            .form-row-top { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .preco-input { width: 100%; } /* No telemóvel volta a ocupar o espaço total da grelha */
+            .summary-panel { grid-template-columns: 1fr 1fr; }
+            .summary-item:last-child { grid-column: span 2; border-right: none; border-top: 1px solid var(--border-color); padding: 15px; }
             
-            input, select { padding: 10px; font-size: 14px; border-radius: 6px; width: 100%; box-sizing: border-box; }
-            label { font-size: 9px; margin-bottom: 2px; }
-            .btn-add { padding: 12px; font-size: 14px; }
+            .form-row-top { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
             
             table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
             thead tr { display: none; } 
+            tr { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px; padding: 12px; }
+            td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(128,128,128,0.1); padding: 10px 0; font-size: 14px; }
+            td:last-child { border-bottom: none; }
+            td::before { content: attr(data-label); font-weight: 700; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-right: 10px; }
+            .action-btns { border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 6px; }
             
-            tr { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-            
-            td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(128,128,128,0.1); padding: 8px 0; font-size: 14px; white-space: normal; word-wrap: break-word; }
-            td::before { content: attr(data-label); font-weight: bold; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-right: 10px; flex-shrink: 0; }
-            
-            .action-btns { justify-content: flex-end; width: 100%; margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 8px; }
-            .table-container { border: none; background: transparent; overflow-x: hidden; }
-            
-            .btn-toggle-finance { display: block; width: 100%; background: var(--accent-color); color: white; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; cursor: pointer; text-align: center; border: none; font-size: 13px; }
+            .btn-toggle-finance { display: block; width: 100%; background: var(--accent-color); color: white; padding: 12px; border-radius: 8px; margin: 15px 0; font-weight: bold; text-align: center; border: none; font-size: 14px; }
             .finance-panel-wrapper { display: none; } 
-            .finance-panel { grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
-            .finance-item.result-item { grid-column: span 2; border-left: none; border-top: 1px solid var(--border-color); padding-top: 10px; }
+            .finance-panel { grid-template-columns: 1fr 1fr; gap: 8px; padding: 15px; }
+            .finance-item.result-item { grid-column: span 2; border-left: none; border-top: 1px solid var(--border-color); padding-top: 12px; }
             
-            .bottom-nav { display: flex; } 
-            .botoes-topo .btn-graficos, .botoes-topo .btn-ver-despesas, .botoes-topo .btn-agenda { display: none; } 
-            .filter-panel { flex-direction: column; padding: 10px; gap: 8px; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .search-filter-bar { flex-direction: column; }
+            
+            .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bottom-nav-bg); border-top: 1px solid var(--border-color); z-index: 1500; justify-content: space-around; padding: 10px 0; padding-bottom: env(safe-area-inset-bottom, 10px); }
+            .nav-item-mob { display: flex; flex-direction: column; align-items: center; background: none; border: none; color: var(--text-muted); font-size: 11px; font-weight: 600; gap: 4px; }
+            .nav-item-mob.active { color: var(--accent-color); }
+            .nav-item-mob span.icon { font-size: 20px; }
         }
-        @media (min-width: 701px) {
+        @media (min-width: 801px) {
             .finance-panel-wrapper { display: block !important; }
+            .bottom-nav { display: none; }
         }
     </style>
 </head>
 <body>
     <div id="toast-container"></div>
     
-    <!-- Ecrã de Loading Spinner Global -->
-    <div id="global-loader">
-        <div class="spinner"></div>
-        <div id="loader-text">A processar...</div>
-    </div>
+    <!-- Spinner Silencioso no topo -->
+    <div id="sync-indicador"><div class="mini-spinner"></div>Sincronizando...</div>
     
-    <!-- ECRÃ DE LOGIN PIN COM TECLADO VIRTUAL -->
+    <!-- ECRÃ DE LOGIN -->
     <div id="login-overlay" class="hidden">
         <div class="login-box">
             <h2>🔒 Acesso Restrito</h2>
-            
-            <div id="pin-error-msg">⚠️ PIN Incorreto. Tente novamente.</div>
-            
+            <div id="pin-error-msg">⚠️ PIN Incorreto.</div>
             <input type="password" id="pin-input" placeholder="••••" readonly>
-            
             <div class="keypad">
                 <button class="key" onclick="teclarPIN('1')">1</button>
                 <button class="key" onclick="teclarPIN('2')">2</button>
@@ -230,55 +211,159 @@
                 <button class="key" onclick="teclarPIN('0')">0</button>
                 <button class="key key-action" onclick="apagarUltimoPIN()">⌫</button>
             </div>
-
             <button class="btn-add" onclick="verificarPinLogin()">ENTRAR</button>
         </div>
     </div>
     
-    <!-- Menu de Navegação Inferior Móvel -->
+    <!-- SIDEBAR (DESKTOP) -->
+    <aside class="sidebar">
+        <div class="brand"><span style="font-size: 24px;">⏱️</span> CloudApp</div>
+        
+        <button class="nav-item-desk active" id="menu-home" onclick="navegarPara('home', this)">
+            <span>📝</span> Registos Auto
+        </button>
+        <button class="nav-item-desk" id="menu-despesas" onclick="navegarPara('despesas', this)">
+            <span>🛒</span> Nova Despesa
+        </button>
+        <button class="nav-item-desk" id="menu-agenda" onclick="navegarPara('agenda', this)">
+            <span>📅</span> Gestor de Eventos
+        </button>
+        <button class="nav-item-desk" id="menu-dashboard" onclick="navegarPara('dashboard', this)">
+            <span>📊</span> Painel Estatístico
+        </button>
+        
+        <div style="flex:1"></div>
+        
+        <div style="display: flex; gap: 10px;">
+            <button class="theme-btn" onclick="alternarTema()" style="flex: 1;" title="Mudar Tema">☀️/🌙</button>
+            <button class="theme-btn" onclick="sairApp()" style="flex: 1; border-color: rgba(255, 59, 48, 0.4); color: #ff3b30;" title="Sair">Sair</button>
+        </div>
+    </aside>
+
+    <!-- BOTTOM NAV (MOBILE) -->
     <nav class="bottom-nav">
-        <button class="nav-item active" onclick="navegarPara('home', this)">
-            <span class="nav-icon">📝</span><span>Registo</span>
-        </button>
-        <button class="nav-item" onclick="navegarPara('despesas', this)">
-            <span class="nav-icon">🛒</span><span>Despesas</span>
-        </button>
-        <button class="nav-item" onclick="navegarPara('agenda', this)">
-            <span class="nav-icon">📅</span><span>Agenda</span>
-        </button>
-        <button class="nav-item" onclick="navegarPara('dashboard', this)">
-            <span class="nav-icon">📊</span><span>Estatísticas</span>
-        </button>
+        <button class="nav-item-mob active" id="mob-home" onclick="navegarPara('home', this)"><span class="icon">📝</span><span>Registos</span></button>
+        <button class="nav-item-mob" id="mob-despesas" onclick="navegarPara('despesas', this)"><span class="icon">🛒</span><span>Despesas</span></button>
+        <button class="nav-item-mob" id="mob-agenda" onclick="navegarPara('agenda', this)"><span class="icon">📅</span><span>Agenda</span></button>
+        <button class="nav-item-mob" id="mob-dashboard" onclick="navegarPara('dashboard', this)"><span class="icon">📊</span><span>Estatística</span></button>
     </nav>
+
+    <!-- CONTENT -->
+    <main class="main-content">
+        <div class="app-container">
+            <header class="header">
+                <h1 style="margin:0; letter-spacing: -0.5px;">Gestão de Folhas</h1>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-acao btn-download" onclick="iniciarBackupCSV()">📥 CSV</button>
+                    <button class="btn-acao btn-download" style="background:#ff3b30;" onclick="preVisualizarPDF()">📄 PDF</button>
+                </div>
+            </header>
+            
+            <div class="summary-panel">
+                <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
+                <div class="summary-item"><span class="val" id="total_horas">0h 00m</span><span class="lab">Total Horas</span></div>
+                <div class="summary-item"><span class="val" id="total_ganho">0.00 €</span><span class="lab">Faturação Bruta</span></div>
+            </div>
+
+            <!-- FORMULÁRIO -->
+            <div class="form-centralized">
+                <div class="form-wrapper-inner">
+                    <div class="form-row-top">
+                        <div class="input-group"><label>Data</label><input type="date" id="data"></div>
+                        <div class="input-group" style="flex:0.5"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
+                        <div class="input-group"><label>Início</label><input type="time" id="hora_inicio"></div>
+                        <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
+                    </div>
+                    <div class="input-group">
+                        <label>Cliente</label>
+                        <input type="text" id="cliente" list="lista_clientes" placeholder="Ex: João Silva">
+                        <datalist id="lista_clientes"></datalist>
+                    </div>
+                    <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()">+ ADICIONAR REGISTO</button>
+                </div>
+            </div>
+
+            <button class="btn-toggle-finance" onclick="toggleFinancas()">💰 Ver Detalhes Financeiros</button>
+            <div class="finance-panel-wrapper" id="painel-financas">
+                <div class="finance-panel">
+                    <div class="finance-item">
+                        <span class="lab">Despesas</span>
+                        <span class="val" id="f_despesas_totais" style="font-size: 18px; margin: 3px 0; font-weight:bold;">0.00 €</span>
+                        <button class="btn-acao" style="background:#ff3b30; padding:4px 10px; font-size:10px; color:white; border:none;" onclick="abrirModalDespesa()">Adicionar</button>
+                    </div>
+                    <div class="finance-item">
+                        <span class="lab">IRS (%)</span>
+                        <input type="number" id="inp_irs" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
+                    </div>
+                    <div class="finance-item">
+                        <span class="lab">SS (%)</span>
+                        <input type="number" id="inp_ss" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
+                    </div>
+                    <div class="finance-item result-item">
+                        <span class="lab">Impostos</span>
+                        <span class="val" id="f_impostos" style="font-size: 18px; font-weight:bold;">0.00 €</span>
+                    </div>
+                    <div class="finance-item result-item highlight">
+                        <span class="lab">Líquido</span>
+                        <span class="val" id="f_liquido" style="font-size: 18px; font-weight:bold;">0.00 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PESQUISA E FILTROS -->
+            <div class="search-filter-bar">
+                <div class="search-box">
+                    <span style="color:var(--text-muted); font-size:18px;">🔍</span>
+                    <input type="text" id="pesquisa_geral" placeholder="Pesquisar cliente..." oninput="redefinirPaginaE_Renderizar()">
+                </div>
+                <div class="filter-selects">
+                    <select id="filtro_mes" onchange="redefinirPaginaE_Renderizar()"><option value="todos">Mês: Todos</option></select>
+                    <select id="filtro_cliente" onchange="redefinirPaginaE_Renderizar()"><option value="todos">Cliente: Todos</option></select>
+                </div>
+            </div>
+
+            <!-- TABELA PAGINADA -->
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Valor/h</th><th>Total</th><th style="text-align:right">Ações</th></tr></thead>
+                    <tbody id="tabela_registos"></tbody>
+                </table>
+                <div class="pagination">
+                    <button class="btn-acao" id="btn_pag_ant" onclick="mudarPagina(-1)">← Anterior</button>
+                    <span id="paginacao_info" style="font-size:12px; font-weight:600; color:var(--text-muted);">Pág 1/1</span>
+                    <button class="btn-acao" id="btn_pag_prox" onclick="mudarPagina(1)">Próxima →</button>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <!-- MODAL DE AGENDA -->
     <div id="modal-agenda" class="modal-overlay">
-        <!-- (Mantido igual ao anterior) -->
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header"><h2 id="titulo_modal_agenda">📅 Agenda de Compromissos</h2></div>
             <div class="modal-body">
-                <div class="quick-add-box">
-                    <h3 id="titulo_form_agenda" style="margin-top:0; font-size:14px; color:var(--text-muted); text-transform:uppercase;">Novo Evento</h3>
+                <div style="background:var(--hover-bg); padding:15px; border-radius:12px; border:1px dashed rgba(0,122,255,0.3); margin-bottom: 20px;">
+                    <h3 id="titulo_form_agenda" style="margin-top:0; font-size:14px; color:var(--accent-color); text-transform:uppercase;">Novo Evento</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
                         <div class="input-group" style="flex: 1;"><label>Data</label><input type="date" id="a_data"></div>
                         <div class="input-group" style="flex: 1;"><label>Hora</label><input type="time" id="a_hora"></div>
-                        <div class="input-group" style="flex: 2; min-width: 200px;"><label>Cliente / Evento</label><input type="text" id="a_titulo" placeholder="Ex: Reunião de Alinhamento"></div>
+                        <div class="input-group" style="flex: 2; min-width: 200px;"><label>Evento / Cliente</label><input type="text" id="a_titulo" placeholder="Reunião João Silva"></div>
                     </div>
                     <div style="display:flex; gap:10px;">
                         <button class="btn-cancel" id="btn_cancelar_agenda" onclick="limparFormularioAgenda()" style="display:none; flex:1;">Cancelar Edição</button>
                         <button class="btn-confirm" id="btn_guardar_agenda" onclick="guardarAgenda()" style="flex:3;">+ Guardar na Agenda</button>
                     </div>
                 </div>
-                <h3 style="font-size:14px; color:var(--text-muted); text-transform:uppercase; margin-bottom: 10px;">Próximos Eventos</h3>
-                <div class="table-container" style="background:var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+                <h3 style="font-size:13px; color:var(--text-muted); text-transform:uppercase; margin-bottom: 10px;">Próximos Eventos</h3>
+                <div class="table-container" style="box-shadow:none;">
                     <table>
-                        <thead><tr><th>Data</th><th>Hora</th><th>Evento</th><th>Ações</th></tr></thead>
+                        <thead><tr><th>Data</th><th>Hora</th><th>Evento</th><th style="text-align:right">Ações</th></tr></thead>
                         <tbody id="lista_agenda_corpo"></tbody>
                     </table>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-agenda'); limparFormularioAgenda(); sincronizarNavHome();">Fechar/Voltar</button>
+                <button class="btn-cancel" onclick="fecharModal('modal-agenda'); sincronizarNavHome();">Fechar/Voltar</button>
             </div>
         </div>
     </div>
@@ -286,11 +371,14 @@
     <!-- MODAL HISTÓRICO DE DESPESAS -->
     <div id="modal-lista-despesas" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header"><h2>📋 Histórico de Despesas Registadas</h2></div>
+            <div class="modal-header">
+                <h2>📋 Central de Despesas</h2>
+                <button class="btn-confirm" style="font-size:12px; padding:8px 12px;" onclick="abrirModalDespesa()">+ Nova Despesa</button>
+            </div>
             <div class="modal-body" style="padding:0;">
-                <div class="table-container" style="padding: 15px;">
+                <div class="table-container" style="margin: 15px; box-shadow:none;">
                     <table>
-                        <thead><tr><th>Data</th><th>Cat.</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr></thead>
+                        <thead><tr><th>Data</th><th>Cat.</th><th>Descrição</th><th>Valor</th><th style="text-align:right">Ações</th></tr></thead>
                         <tbody id="lista_despesas_corpo"></tbody>
                     </table>
                 </div>
@@ -302,9 +390,9 @@
     </div>
 
     <!-- MODAL ADICIONAR / EDITAR DESPESA -->
-    <div id="modal-despesa" class="modal-overlay">
+    <div id="modal-despesa" class="modal-overlay" style="z-index: 2500;">
         <div class="modal-content" style="max-width: 450px; height: auto;">
-            <div class="modal-header"><h2 id="titulo_modal_despesa">🛒 Registar Nova Despesa</h2></div>
+            <div class="modal-header"><h2 id="titulo_modal_despesa">🛒 Nova Despesa</h2></div>
             <div class="modal-body">
                 <div class="input-group" style="margin-bottom:15px;"><label>Data</label><input type="date" id="d_data"></div>
                 <div class="input-group" style="margin-bottom:15px;"><label>Categoria</label>
@@ -316,12 +404,12 @@
                         <option value="Outros">Outros</option>
                     </select>
                 </div>
-                <div class="input-group" style="margin-bottom:15px;"><label>Descrição (Opcional)</label><input type="text" id="d_descricao" placeholder="Ex: Combustível Galp, Almoço..."></div>
-                <div class="input-group" style="margin-bottom:15px;"><label>Valor Gasto (€)</label><input type="number" id="d_valor" step="0.01"></div>
+                <div class="input-group" style="margin-bottom:15px;"><label>Descrição Opcional</label><input type="text" id="d_descricao" placeholder="Ex: Galp A1"></div>
+                <div class="input-group" style="margin-bottom:15px;"><label>Total Pago (€)</label><input type="number" id="d_valor" step="0.01" style="font-size:20px; font-weight:bold;"></div>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="fecharModal('modal-despesa')">Cancelar</button>
-                <button class="btn-confirm" onclick="guardarDespesa()">Guardar Despesa</button>
+                <button class="btn-confirm" onclick="guardarDespesa()">Gravar</button>
             </div>
         </div>
     </div>
@@ -329,45 +417,36 @@
     <!-- MODAL PRÉ-VISUALIZAÇÃO DO PDF -->
     <div id="modal-pdf" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header"><h2>Pré-visualização do Relatório</h2></div>
-            <div class="modal-body" style="padding:0;"><iframe id="pdf-preview-frame"></iframe></div>
+            <div class="modal-header"><h2>📄 Visualizador PDF</h2></div>
+            <div class="modal-body" style="padding:0; background:#cacaca;"><iframe id="pdf-preview-frame" style="width:100%; height:100%; border:none;"></iframe></div>
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-pdf')">Cancelar</button>
-                <button class="btn-save-pdf" onclick="gravarPDFFinal()">Transferir PDF</button>
+                <button class="btn-cancel" onclick="fecharModal('modal-pdf')">Anular</button>
+                <button class="btn-confirm" onclick="gravarPDFFinal()">Descarregar Ficheiro</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO ELEGANTE -->
-    <div id="modal-confirm" class="modal-overlay">
-        <div class="modal-content" style="height: auto; max-width: 400px; padding: 20px;">
-            <div id="modal-title" style="font-weight: bold; font-size: 18px; margin-bottom: 10px; text-align: center;">Atenção</div>
-            <div id="modal-text" style="font-size: 15px; margin-bottom: 20px; text-align: center; color: var(--text-muted);">Tem a certeza que pretende executar esta ação?</div>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button class="btn-cancel" onclick="fecharModal('modal-confirm')">Cancelar</button>
-                <button id="btn-confirm-action" class="btn-confirm" style="background: #ff3b30;">Confirmar</button>
+    <!-- MODAL DE CONFIRMAÇÃO -->
+    <div id="modal-confirm" class="modal-overlay" style="z-index: 3000;">
+        <div class="modal-content" style="height: auto; max-width: 400px; padding: 25px;">
+            <div id="modal-title" style="font-weight: 800; font-size: 18px; margin-bottom: 12px; text-align: center;">Atenção</div>
+            <div id="modal-text" style="font-size: 14px; margin-bottom: 25px; text-align: center; color: var(--text-muted); line-height: 1.5;">Tem a certeza?</div>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="btn-cancel" style="flex:1" onclick="fecharModal('modal-confirm')">Cancelar</button>
+                <button id="btn-confirm-action" class="btn-confirm" style="flex:1; background: #ff3b30;">Apagar Definitivo</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DO DASHBOARD / ESTATÍSTICAS -->
+    <!-- MODAL DASHBOARD -->
     <div id="modal-dashboard" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header"><h2>📊 Painel Estatístico</h2></div>
+            <div class="modal-header"><h2>📈 Estatísticas Financeiras</h2></div>
             <div class="modal-body">
                 <div class="dashboard-grid">
-                    <div class="chart-container">
-                        <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Faturação por Cliente</h3>
-                        <div class="chart-wrapper"><canvas id="graficoClientes"></canvas></div>
-                    </div>
-                    <div class="chart-container">
-                        <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Horas por Mês</h3>
-                        <div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div>
-                    </div>
-                    <div class="chart-container" style="grid-column: 1 / -1;">
-                        <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Despesas por Categoria</h3>
-                        <div class="chart-wrapper"><canvas id="graficoDespesas"></canvas></div>
-                    </div>
+                    <div class="chart-container"><h3 style="margin-top:0; font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Volume por Cliente</h3><div class="chart-wrapper"><canvas id="graficoClientes"></canvas></div></div>
+                    <div class="chart-container"><h3 style="margin-top:0; font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Horas Lançadas (Mês)</h3><div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div></div>
+                    <div class="chart-container" style="grid-column: 1 / -1;"><h3 style="margin-top:0; font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Distribuição de Despesas</h3><div class="chart-wrapper"><canvas id="graficoDespesas"></canvas></div></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -377,555 +456,410 @@
     </div>
 
     <!-- ========================================== -->
-    <!--         CORPO PRINCIPAL DA APLICAÇÃO       -->
-    <!-- ========================================== -->
-    <div class="app-container">
-        <div class="header">
-            <h1 style="margin:0;">Gestão de Horas</h1>
-            <div style="display: flex; align-items: center;">
-                <button class="theme-btn" onclick="alternarTema()">☀️/🌙</button>
-                <button class="theme-btn" onclick="sairApp()" style="margin-left: 10px; font-size: 20px;" title="Terminar Sessão">🚪</button>
-            </div>
-        </div>
-        
-        <!-- --- NOVO FORMULÁRIO CENTRALIZADO --- -->
-        <div class="form-centralized">
-            <div class="form-wrapper-inner">
-                <!-- Linha 1: Fica centrada -->
-                <div class="form-row-top">
-                    <div class="input-group"><label>Data</label><input type="date" id="data"></div>
-                    <div class="input-group"><label>Preço/h</label><input type="number" id="taxa_hora" class="preco-input" step="0.5"></div>
-                    <div class="input-group"><label>Início</label><input type="time" id="hora_inicio"></div>
-                    <div class="input-group"><label>Fim</label><input type="time" id="hora_fim"></div>
-                </div>
-                <!-- Linha 2: Cliente acompanha 100% da largura da Linha 1 -->
-                <div class="form-row-bottom">
-                    <div class="input-group">
-                        <label>Cliente</label>
-                        <input type="text" id="cliente" list="lista_clientes" placeholder="Ex: João Silva" style="width: 100%;">
-                        <datalist id="lista_clientes"></datalist>
-                    </div>
-                </div>
-                <!-- Botão acompanha 100% da largura -->
-                <button class="btn-add" id="btn_submit" onclick="adicionarRegisto()" style="width: 100%;">ADICIONAR REGISTO</button>
-            </div>
-        </div>
-
-        <div class="summary-panel">
-            <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
-            <div class="summary-item"><span class="val" id="total_horas">0h</span><span class="lab">Total Horas</span></div>
-            <div class="summary-item">
-                <span class="val" id="total_ganho">0.00 €</span><span class="lab">Faturação Bruta</span>
-                <div class="botoes-topo">
-                    <button class="btn-acao btn-pdf" onclick="preVisualizarPDF()">📄 PDF</button>
-                    <button class="btn-acao btn-csv" onclick="iniciarBackupCSV()">📥 CSV</button>
-                    <button class="btn-acao btn-graficos" onclick="abrirDashboard()">📊 Estatística</button>
-                    <button class="btn-acao btn-ver-despesas" onclick="abrirModalListaDespesas()">📋 Despesas</button>
-                    <button class="btn-acao btn-agenda" onclick="abrirModalAgenda()">📅 Agenda</button>
-                </div>
-            </div>
-        </div>
-
-        <button class="btn-toggle-finance" onclick="toggleFinancas()">💰 Mostrar Detalhes Financeiros</button>
-
-        <div class="finance-panel-wrapper" id="painel-financas">
-            <div class="finance-panel">
-                <div class="finance-item">
-                    <span class="lab">Despesas</span>
-                    <span class="val" id="f_despesas_totais" style="font-size: 16px; margin: 3px 0;">0.00 €</span>
-                    <button class="btn-acao" style="background:#ff3b30; width:95%; padding:4px; font-size:9px;" onclick="abrirModalDespesa()">Registar</button>
-                </div>
-                <div class="finance-item">
-                    <span class="lab">IRS (%)</span>
-                    <input type="number" id="inp_irs" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
-                </div>
-                <div class="finance-item">
-                    <span class="lab">SS (%)</span>
-                    <input type="number" id="inp_ss" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
-                </div>
-                <div class="finance-item result-item">
-                    <span class="lab">Impostos</span>
-                    <span class="val" id="f_impostos" style="font-size: 16px;">0.00 €</span>
-                </div>
-                <div class="finance-item result-item highlight">
-                    <span class="lab">Líquido</span>
-                    <span class="val" id="f_liquido" style="font-size: 16px;">0.00 €</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="filter-panel">
-            <select id="filtro_mes" onchange="renderizarTabela()"><option value="todos">Todos os Meses</option></select>
-            <select id="filtro_cliente" onchange="renderizarTabela()"><option value="todos">Todos os Clientes</option></select>
-        </div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Cliente</th>
-                        <th>Início</th>
-                        <th>Fim</th>
-                        <th>Duração</th>
-                        <th>Valor/h</th>
-                        <th>Valor</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela_registos"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!--               MOTOR JAVASCRIPT             -->
+    <!--         MOTOR JAVASCRIPT INTELIGENTE       -->
     <!-- ========================================== -->
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxp9k3cZ8KtDKwPziD7gStD1596mz2SPVo1TLC7hB3fo3VUNknwRaRySKXGiFPm4W5amQ/exec";
         
-        let registos = []; 
-        let despesasRegistadas = []; 
-        let agendaRegistada = []; 
-        let idEmEdicao = null; 
-        let idEmEdicaoDespesa = null; 
-        let idEmEdicaoAgenda = null; 
-        let documentoPDFFinal = null; 
-        let nomePDFFinal = ""; 
-        let chartClientesInst = null; 
-        let chartMesesInst = null; 
-        let chartDespesasInst = null;
+        let registos = []; let despesasRegistadas = []; let agendaRegistada = []; 
+        let idEmEdicao = null; let idEmEdicaoDespesa = null; let idEmEdicaoAgenda = null;
+        let documentoPDFFinal = null; let nomePDFFinal = ""; 
+        let chartClientesInst=null, chartMesesInst=null, chartDespesasInst=null;
+        
+        // Paginação
+        let paginaAtual = 1;
+        const ITENS_POR_PAGINA = 15;
         
         let pinApp = localStorage.getItem('app_pin') || '';
 
-        if ('serviceWorker' in navigator) { 
-            navigator.serviceWorker.register('sw.js').then(reg => reg.update()); 
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(reg => reg.update()); 
+
+        // --- SISTEMAS DE NOTIFICAÇÃO E LOADERS ---
+        function showToast(msg, isSync = false) {
+            const t = document.createElement('div');
+            t.className = 'toast ' + (isSync ? 'sync' : '');
+            t.innerHTML = (isSync ? '☁️ ' : 'ℹ️ ') + msg;
+            document.getElementById('toast-container').appendChild(t);
+            setTimeout(() => t.classList.add('show'), 10);
+            setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, isSync ? 2000 : 3000);
         }
 
-        // --- SISTEMA INTERFACES CARREGAMENTO ---
-        function setCarregando(ativo, mensagem = "A processar...") {
-            const loader = document.getElementById('global-loader');
-            const loaderText = document.getElementById('loader-text');
-            if (ativo) { 
-                loaderText.innerText = mensagem; 
-                loader.classList.add('active'); 
-            } else { 
-                loader.classList.remove('active'); 
-            }
+        function setSyncBackground(ativo) {
+            const ind = document.getElementById('sync-indicador');
+            if (ativo) ind.classList.add('active'); else ind.classList.remove('active');
         }
 
-        // --- LÓGICA DO TECLADO VIRTUAL ---
-        function teclarPIN(numero) {
-            const input = document.getElementById('pin-input');
-            if (input.value.length < 8) { 
-                input.value += numero;
-                document.getElementById('pin-error-msg').style.display = 'none';
-                input.classList.remove('shake-error');
-            }
-        }
+        // --- TECLADO VIRTUAL PIN ---
+        function teclarPIN(num) { const i = document.getElementById('pin-input'); if(i.value.length < 8) { i.value+=num; document.getElementById('pin-error-msg').style.display='none'; } }
+        function limparPIN() { document.getElementById('pin-input').value=''; document.getElementById('pin-error-msg').style.display='none'; }
+        function apagarUltimoPIN() { const i = document.getElementById('pin-input'); i.value=i.value.slice(0,-1); document.getElementById('pin-error-msg').style.display='none'; }
 
-        function limparPIN() {
-            document.getElementById('pin-input').value = '';
-            document.getElementById('pin-error-msg').style.display = 'none';
-        }
-
-        function apagarUltimoPIN() {
-            const input = document.getElementById('pin-input');
-            input.value = input.value.slice(0, -1);
-            document.getElementById('pin-error-msg').style.display = 'none';
-        }
-
-        // --- AUTENTICAÇÃO PIN ---
         async function verificarPinLogin() {
             const p = document.getElementById('pin-input').value;
-            if(!p) { showToast("Insira o PIN!"); return; }
-            pinApp = p;
-            localStorage.setItem('app_pin', pinApp);
-            await iniciarAppApósLogin();
+            if(!p) { showToast("Insira o código."); return; }
+            pinApp = p; localStorage.setItem('app_pin', pinApp);
+            await carregarAppBoot();
         }
 
-        async function iniciarAppApósLogin() {
-            const sucesso = await carregarDadosDoGoogle();
-            const erroMsg = document.getElementById('pin-error-msg');
-            const input = document.getElementById('pin-input');
-
-            if (sucesso) {
-                document.getElementById('login-overlay').classList.add('hidden');
-                erroMsg.style.display = 'none';
-                renderizarTabela();
-            } else {
-                document.getElementById('login-overlay').classList.remove('hidden');
-                erroMsg.style.display = 'block';
-                input.classList.add('shake-error');
-                
-                setTimeout(() => { input.classList.remove('shake-error'); }, 400); 
-
-                pinApp = '';
-                localStorage.removeItem('app_pin');
-                input.value = ''; 
-            }
-        }
-        
         function sairApp() {
-            pinApp = '';
-            localStorage.removeItem('app_pin');
+            pinApp = ''; localStorage.removeItem('app_pin');
+            localStorage.removeItem('app_cache');
             document.getElementById('login-overlay').classList.remove('hidden');
-            document.getElementById('pin-input').value = '';
-            document.getElementById('pin-error-msg').style.display = 'none';
-            registos = []; despesasRegistadas = []; agendaRegistada = [];
+            limparPIN(); registos=[]; despesasRegistadas=[]; agendaRegistada=[];
             renderizarTabela();
         }
 
-        // --- CONTROLO NAVEGAÇÃO MOBILE ---
-        function navegarPara(seccao, botaoClick) {
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            if(botaoClick) botaoClick.classList.add('active');
-            fecharModal('modal-lista-despesas'); 
-            fecharModal('modal-agenda'); 
-            fecharModal('modal-dashboard');
-            if (seccao === 'home') { window.scrollTo({ top: 0, behavior: 'smooth' }); } 
-            else if (seccao === 'despesas') { abrirModalListaDespesas(); } 
-            else if (seccao === 'agenda') { abrirModalAgenda(); } 
-            else if (seccao === 'dashboard') { abrirDashboard(); }
-        }
-        
-        function sincronizarNavHome() {
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('.nav-item').classList.add('active'); 
-        }
-
-        function toggleFinancas() {
-            const painel = document.getElementById('painel-financas');
-            const btn = document.querySelector('.btn-toggle-finance');
-            if (painel.style.display === 'block') { 
-                painel.style.display = 'none'; 
-                btn.innerText = '💰 Mostrar Detalhes Financeiros'; 
-            } else { 
-                painel.style.display = 'block'; 
-                btn.innerText = '🔼 Ocultar Detalhes Financeiros'; 
+        // --- NAVEGAÇÃO / AMBIENTE DASHBOARD ---
+        function navegarPara(seccao, botao) {
+            document.querySelectorAll('.nav-item-desk, .nav-item-mob').forEach(b => b.classList.remove('active'));
+            if(botao) botao.classList.add('active');
+            fecharModal('modal-lista-despesas'); fecharModal('modal-agenda'); fecharModal('modal-dashboard');
+            
+            if (seccao === 'despesas') abrirModalListaDespesas();
+            else if (seccao === 'agenda') abrirModalAgenda();
+            else if (seccao === 'dashboard') abrirDashboard();
+            else { 
+                document.getElementById('mob-home').classList.add('active'); 
+                document.getElementById('menu-home').classList.add('active'); 
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
             }
         }
+        function sincronizarNavHome() { navegarPara('home'); }
+        function toggleFinancas() { const p = document.getElementById('painel-financas'), b = document.querySelector('.btn-toggle-finance'); if(p.style.display==='block') { p.style.display='none'; b.innerText='💰 Mostrar Detalhes Fnanceiros'; } else { p.style.display='block'; b.innerText='🔼 Ocultar Detalhes'; } }
+        function alternarTema() { const t = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('tema_final', t); if(chartClientesInst) gerarGraficos(); }
+        function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
 
-        function alternarTema() {
-            const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', t);
-            localStorage.setItem('tema_final', t);
-            if (chartClientesInst) gerarGraficos();
-        }
-
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.innerText = msg;
-            document.getElementById('toast-container').appendChild(t);
-            setTimeout(() => t.classList.add('show'), 10);
-            setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000);
-        }
-
-        // --- FORMATADORES ---
-        function formatDataBR(d) { if(!d) return '--'; return d.split('T')[0].split('-').reverse().join('/'); }
-        function formatDataParaInput(d) { if(!d) return ''; return d.split('T')[0]; }
-        function formatHora(h) {
-            if(!h) return '--';
-            if(h.includes('T')) {
-                const dataObj = new Date(h);
-                return dataObj.getHours().toString().padStart(2, '0') + ':' + dataObj.getMinutes().toString().padStart(2, '0');
-            }
-            return h.substring(0, 5) || '--:--';
-        }
-
-        function calcDiferenca(ini, fim) {
-            const [hI, mI] = ini.split(':').map(Number);
-            const [hF, mF] = fim.split(':').map(Number);
-            let totMin = (hF * 60 + mF) - (hI * 60 + mI);
-            if (totMin < 0) totMin += 24 * 60;
-            const h = Math.floor(totMin / 60);
-            return { texto: `${h}h ${(totMin % 60).toString().padStart(2,'0')}m`, mins: totMin, dec: h + ((totMin % 60)/60) };
-        }
+        // --- PREPARAÇÃO DE DADOS BÁSICA ---
+        function formatDataBR(d) { if(!d) return '--'; return String(d).split('T')[0].split('-').reverse().join('/'); }
+        function formatDataForm(d) { if(!d) return ''; return String(d).split('T')[0]; }
+        function formatHora(h) { if(!h) return '--:--'; if(String(h).includes('T')) { const obj = new Date(h); return obj.getHours().toString().padStart(2,'0')+':'+obj.getMinutes().toString().padStart(2,'0'); } return String(h).substring(0,5); }
+        function calcDiferenca(i, f) { const [hI,mI]=i.split(':').map(Number), [hF,mF]=f.split(':').map(Number); let tot=(hF*60+mF)-(hI*60+mI); if(tot<0) tot+=24*60; const h=Math.floor(tot/60); return { texto:`${h}h ${(tot%60).toString().padStart(2,'0')}m`, mins:tot, dec:h+((tot%60)/60) }; }
 
         function atualizarDropdownsFiltros() {
-            const clientesUnicos = [...new Set(registos.map(r => r.cliente).filter(c => c && c.trim() !== ''))].sort();
-            document.getElementById('lista_clientes').innerHTML = clientesUnicos.map(c => `<option value="${c}">`).join('');
+            const cls = [...new Set(registos.map(r => r.cliente).filter(c => c && c.trim() !== ''))].sort();
+            document.getElementById('lista_clientes').innerHTML = cls.map(c => `<option value="${c}">`).join('');
             
-            const selCliente = document.getElementById('filtro_cliente');
-            const clienteAtual = selCliente.value;
-            selCliente.innerHTML = '<option value="todos">Todos os Clientes</option>' + clientesUnicos.map(c => `<option value="${c}">${c}</option>`).join('');
-            if(clientesUnicos.includes(clienteAtual)) selCliente.value = clienteAtual;
+            const sC = document.getElementById('filtro_cliente'); const valC = sC.value;
+            sC.innerHTML = '<option value="todos">Cliente: Todos</option>' + cls.map(c => `<option value="${c}">${c}</option>`).join('');
+            if(cls.includes(valC)) sC.value = valC;
 
-            const mesesUnicos = [...new Set(registos.map(r => r.data ? r.data.split('T')[0].substring(0,7) : ''))].filter(m => m !== '').sort().reverse();
-            const selMes = document.getElementById('filtro_mes');
-            const mesAtual = selMes.value;
-            selMes.innerHTML = '<option value="todos">Todos os Meses</option>' + mesesUnicos.map(m => {
-                const [ano, mes] = m.split('-');
-                const nomeMes = new Date(ano, mes-1, 1).toLocaleString('pt-PT', { month: 'long' });
-                return `<option value="${m}">${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)} ${ano}</option>`;
-            }).join('');
-            if(mesesUnicos.includes(mesAtual)) selMes.value = mesAtual;
+            const mss = [...new Set(registos.map(r => r.data ? String(r.data).split('T')[0].substring(0,7) : ''))].filter(m=>m).sort().reverse();
+            const sM = document.getElementById('filtro_mes'); const valM = sM.value;
+            sM.innerHTML = '<option value="todos">Mês: Todos</option>' + mss.map(m => { const [a, ms] = m.split('-'); return `<option value="${m}">${new Date(a, ms-1).toLocaleString('pt-PT', {month:'short'})}/${a}</option>`; }).join('');
+            if(mss.includes(valM)) sM.value = valM;
         }
 
-        function obterRegistosFiltrados() {
-            const fMes = document.getElementById('filtro_mes').value;
-            const fCliente = document.getElementById('filtro_cliente').value;
-            let filtrados = [...registos].sort((a,b) => new Date(a.data ? a.data.split('T')[0] : '') - new Date(b.data ? b.data.split('T')[0] : ''));
-            return filtrados.filter(r => {
-                let passaMes = (fMes === 'todos' || (r.data && r.data.split('T')[0].substring(0,7) === fMes));
-                let passaCliente = (fCliente === 'todos' || r.cliente === fCliente);
-                return passaMes && passaCliente;
-            });
+        // --- SISTEMA OFFLINE FIRST & RENDERIZAÇÃO INSTANTÂNEA ---
+        async function carregarAppBoot() {
+            const cache = localStorage.getItem('app_cache');
+            if (cache) {
+                try { carregarListas(JSON.parse(cache)); } catch(e){} // Instant load from cache
+                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('pin-error-msg').style.display = 'none';
+            }
+            if(!navigator.onLine) { if(cache) showToast("A funcionar em modo Offline."); return; }
+            await puxarDaNuvem(!cache); // Call network silently if cached, blocking if no cache
         }
 
-        // --- CHAMADAS À BASE DE DADOS (API) ---
-        async function carregarDadosDoGoogle() {
-            if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) { showToast("ID do App Script ausente!"); return false; }
-            setCarregando(true, "A sincronizar dados da nuvem...");
+        async function puxarDaNuvem(bloqueante) {
+            if(bloqueante) setSyncBackground(true);
             try {
                 const res = await fetch(`${GOOGLE_SCRIPT_URL}?nocache=${Date.now()}&pin=${pinApp}`);
-                if(!res.ok) throw new Error("Erro de resposta do servidor");
                 const json = await res.json();
                 
-                if (json.erro && json.erro === "PIN incorreto") {
-                    return false;
+                if (json.erro === "PIN incorreto") {
+                    document.getElementById('login-overlay').classList.remove('hidden');
+                    document.getElementById('pin-error-msg').style.display = 'block';
+                    pinApp = ''; localStorage.removeItem('app_pin'); document.getElementById('pin-input').value='';
+                    return;
                 }
-                
-                const corrigirData = (r) => {
-                    if (r && r.data) {
-                        const strData = String(r.data);
-                        if (strData.includes('T')) {
-                            const dt = new Date(r.data);
-                            if(!isNaN(dt.getTime())) r.data = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
-                        }
-                    }
-                };
-                
-                if (Array.isArray(json)) {
-                    json.forEach(corrigirData); registos = json; despesasRegistadas = []; agendaRegistada = [];
-                } else if (json && typeof json === 'object') {
-                    if(json.registos && Array.isArray(json.registos)) { json.registos.forEach(corrigirData); registos = json.registos; }
-                    if(json.despesas && Array.isArray(json.despesas)) { json.despesas.forEach(corrigirData); despesasRegistadas = json.despesas; }
-                    if(json.agenda && Array.isArray(json.agenda)) { json.agenda.forEach(corrigirData); agendaRegistada = json.agenda; }
-                }
-                atualizarDropdownsFiltros();
-                return true;
-            } catch (e) { 
-                console.error(e); showToast("Não foi possível carregar os dados."); return false;
-            } finally { setCarregando(false); }
+                document.getElementById('login-overlay').classList.add('hidden');
+                localStorage.setItem('app_cache', JSON.stringify(json));
+                carregarListas(json);
+                if(bloqueante) showToast("Dados atualizados com sucesso", true);
+            } catch (e) {
+                console.error(e); if(bloqueante) showToast("Falha. A usar apenas memória local.");
+            } finally { setSyncBackground(false); }
+        }
+
+        function carregarListas(obj) {
+            const fix = (r) => { if (r.data && String(r.data).includes('T')) { const dt = new Date(r.data); if(!isNaN(dt.getTime())) r.data = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); } };
+            if(Array.isArray(obj)) { obj.forEach(fix); registos = obj; despesasRegistadas = []; agendaRegistada = []; } 
+            else if(obj) {
+                if(obj.registos) { obj.registos.forEach(fix); registos = obj.registos; }
+                if(obj.despesas) { obj.despesas.forEach(fix); despesasRegistadas = obj.despesas; }
+                if(obj.agenda)   { obj.agenda.forEach(fix); agendaRegistada = obj.agenda; }
+            }
+            atualizarDropdownsFiltros(); redefinirPaginaE_Renderizar();
+        }
+
+        // --- FILTROS E PAGINAÇÃO ---
+        function redefinirPaginaE_Renderizar() { paginaAtual = 1; renderizarTabela(); }
+        function mudarPagina(delta) { paginaAtual += delta; renderizarTabela(); }
+        
+        function obterRegistosFiltrados() {
+            const pGeral = document.getElementById('pesquisa_geral').value.toLowerCase();
+            const fMes = document.getElementById('filtro_mes').value;
+            const fCli = document.getElementById('filtro_cliente').value;
+            // Ordenação: MAIS RECENTES PRIMEIRO (descendente)
+            let filtrados = [...registos].sort((a,b) => new Date(b.data) - new Date(a.data));
+            
+            return filtrados.filter(r => {
+                let p = pGeral === "" || (r.cliente && r.cliente.toLowerCase().includes(pGeral));
+                let m = fMes === 'todos' || (r.data && String(r.data).substring(0,7) === fMes);
+                let c = fCli === 'todos' || r.cliente === fCli;
+                return p && m && c;
+            });
         }
 
         function renderizarTabela() {
             const tbody = document.getElementById('tabela_registos'); tbody.innerHTML = '';
-            const registosExibidos = obterRegistosFiltrados();
+            const todosFiltrados = obterRegistosFiltrados();
+            
+            // Calculos globais
             let sMin=0, sVal=0; const dias = new Set();
-            registosExibidos.forEach(r => {
-                if(r.data) dias.add(r.data.split('T')[0]);
-                sMin += parseInt(r.minutosTotais||0);
-                sVal += parseFloat(r.valorGasto||0);
-                
+            todosFiltrados.forEach(r => { if(r.data) dias.add(r.data); sMin += parseInt(r.minutosTotais||0); sVal += parseFloat(r.valorGasto||0); });
+            document.getElementById('total_dias').innerText = dias.size; document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`; document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
+            
+            // Aplicação da Paginação
+            const totalPags = Math.ceil(todosFiltrados.length / ITENS_POR_PAGINA) || 1;
+            if(paginaAtual < 1) paginaAtual = 1; if(paginaAtual > totalPags) paginaAtual = totalPags;
+            document.getElementById('paginacao_info').innerText = `Pág ${paginaAtual}/${totalPags}`;
+            document.getElementById('btn_pag_ant').disabled = paginaAtual === 1;
+            document.getElementById('btn_pag_prox').disabled = paginaAtual === totalPags;
+
+            const slice = todosFiltrados.slice((paginaAtual-1)*ITENS_POR_PAGINA, paginaAtual*ITENS_POR_PAGINA);
+            if(slice.length === 0) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Sem registos encontrados.</td></tr>';
+            
+            slice.forEach(r => {
                 tbody.innerHTML += `<tr>
                     <td data-label="Data">${formatDataBR(r.data)}</td>
                     <td data-label="Cliente"><strong>${r.cliente || '--'}</strong></td>
                     <td data-label="Início">${formatHora(r.inicio)}</td>
                     <td data-label="Fim">${formatHora(r.fim)}</td>
-                    <td data-label="Duração">${r.duracaoTexto||'--'}</td>
+                    <td data-label="Duração"><span style="background:var(--input-bg); padding:4px 8px; border-radius:6px; font-weight:600; font-size:12px; border:1px solid var(--border-color);">${r.duracaoTexto||'--'}</span></td>
                     <td data-label="Valor/h">${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
-                    <td data-label="Total"><strong>${parseFloat(r.valorGasto||0).toFixed(2)}€</strong></td>
+                    <td data-label="Total" style="color:var(--accent-color); font-weight:bold;">${parseFloat(r.valorGasto||0).toFixed(2)}€</td>
                     <td class="action-btns">
                         <button class="edit-btn" onclick="editarRegisto('${r.id}')">✏️</button>
-                        <button class="delete-btn" onclick="apagarRegisto('${r.id}', 'este registo de horas')">🗑️</button>
+                        <button class="delete-btn" onclick="perguntarRemover('${r.id}', 'este registo de horas', 'registos')">🗑️</button>
                     </td>
                 </tr>`;
             });
-            document.getElementById('total_dias').innerText = dias.size;
-            document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`;
-            document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
             calcularFinancas();
         }
 
-        function calcularFinancas() {
-            const fMes = document.getElementById('filtro_mes').value;
-            let despesasFiltradas = despesasRegistadas;
-            if(fMes !== 'todos') despesasFiltradas = despesasRegistadas.filter(d => d.data && d.data.substring(0,7) === fMes);
-            const totalDespesasReais = despesasFiltradas.reduce((soma, d) => soma + parseFloat(d.valor || 0), 0);
-            document.getElementById('f_despesas_totais').innerText = totalDespesasReais.toFixed(2) + ' €';
-            const bruto = parseFloat(document.getElementById('total_ganho').innerText.replace('€', '').trim()) || 0;
-            const irs = (parseFloat(document.getElementById('inp_irs').value) || 0) / 100;
-            const ss = (parseFloat(document.getElementById('inp_ss').value) || 0) / 100;
-            const totalImpostos = bruto * (irs + ss);
-            const liquido = bruto - totalDespesasReais - totalImpostos;
-            document.getElementById('f_impostos').innerText = totalImpostos.toFixed(2) + ' €';
-            document.getElementById('f_liquido').innerText = liquido.toFixed(2) + ' €';
-            localStorage.setItem('tx_irs', document.getElementById('inp_irs').value);
-            localStorage.setItem('tx_ss', document.getElementById('inp_ss').value);
+        // --- SISTEMA OPTIMISTIC PARA REGISTOS (MÁXIMA VELOCIDADE) ---
+        function editarRegisto(id) {
+            const r = registos.find(x => String(x.id) === String(id)); if (!r) return;
+            document.getElementById('data').value = formatDataForm(r.data); document.getElementById('cliente').value = r.cliente || ''; document.getElementById('hora_inicio').value = formatHora(r.inicio); document.getElementById('hora_fim').value = formatHora(r.fim); document.getElementById('taxa_hora').value = r.taxaUsada;
+            idEmEdicao = id; const btn = document.getElementById('btn_submit'); btn.innerText = "GRAVAR ALTERAÇÕES"; btn.style.backgroundColor = "#ff9500"; window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function adicionarRegisto() {
+            const d=document.getElementById('data').value, cli=document.getElementById('cliente').value, i=document.getElementById('hora_inicio').value, f=document.getElementById('hora_fim').value, t=parseFloat(document.getElementById('taxa_hora').value);
+            if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos obrigatórios."); return; }
+            const c = calcDiferenca(i,f);
+            const req = { pin: pinApp, tipo: 'registo', id: idEmEdicao || 'R_'+Date.now(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec*t, cliente: cli };
+            
+            // 1. Atualizar Front-end (Instantâneo)
+            const idx = registos.findIndex(x => String(x.id) === String(req.id));
+            if(idx > -1) registos[idx] = req; else registos.unshift(req); // põe no topo
+            
+            localStorage.setItem('taxa_hora_guardada', t);
+            idEmEdicao = null; const btn = document.getElementById('btn_submit'); btn.innerText = "+ ADICIONAR REGISTO"; btn.style.backgroundColor = ""; 
+            ['cliente','hora_inicio','hora_fim'].forEach(x=>document.getElementById(x).value='');
+            
+            atualizarDropdownsFiltros();
+            renderizarTabela();
+            
+            // 2. Enviar para Traseiras
+            sincronizarAlteracao(req, "Registo guardado com sucesso.");
         }
 
-        // --- LOGICA DA AGENDA COMPROMISSOS ---
-        function abrirModalAgenda() { limparFormularioAgenda(); renderizarAgenda(); document.getElementById('modal-agenda').classList.add('show'); }
-        function limparFormularioAgenda() { idEmEdicaoAgenda = null; document.getElementById('titulo_form_agenda').innerText = "Novo Evento"; document.getElementById('a_data').valueAsDate = new Date(); document.getElementById('a_hora').value = ''; document.getElementById('a_titulo').value = ''; document.getElementById('btn_guardar_agenda').innerText = "+ Guardar na Agenda"; document.getElementById('btn_cancelar_agenda').style.display = "none"; }
-        function renderizarAgenda() {
-            const corpo = document.getElementById('lista_agenda_corpo'); corpo.innerHTML = '';
-            let agendaOrdenada = [...agendaRegistada].sort((a,b) => new Date(a.data) - new Date(b.data));
-            if(agendaOrdenada.length === 0) { corpo.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Sem eventos futuros.</td></tr>`; return; }
-            agendaOrdenada.forEach(a => {
-                corpo.innerHTML += `<tr>
-                    <td data-label="Data">${formatDataBR(a.data)}</td>
-                    <td data-label="Hora">${a.hora || '--:--'}</td>
-                    <td data-label="Evento"><strong>${a.titulo}</strong></td>
-                    <td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${a.id}', 'este evento da agenda')">🗑️</button></td>
-                </tr>`;
-            });
-        }
-        function editarAgenda(id) {
-            const evento = agendaRegistada.find(a => String(a.id) === String(id));
-            if(!evento) return;
-            idEmEdicaoAgenda = id; document.getElementById('titulo_form_agenda').innerText = "✏️ Editar Evento"; document.getElementById('a_data').value = formatDataParaInput(evento.data); document.getElementById('a_hora').value = formatHora(evento.hora) !== '--:--' ? formatHora(evento.hora) : ''; document.getElementById('a_titulo').value = evento.titulo; document.getElementById('btn_guardar_agenda').innerText = "Atualizar Evento"; document.getElementById('btn_cancelar_agenda').style.display = "block";
-        }
-        async function guardarAgenda() {
-            const d = document.getElementById('a_data').value; const h = document.getElementById('a_hora').value; const t = document.getElementById('a_titulo').value;
-            if(!d || !t) { showToast("Preencha a Data e o Nome do Evento!"); return; }
-            const req = { pin: pinApp, tipo: 'agenda', id: idEmEdicaoAgenda || 'A'+Date.now().toString(), data: d, hora: h, titulo: t };
-            setCarregando(true, "A comunicar com Google Calendar...");
-            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); renderizarAgenda(); limparFormularioAgenda(); showToast("Evento guardado!"); } catch(e) { showToast("Erro de rede"); } finally { setCarregando(false); }
-        }
-
-        // --- GESTÃO GERAL DESPESAS ---
+        // --- SISTEMA OPTIMISTIC DESPESAS ---
         function abrirModalListaDespesas() {
-            const corpo = document.getElementById('lista_despesas_corpo'); corpo.innerHTML = '';
-            if(despesasRegistadas.length === 0) { corpo.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Sem despesas registadas.</td></tr>`; }
-            despesasRegistadas.forEach(d => {
-                corpo.innerHTML += `<tr>
-                    <td data-label="Data">${formatDataBR(d.data)}</td>
-                    <td data-label="Categoria">${d.categoria}</td>
-                    <td data-label="Descrição">${d.descricao}</td>
-                    <td data-label="Valor">${parseFloat(d.valor).toFixed(2)}€</td>
-                    <td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${d.id}', 'esta despesa')">🗑️</button></td>
-                </tr>`;
+            const corp = document.getElementById('lista_despesas_corpo'); corp.innerHTML='';
+            let tds = [...despesasRegistadas].sort((a,b) => new Date(b.data) - new Date(a.data));
+            if(tds.length===0) corp.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:var(--text-muted);">Sem despesas na cloud.</td></tr>`;
+            tds.forEach(d => {
+                corp.innerHTML += `<tr><td data-label="Data">${formatDataBR(d.data)}</td><td data-label="Cat">${d.categoria}</td><td data-label="Desc">${d.descricao}</td><td data-label="Valor"><strong>${parseFloat(d.valor).toFixed(2)}€</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button><button class="delete-btn" onclick="perguntarRemover('${d.id}', 'esta despesa', 'despesasRegistadas')">🗑️</button></td></tr>`;
             });
             document.getElementById('modal-lista-despesas').classList.add('show');
         }
-        function abrirModalDespesa() {
-            idEmEdicaoDespesa = null; document.getElementById('titulo_modal_despesa').innerText = "🛒 Registar Despesa"; document.getElementById('d_data').valueAsDate = new Date(); document.getElementById('d_valor').value = ''; document.getElementById('d_descricao').value = ''; document.getElementById('modal-despesa').classList.add('show');
-        }
-        function editarDespesa(id) {
-            const despesa = despesasRegistadas.find(d => String(d.id) === String(id));
-            if(!despesa) return;
-            idEmEdicaoDespesa = id; document.getElementById('titulo_modal_despesa').innerText = "✏️ Editar Despesa"; document.getElementById('d_data').value = formatDataParaInput(despesa.data); document.getElementById('d_categoria').value = despesa.categoria; document.getElementById('d_descricao').value = despesa.descricao; document.getElementById('d_valor').value = despesa.valor; document.getElementById('modal-despesa').classList.add('show');
-        }
-        async function guardarDespesa() {
-            const d = document.getElementById('d_data').value; const cat = document.getElementById('d_categoria').value; const desc = document.getElementById('d_descricao').value; const val = parseFloat(document.getElementById('d_valor').value);
-            if(!d || isNaN(val)) { showToast("Preencha data e valor corretamente!"); return; }
-            const req = { pin: pinApp, tipo: 'despesa', id: idEmEdicaoDespesa || 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
-            setCarregando(true, "A registar despesa...");
-            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); fecharModal('modal-despesa'); abrirModalListaDespesas(); renderizarTabela(); showToast("Despesa guardada!"); } catch(e) { showToast("Erro ao guardar"); } finally { setCarregando(false); }
+        function abrirModalDespesa() { idEmEdicaoDespesa=null; document.getElementById('titulo_modal_despesa').innerText="🛒 Nova Despesa"; document.getElementById('d_data').valueAsDate=new Date(); document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; document.getElementById('modal-despesa').classList.add('show'); }
+        function editarDespesa(id) { const d = despesasRegistadas.find(x => String(x.id) === String(id)); if(!d) return; idEmEdicaoDespesa=id; document.getElementById('titulo_modal_despesa').innerText="✏️ Atualizar Despesa"; document.getElementById('d_data').value=formatDataForm(d.data); document.getElementById('d_categoria').value=d.categoria; document.getElementById('d_descricao').value=d.descricao; document.getElementById('d_valor').value=d.valor; document.getElementById('modal-despesa').classList.add('show'); }
+        
+        function guardarDespesa() {
+            const d=document.getElementById('d_data').value, cat=document.getElementById('d_categoria').value, desc=document.getElementById('d_descricao').value, val=parseFloat(document.getElementById('d_valor').value);
+            if(!d || isNaN(val)) { showToast("Preencha data e valor!"); return; }
+            const req = { pin: pinApp, tipo: 'despesa', id: idEmEdicaoDespesa || 'D_'+Date.now(), data: d, categoria: cat, descricao: desc, valor: val };
+            
+            const idx = despesasRegistadas.findIndex(x => String(x.id) === String(req.id));
+            if(idx > -1) despesasRegistadas[idx] = req; else despesasRegistadas.unshift(req);
+            
+            fecharModal('modal-despesa');
+            abrirModalListaDespesas();
+            calcularFinancas();
+            sincronizarAlteracao(req, "Despesa arquivada.");
         }
 
-        // --- SISTEMAS DE CONFIRMAÇÃO E SUPRESSÃO ---
-        function confirmarAcao(titulo, mensagem, corBotao, textoBotao, callbackConfirmar) {
-            document.getElementById('modal-title').innerText = titulo; document.getElementById('modal-text').innerText = mensagem;
-            const btn = document.getElementById('btn-confirm-action'); btn.style.background = corBotao; btn.innerText = textoBotao;
-            const newBtn = btn.cloneNode(true); btn.parentNode.replaceChild(newBtn, btn);
-            newBtn.onclick = () => { fecharModal('modal-confirm'); callbackConfirmar(); };
+        // --- SISTEMA OPTIMISTIC AGENDA ---
+        function abrirModalAgenda() { limparFormularioAgenda(); renderizarAgenda(); document.getElementById('modal-agenda').classList.add('show'); }
+        function limparFormularioAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerText="Novo Evento"; document.getElementById('a_data').valueAsDate=new Date(); document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; document.getElementById('btn_guardar_agenda').innerText="+ Guardar na Agenda"; document.getElementById('btn_cancelar_agenda').style.display="none"; }
+        function renderizarAgenda() {
+            const crp = document.getElementById('lista_agenda_corpo'); crp.innerHTML='';
+            let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data)); // Eventos por ordem cronologica a seguir
+            if(ods.length===0) { crp.innerHTML=`<tr><td colspan="4" style="text-align:center; padding:15px; color:var(--text-muted);">Agenda limpa.</td></tr>`; return; }
+            ods.forEach(a => crp.innerHTML+=`<tr><td data-label="Data">${formatDataBR(a.data)}</td><td data-label="Hora"><span style="background:var(--card-bg); border:1px solid var(--border-color); padding:3px 8px; border-radius:4px; font-size:11px;">${formatHora(a.hora)}</span></td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="perguntarRemover('${a.id}', 'este evento', 'agendaRegistada')">🗑️</button></td></tr>`);
+        }
+        function editarAgenda(id) { const e = agendaRegistada.find(x => String(x.id) === String(id)); if(!e) return; idEmEdicaoAgenda=id; document.getElementById('titulo_form_agenda').innerText="✏️ A Atualizar Evento"; document.getElementById('a_data').value=formatDataForm(e.data); document.getElementById('a_hora').value=(formatHora(e.hora)!=='--:--')?formatHora(e.hora):''; document.getElementById('a_titulo').value=e.titulo; document.getElementById('btn_guardar_agenda').innerText="Confirmar"; document.getElementById('btn_cancelar_agenda').style.display="block"; }
+        
+        function guardarAgenda() {
+            const d=document.getElementById('a_data').value, h=document.getElementById('a_hora').value, t=document.getElementById('a_titulo').value;
+            if(!d || !t) { showToast("Falta a data ou o título."); return; }
+            const req = { pin: pinApp, tipo: 'agenda', id: idEmEdicaoAgenda || 'A_'+Date.now(), data: d, hora: h, titulo: t };
+            
+            const idx = agendaRegistada.findIndex(x => String(x.id) === String(req.id));
+            if(idx > -1) agendaRegistada[idx] = req; else agendaRegistada.push(req);
+            
+            limparFormularioAgenda();
+            renderizarAgenda();
+            sincronizarAlteracao(req, "Agenda da Web sincronizada.");
+        }
+
+        // --- SISTEMA PARTILHADO DE ELIMINAÇÃO OPTIMISTIC ---
+        function perguntarRemover(id, nome, arrayAlvo) {
+            document.getElementById('modal-title').innerText = "Apagar Permanentemente";
+            document.getElementById('modal-text').innerText = `Isto irá apagar ${nome} em todos os dispositivos ligados à Google Cloud.`;
+            const btn = document.getElementById('btn-confirm-action'); 
+            const nBtn = btn.cloneNode(true); btn.parentNode.replaceChild(nBtn, btn);
+            nBtn.onclick = () => { fecharModal('modal-confirm'); apagarGeral(id, arrayAlvo); };
             document.getElementById('modal-confirm').classList.add('show');
         }
-        async function apagarRegisto(id, nomeItem = "este item") {
-            confirmarAcao("Eliminar Registo", `Tem a certeza absoluta que pretende apagar permanentemente ${nomeItem}?`, "#ff3b30", "Sim, Eliminar", 
-                async () => {
-                    setCarregando(true, "A apagar da base de dados...");
-                    try { 
-                        await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`); 
-                        await carregarDadosDoGoogle(); 
-                        renderizarTabela(); 
-                        renderizarAgenda(); 
-                        if(document.getElementById('modal-lista-despesas').classList.contains('show')) abrirModalListaDespesas(); 
-                        showToast("Removido com sucesso!"); 
-                    } catch(e) { showToast("Erro ao apagar"); } finally { setCarregando(false); }
-                }
-            );
-        }
-
-        // --- CONTROLO INTERFACE DE HORAS ---
-        function editarRegisto(id) {
-            const registo = registos.find(r => String(r.id) === String(id)); if (!registo) return;
-            document.getElementById('data').value = formatDataParaInput(registo.data); document.getElementById('cliente').value = registo.cliente || ''; document.getElementById('hora_inicio').value = formatHora(registo.inicio); document.getElementById('hora_fim').value = formatHora(registo.fim); document.getElementById('taxa_hora').value = registo.taxaUsada;
-            idEmEdicao = id; const btn = document.getElementById('btn_submit'); btn.innerText = "ATUALIZAR REGISTO"; btn.style.backgroundColor = "#ff9500"; window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        async function adicionarRegisto() {
-            const d=document.getElementById('data').value; const cli=document.getElementById('cliente').value; const i=document.getElementById('hora_inicio').value; const f=document.getElementById('hora_fim').value; const t=parseFloat(document.getElementById('taxa_hora').value);
-            if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos obrigatórios!"); return; }
-            const c = calcDiferenca(i,f);
-            const req = { pin: pinApp, tipo: 'registo', id: idEmEdicao ? idEmEdicao : 'R_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: cli };
-            setCarregando(true, "A enviar dados de horas...");
-            try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); localStorage.setItem('taxa_hora_guardada', t); await carregarDadosDoGoogle(); renderizarTabela(); showToast("Horas gravadas!"); idEmEdicao = null; document.getElementById('btn_submit').innerText = "ADICIONAR REGISTO"; document.getElementById('btn_submit').style.backgroundColor = "#007aff"; } catch(e) { showToast("Erro"); } finally { setCarregando(false); }
-        }
         
-        function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
+        function apagarGeral(id, arrayAlvo) {
+            // Optimistic Delete -> Front-end imediato
+            if(arrayAlvo === 'registos') { registos = registos.filter(x => String(x.id) !== String(id)); redefinirPaginaE_Renderizar(); }
+            if(arrayAlvo === 'despesasRegistadas') { despesasRegistadas = despesasRegistadas.filter(x => String(x.id) !== String(id)); abrirModalListaDespesas(); calcularFinancas(); }
+            if(arrayAlvo === 'agendaRegistada') { agendaRegistada = agendaRegistada.filter(x => String(x.id) !== String(id)); renderizarAgenda(); }
+            
+            // Sync Delete (Background)
+            setSyncBackground(true);
+            fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`)
+                .then(res => res.json())
+                .then(json => { if(json.sucesso) showToast("Registo vaporizado da Nuvem.", true); else showToast("Falhou ao apagar na nuvem."); })
+                .catch(() => showToast("Erro: Modificação só aplicada na memória."))
+                .finally(() => setSyncBackground(false));
+            
+            // Atualiza cache em memória silenciosamente
+            localStorage.setItem('app_cache', JSON.stringify({registos, despesas:despesasRegistadas, agenda:agendaRegistada}));
+        }
 
-        // --- SISTEMAS DE EXPORTAÇÃO ---
+        function sincronizarAlteracao(req, msgSucesso) {
+            setSyncBackground(true);
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) })
+                .then(res => res.json())
+                .then(j => { if(j.sucesso) showToast(msgSucesso, true); else showToast("Erro alojamento: "+j.erro); })
+                .catch(() => showToast("Guardado na memória (Cloud insucessível)."))
+                .finally(() => setSyncBackground(false));
+                
+            localStorage.setItem('app_cache', JSON.stringify({registos, despesas:despesasRegistadas, agenda:agendaRegistada}));
+        }
+
+        // --- CÁLCULO FINANCEIRO DETALHADO ---
+        function calcularFinancas() {
+            const fM = document.getElementById('filtro_mes').value;
+            let df = despesasRegistadas; if(fM !== 'todos') df = df.filter(d => d.data && String(d.data).substring(0,7) === fM);
+            const rReal = df.reduce((s,d) => s + parseFloat(d.valor||0), 0);
+            document.getElementById('f_despesas_totais').innerText = rReal.toFixed(2) + ' €';
+            const b = parseFloat(document.getElementById('total_ganho').innerText.replace('€',''))||0;
+            const txIRS = (parseFloat(document.getElementById('inp_irs').value)||0)/100;
+            const txSS = (parseFloat(document.getElementById('inp_ss').value)||0)/100;
+            const tImp = b * (txIRS+txSS);
+            document.getElementById('f_impostos').innerText = tImp.toFixed(2) + ' €';
+            document.getElementById('f_liquido').innerText = (b - rReal - tImp).toFixed(2) + ' €';
+            localStorage.setItem('tx_irs', document.getElementById('inp_irs').value); localStorage.setItem('tx_ss', document.getElementById('inp_ss').value);
+        }
+
+        // --- SISTEMAS DE EXPORTAÇÃO CSV ---
         function iniciarBackupCSV() {
-            const dados = obterRegistosFiltrados(); if(dados.length === 0) { showToast("Sem dados filtrados para exportar."); return; }
-            confirmarAcao("Exportar para CSV", "Deseja transferir o ficheiro de backup em colunas (Excel)?", "#5856d6", "Transferir", 
-                () => {
-                    let csvContent = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Valor Hora;Valor\n";
-                    dados.forEach(r => { csvContent += `${r.data.split('T')[0]};${r.cliente || ''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`; });
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a"); a.href = url; a.download = "Relatorio_Exportado.csv"; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast("CSV Guardado!");
-                }
-            );
+            const f = obterRegistosFiltrados(); if(f.length===0){showToast("Nada para exportar");return;}
+            let c = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Valor Hora;Valor\n";
+            f.forEach(r => c += `${formatDataForm(r.data)};${r.cliente||''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`);
+            const b = new Blob([c], {type:'text/csv;charset=utf-8;'}); const l = URL.createObjectURL(b);
+            const a = document.createElement("a"); a.href=l; a.download="Registos_Horas.csv"; a.click(); showToast("CSV Guardado.");
         }
 
-        function preVisualizarPDF() {
-            const registosParaPDF = obterRegistosFiltrados(); if(registosParaPDF.length === 0) { showToast("Tabela vazia."); return; }
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            doc.setFillColor(29, 29, 31); doc.rect(0, 0, 210, 35, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("RELATÓRIO DE SERVIÇOS", 14, 22);
-            doc.setTextColor(80, 80, 80); doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.text(`Emitido em: ${new Date().toLocaleDateString('pt-PT')}`, 14, 48);
-            
-            doc.autoTable({
-                startY: 60,
-                head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor/h', 'Total']],
-                body: registosParaPDF.map(r => [formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), formatHora(r.fim), r.duracaoTexto, parseFloat(r.taxaUsada).toFixed(2)+'€', parseFloat(r.valorGasto).toFixed(2)+'€']),
-                theme: 'plain', headStyles: { fillColor: [245, 245, 247], textColor: [29, 29, 31], fontStyle: 'bold' }
+        // --- LAZY LOAD: IMPORTADOR DE LIBRARIAS PESADAS ON-DEMAND ---
+        function loadScript(src) {
+            return new Promise((res, rej) => {
+                if(document.querySelector(`script[src="${src}"]`)) return res();
+                const s = document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s);
             });
-            
-            doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(29, 29, 31);
-            doc.text(`Total Bruto: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY || 60) + 15);
-            documentoPDFFinal = doc; nomePDFFinal = "Relatorio_Atividades.pdf"; 
-            document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob')); 
-            document.getElementById('modal-pdf').classList.add('show');
         }
-        function gravarPDFFinal() { if(documentoPDFFinal) { documentoPDFFinal.save(nomePDFFinal); fecharModal('modal-pdf'); showToast("PDF Descarregado!"); } }
 
-        // --- SISTEMAS DE GRÁFICOS (CHART.JS) ---
-        function abrirDashboard() { if(registos.length === 0) { showToast("Não existem dados suficientes."); return; } document.getElementById('modal-dashboard').classList.add('show'); gerarGraficos(); }
-        function gerarGraficos() {
+        async function preVisualizarPDF() {
+            const d = obterRegistosFiltrados(); if(d.length===0){showToast("Tabela vazia.");return;}
+            setSyncBackground(true);
+            try {
+                await loadScript("[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js)");
+                await loadScript("[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js)");
+                const doc = new window.jspdf.jsPDF();
+                doc.setFillColor(29,29,31); doc.rect(0,0,210,35,'F');
+                doc.setTextColor(255,255,255); doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.text("EXTRATO DE SERVIÇOS", 14, 23);
+                doc.setTextColor(190,190,190); doc.setFontSize(10); doc.text(`Ref: ${new Date().toLocaleDateString('pt-PT')}`, 14, 45);
+                
+                doc.autoTable({
+                    startY: 55, head: [['Data', 'Cliente', 'Tempo', 'Rate', 'Total']],
+                    body: d.map(r => [formatDataBR(r.data), r.cliente||'-', r.duracaoTexto, parseFloat(r.taxaUsada).toFixed(2)+'€', parseFloat(r.valorGasto).toFixed(2)+'€']),
+                    theme: 'striped', headStyles: { fillColor: [40, 120, 255] }
+                });
+                
+                doc.setFont("helvetica","bold"); doc.setFontSize(14); doc.setTextColor(0,0,0);
+                doc.text(`Valor Bruto Cobrado: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY||55)+15);
+                
+                documentoPDFFinal = doc; nomePDFFinal = "Extrato_Horas.pdf";
+                document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob'));
+                document.getElementById('modal-pdf').classList.add('show');
+            } catch(e) { showToast("Ligação lenta para importar PDF maker."); }
+            finally { setSyncBackground(false); }
+        }
+        function gravarPDFFinal() { if(documentoPDFFinal) { documentoPDFFinal.save(nomePDFFinal); fecharModal('modal-pdf'); showToast("PDF Aprovado!"); } }
+
+        // --- DASHBOARD (GRÁFICOS CHART.JS ON-DEMAND) ---
+        async function abrirDashboard() {
+            if(registos.length===0){showToast("Dados insuficientes.");return;}
+            setSyncBackground(true);
+            try {
+                await loadScript("[cdn.jsdelivr.net](https://cdn.jsdelivr.net/npm/chart.js)");
+                document.getElementById('modal-dashboard').classList.add('show');
+                gerarGraficosGerais();
+            } catch(e) { showToast("Falha ao injetar pacote analítico."); }
+            finally { setSyncBackground(false); }
+        }
+
+        function gerarGraficosGerais() {
             if(chartClientesInst) chartClientesInst.destroy(); if(chartMesesInst) chartMesesInst.destroy(); if(chartDespesasInst) chartDespesasInst.destroy();
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark'; const corTexto = isDark ? '#f5f5f7' : '#1d1d1f';
-            let rend = {}, horas = {}, desp = {}; 
-            
-            registos.forEach(r => { 
-                let c = r.cliente || "S/ Nome"; rend[c] = (rend[c]||0) + parseFloat(r.valorGasto||0); 
-                if(r.data) { let m = r.data.split('T')[0].substring(0,7); horas[m] = (horas[m]||0) + parseInt(r.minutosTotais||0); } 
-            });
-            despesasRegistadas.forEach(d => { let cat = d.categoria || "Outras"; desp[cat] = (desp[cat] || 0) + parseFloat(d.valor || 0); });
-            
-            chartClientesInst = new Chart(document.getElementById('graficoClientes'), { type: 'pie', data: { labels: Object.keys(rend), datasets: [{ data: Object.values(rend), backgroundColor: ['#007aff','#34c759','#ff9500','#ff3b30','#5856d6'] }] }, options: { plugins: { legend: { labels: { color: corTexto } } } } });
-            chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type: 'bar', data: { labels: Object.keys(horas), datasets: [{ label: 'Horas Efetivas', data: Object.values(horas).map(m=>(m/60).toFixed(1)), backgroundColor: '#007aff' }] }, options: { scales: { x: { ticks: { color: corTexto } }, y: { ticks: { color: corTexto } } } } });
-            chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type: 'doughnut', data: { labels: Object.keys(desp), datasets: [{ data: Object.values(desp), backgroundColor: ['#ff3b30','#ff9500','#34c759','#5856d6','#007aff'] }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: corTexto } } } } });
+            const corText = document.documentElement.getAttribute('data-theme')==='dark' ? '#f5f5f7' : '#1d1d1f';
+            let ptCl="", horas={}, deps={};
+            registos.forEach(x => { ptCl = x.cliente||"S/ Nome"; horas[ptCl] = (horas[ptCl]||0)+parseFloat(x.valorGasto||0); let m = x.data?String(x.data).substring(0,7):null; if(m) deps[m] = (deps[m]||0)+(parseInt(x.minutosTotais||0)/60); });
+            let grcat={}; despesasRegistadas.forEach(x => grcat[x.categoria||"Outras"] = (grcat[x.categoria||"Outras"]||0)+parseFloat(x.valor||0));
+
+            chartClientesInst = new Chart(document.getElementById('graficoClientes'), { type:'pie', data:{ labels:Object.keys(horas), datasets:[{data:Object.values(horas), backgroundColor:['#007aff','#34c759','#ff9500','#ff3b30','#af52de']}] }, options:{plugins:{legend:{labels:{color:corText}}}} });
+            chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type:'bar', data:{ labels:Object.keys(deps), datasets:[{label:'Horas Gastas', data:Object.values(deps), backgroundColor:'#0a84ff'}] }, options:{scales:{y:{ticks:{color:corText}},x:{ticks:{color:corText}}}} });
+            chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type:'doughnut', data:{ labels:Object.keys(grcat), datasets:[{data:Object.values(grcat), backgroundColor:['#ff3b30','#ff9500','#34c759','#5856d6','#8e8e93']}] }, options:{maintainAspectRatio:false, plugins:{legend:{labels:{color:corText}}}} });
         }
 
-        // --- ARRANQUE DA APP ---
+        // --- ARRANQUE MESTRE DA APP ---
         window.onload = async () => {
-            if(localStorage.getItem('tema_final') === 'dark') alternarTema();
+            if(localStorage.getItem('tema_final')==='dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
-            const t = localStorage.getItem('taxa_hora_guardada'); if (t) document.getElementById('taxa_hora').value = t;
-            if (localStorage.getItem('tx_irs')) document.getElementById('inp_irs').value = localStorage.getItem('tx_irs');
-            if (localStorage.getItem('tx_ss')) document.getElementById('inp_ss').value = localStorage.getItem('tx_ss');
+            const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
+            ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
             
-            // Verifica se o utilizador já tem um PIN guardado
-            if (pinApp) {
-                await iniciarAppApósLogin();
-            } else {
-                // Se não tem PIN guardado, mostra a janela de Login
-                document.getElementById('login-overlay').classList.remove('hidden');
-            }
+            if (pinApp) { await carregarAppBoot(); } 
+            else { document.getElementById('login-overlay').classList.remove('hidden'); }
         };
     </script>
 </body>
