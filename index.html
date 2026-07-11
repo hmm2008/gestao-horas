@@ -95,13 +95,27 @@
         #loader-text { font-weight: 600; font-size: 16px; color: var(--text-main); letter-spacing: 0.5px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* OVERLAY DO LOGIN COM PIN */
+        /* OVERLAY DO LOGIN COM PIN E TECLADO VIRTUAL */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s; }
         #login-overlay.hidden { opacity: 0; pointer-events: none; }
-        .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 320px; border: 1px solid var(--border-color); }
+        .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 340px; border: 1px solid var(--border-color); }
         .login-box h2 { margin-top: 0; margin-bottom: 20px; font-size: 20px; color: var(--text-main); }
-        .login-box input { width: 100%; padding: 15px; margin-bottom: 15px; text-align: center; font-size: 24px; letter-spacing: 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: bold; }
         
+        /* Input Readonly (para não abrir teclado nativo) */
+        .login-box input { width: 100%; padding: 15px; margin-bottom: 5px; text-align: center; font-size: 28px; letter-spacing: 12px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: bold; outline: none; caret-color: transparent; transition: 0.2s; }
+        
+        /* Mensagem de Erro e Animação */
+        #pin-error-msg { background: #ffe5e5; color: #ff3b30; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 15px; display: none; border: 1px solid #ff3b30; }
+        [data-theme="dark"] #pin-error-msg { background: rgba(255, 59, 48, 0.15); }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+        .shake-error { animation: shake 0.4s; border-color: #ff3b30 !important; color: #ff3b30 !important; }
+
+        /* Teclado Numérico Virtual */
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+        .key { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px 0; font-size: 22px; font-weight: bold; cursor: pointer; transition: 0.1s; display: flex; justify-content: center; align-items: center; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .key:active { background: var(--border-color); transform: scale(0.95); }
+        .key-action { background: rgba(128,128,128,0.1); font-size: 18px; color: var(--text-muted); }
+
         /* MODAIS GENERALIZADOS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
@@ -168,11 +182,32 @@
         <div id="loader-text">A processar...</div>
     </div>
     
-    <!-- ECRÃ DE LOGIN PIN -->
+    <!-- ECRÃ DE LOGIN PIN COM TECLADO VIRTUAL -->
     <div id="login-overlay" class="hidden">
         <div class="login-box">
             <h2>🔒 Acesso Restrito</h2>
-            <input type="password" id="pin-input" placeholder="****" inputmode="numeric">
+            
+            <div id="pin-error-msg">⚠️ PIN Incorreto. Tente novamente.</div>
+            
+            <!-- Readonly para evitar o teclado nativo do telemóvel -->
+            <input type="password" id="pin-input" placeholder="••••" readonly>
+            
+            <!-- Teclado Numérico -->
+            <div class="keypad">
+                <button class="key" onclick="teclarPIN('1')">1</button>
+                <button class="key" onclick="teclarPIN('2')">2</button>
+                <button class="key" onclick="teclarPIN('3')">3</button>
+                <button class="key" onclick="teclarPIN('4')">4</button>
+                <button class="key" onclick="teclarPIN('5')">5</button>
+                <button class="key" onclick="teclarPIN('6')">6</button>
+                <button class="key" onclick="teclarPIN('7')">7</button>
+                <button class="key" onclick="teclarPIN('8')">8</button>
+                <button class="key" onclick="teclarPIN('9')">9</button>
+                <button class="key key-action" onclick="limparPIN()">C</button>
+                <button class="key" onclick="teclarPIN('0')">0</button>
+                <button class="key key-action" onclick="apagarUltimoPIN()">⌫</button>
+            </div>
+
             <button class="btn-add" onclick="verificarPinLogin()">ENTRAR</button>
         </div>
     </div>
@@ -427,7 +462,6 @@
         let chartMesesInst = null; 
         let chartDespesasInst = null;
         
-        // NOVIDADE: GESTÃO DO PIN
         let pinApp = localStorage.getItem('app_pin') || '';
 
         if ('serviceWorker' in navigator) { 
@@ -446,6 +480,28 @@
             }
         }
 
+        // --- LÓGICA DO TECLADO VIRTUAL ---
+        function teclarPIN(numero) {
+            const input = document.getElementById('pin-input');
+            if (input.value.length < 8) { // Limite visual
+                input.value += numero;
+                // Remove o alerta de erro ao começar a digitar
+                document.getElementById('pin-error-msg').style.display = 'none';
+                input.classList.remove('shake-error');
+            }
+        }
+
+        function limparPIN() {
+            document.getElementById('pin-input').value = '';
+            document.getElementById('pin-error-msg').style.display = 'none';
+        }
+
+        function apagarUltimoPIN() {
+            const input = document.getElementById('pin-input');
+            input.value = input.value.slice(0, -1);
+            document.getElementById('pin-error-msg').style.display = 'none';
+        }
+
         // --- AUTENTICAÇÃO PIN ---
         async function verificarPinLogin() {
             const p = document.getElementById('pin-input').value;
@@ -457,13 +513,26 @@
 
         async function iniciarAppApósLogin() {
             const sucesso = await carregarDadosDoGoogle();
+            const erroMsg = document.getElementById('pin-error-msg');
+            const input = document.getElementById('pin-input');
+
             if (sucesso) {
                 document.getElementById('login-overlay').classList.add('hidden');
+                erroMsg.style.display = 'none';
                 renderizarTabela();
             } else {
                 document.getElementById('login-overlay').classList.remove('hidden');
+                
+                // Exibe a mensagem de Erro na Caixa de Diálogo do Login e agita o input
+                erroMsg.style.display = 'block';
+                input.classList.add('shake-error');
+                
+                // Remove a classe de animação para poder repetir caso o utilizador falhe novamente
+                setTimeout(() => { input.classList.remove('shake-error'); }, 400); 
+
                 pinApp = '';
                 localStorage.removeItem('app_pin');
+                input.value = ''; // Limpa o input automaticamente após erro
             }
         }
         
@@ -472,6 +541,7 @@
             localStorage.removeItem('app_pin');
             document.getElementById('login-overlay').classList.remove('hidden');
             document.getElementById('pin-input').value = '';
+            document.getElementById('pin-error-msg').style.display = 'none';
             registos = []; despesasRegistadas = []; agendaRegistada = [];
             renderizarTabela();
         }
@@ -579,13 +649,11 @@
             if(GOOGLE_SCRIPT_URL.includes("COLE_AQUI")) { showToast("ID do App Script ausente!"); return false; }
             setCarregando(true, "A sincronizar dados da nuvem...");
             try {
-                // Adicionamos o pin na querystring do GET
                 const res = await fetch(`${GOOGLE_SCRIPT_URL}?nocache=${Date.now()}&pin=${pinApp}`);
                 if(!res.ok) throw new Error("Erro de resposta do servidor");
                 const json = await res.json();
                 
                 if (json.erro && json.erro === "PIN incorreto") {
-                    showToast("PIN Incorreto ou Acesso Negado!");
                     return false;
                 }
                 
@@ -683,7 +751,6 @@
         async function guardarAgenda() {
             const d = document.getElementById('a_data').value; const h = document.getElementById('a_hora').value; const t = document.getElementById('a_titulo').value;
             if(!d || !t) { showToast("Preencha a Data e o Nome do Evento!"); return; }
-            // Adicionado envio do pinApp
             const req = { pin: pinApp, tipo: 'agenda', id: idEmEdicaoAgenda || 'A'+Date.now().toString(), data: d, hora: h, titulo: t };
             setCarregando(true, "A comunicar com Google Calendar...");
             try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); renderizarAgenda(); limparFormularioAgenda(); showToast("Evento guardado!"); } catch(e) { showToast("Erro de rede"); } finally { setCarregando(false); }
@@ -715,7 +782,6 @@
         async function guardarDespesa() {
             const d = document.getElementById('d_data').value; const cat = document.getElementById('d_categoria').value; const desc = document.getElementById('d_descricao').value; const val = parseFloat(document.getElementById('d_valor').value);
             if(!d || isNaN(val)) { showToast("Preencha data e valor corretamente!"); return; }
-            // Adicionado envio do pinApp
             const req = { pin: pinApp, tipo: 'despesa', id: idEmEdicaoDespesa || 'D'+Date.now().toString(), data: d, categoria: cat, descricao: desc, valor: val };
             setCarregando(true, "A registar despesa...");
             try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); await carregarDadosDoGoogle(); fecharModal('modal-despesa'); abrirModalListaDespesas(); renderizarTabela(); showToast("Despesa guardada!"); } catch(e) { showToast("Erro ao guardar"); } finally { setCarregando(false); }
@@ -734,7 +800,6 @@
                 async () => {
                     setCarregando(true, "A apagar da base de dados...");
                     try { 
-                        // Adicionado envio do pin na string do GET
                         await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`); 
                         await carregarDadosDoGoogle(); 
                         renderizarTabela(); 
@@ -756,7 +821,6 @@
             const d=document.getElementById('data').value; const cli=document.getElementById('cliente').value; const i=document.getElementById('hora_inicio').value; const f=document.getElementById('hora_fim').value; const t=parseFloat(document.getElementById('taxa_hora').value);
             if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos obrigatórios!"); return; }
             const c = calcDiferenca(i,f);
-            // Adicionado envio do pinApp
             const req = { pin: pinApp, tipo: 'registo', id: idEmEdicao ? idEmEdicao : 'R_' + Date.now().toString(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec * t, cliente: cli };
             setCarregando(true, "A enviar dados de horas...");
             try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }); localStorage.setItem('taxa_hora_guardada', t); await carregarDadosDoGoogle(); renderizarTabela(); showToast("Horas gravadas!"); idEmEdicao = null; document.getElementById('btn_submit').innerText = "ADICIONAR REGISTO"; document.getElementById('btn_submit').style.backgroundColor = "#007aff"; } catch(e) { showToast("Erro"); } finally { setCarregando(false); }
