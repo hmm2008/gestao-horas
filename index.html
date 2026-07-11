@@ -213,7 +213,6 @@
                         <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Horas por Mês</h3>
                         <div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div>
                     </div>
-                    <!-- NOVO GRÁFICO DE DESPESAS -->
                     <div class="chart-container" style="grid-column: 1 / -1;">
                         <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:var(--text-muted); width:100%; text-align:left;">Despesas por Categoria</h3>
                         <div class="chart-wrapper"><canvas id="graficoDespesas"></canvas></div>
@@ -303,7 +302,7 @@
     </div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNcQbKbdVW3PdM5JqyHBY79jAIyQ-ddS7IaUDhpJUam97Ma5K0GvKMZo907pp6t3qI6A/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWeFvz9g66O14tyL5qQF0ZcLeFK0KeKYnqyGwb4kc6TYnmY3__gLj7lw03GnBZG5shBA/exec";
         
         let registos = [];
         let despesasRegistadas = []; 
@@ -411,13 +410,11 @@
                 };
                 
                 if (Array.isArray(json)) {
-                    // Backend antigo (retorna array simples)
                     json.forEach(corrigirData);
                     registos = json;
                     despesasRegistadas = [];
                     agendaRegistada = [];
                 } else if (json && typeof json === 'object') {
-                    // Backend novo (retorna objecto com arrays)
                     if(json.registos && Array.isArray(json.registos)) {
                         json.registos.forEach(corrigirData);
                         registos = json.registos;
@@ -433,7 +430,6 @@
                 }
                 
                 atualizarDropdownsFiltros();
-                renderizarTabela();
             } catch (e) { 
                 console.error("Erro a ler base de dados:", e); 
                 showToast("Erro na obtenção dos dados.");
@@ -552,7 +548,10 @@
             showToast("A guardar evento...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
-                window.location.reload();
+                await carregarDadosDoGoogle();
+                renderizarAgenda();
+                limparFormularioAgenda();
+                showToast("Evento guardado!");
             } catch(e) { showToast("Erro ao guardar evento"); }
         }
 
@@ -611,7 +610,11 @@
             showToast("A guardar despesa...");
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
-                window.location.reload();
+                await carregarDadosDoGoogle();
+                fecharModal('modal-despesa');
+                abrirModalListaDespesas(); // Atualiza a lista caso aberta
+                renderizarTabela(); // Atualiza o dashboard
+                showToast("Despesa guardada!");
             } catch(e) { showToast("Erro ao guardar"); }
         }
 
@@ -634,14 +637,25 @@
         async function apagarRegisto(id, nomeItem = "este item") {
             confirmarAcao(
                 "Eliminar Registo",
-                `Tem a certeza que pretende apagar permanentemente ${nomeItem}? Esta ação não pode ser desfeita.`, 
+                `Tem a certeza que pretende apagar permanentemente ${nomeItem}?`, 
                 "#ff3b30", 
                 "Eliminar", 
                 async () => {
                     showToast("A apagar...");
                     try {
                         await fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&nocache=${Date.now()}`);
-                        window.location.reload();
+                        
+                        // Atualização fluida: refaz o fetch e renderiza tudo
+                        await carregarDadosDoGoogle();
+                        renderizarTabela();
+                        renderizarAgenda();
+                        
+                        // Se a modal de despesas estiver aberta, atualiza-a
+                        if(document.getElementById('modal-lista-despesas').classList.contains('show')) {
+                            abrirModalListaDespesas();
+                        }
+                        
+                        showToast("Eliminado com sucesso!");
                     } catch(e) { showToast("Erro ao apagar"); }
                 }
             );
@@ -675,7 +689,13 @@
             try {
                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) });
                 localStorage.setItem('taxa_hora_guardada', t);
-                window.location.reload();
+                await carregarDadosDoGoogle();
+                renderizarTabela();
+                showToast("Registo guardado!");
+                // Reset form
+                idEmEdicao = null;
+                document.getElementById('btn_submit').innerText = "ADICIONAR REGISTO"; 
+                document.getElementById('btn_submit').style.backgroundColor = "#007aff";
             } catch(e) { showToast("Erro ao guardar"); }
         }
 
@@ -776,14 +796,16 @@
             });
         }
 
-        window.onload = () => {
+        window.onload = async () => {
             if(localStorage.getItem('tema_final') === 'dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
             const t = localStorage.getItem('taxa_hora_guardada');
             if (t) document.getElementById('taxa_hora').value = t;
             if (localStorage.getItem('tx_irs')) document.getElementById('inp_irs').value = localStorage.getItem('tx_irs');
             if (localStorage.getItem('tx_ss')) document.getElementById('inp_ss').value = localStorage.getItem('tx_ss');
-            carregarDadosDoGoogle();
+            
+            await carregarDadosDoGoogle();
+            renderizarTabela();
         };
     </script>
 </body>
