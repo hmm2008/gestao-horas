@@ -92,6 +92,7 @@
         .lab { font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
         .finance-panel-wrapper { transition: 0.3s; }
+        .finance-title { text-align: center; font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; margin-top: 0; letter-spacing: 0.5px; }
         .finance-panel { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--hover-bg); padding: 20px; border-radius: 12px; border: 1px dashed rgba(0, 122, 255, 0.2); align-items: center; }
         .finance-item { display: flex; flex-direction: column; text-align: center; justify-content: center; align-items: center;}
         .finance-item input { text-align: center; margin-top: 5px; }
@@ -367,6 +368,7 @@
 
             <button class="btn-toggle-finance" onclick="toggleFinancas()">💰 Mostrar Detalhes Financeiros</button>
             <div class="finance-panel-wrapper" id="painel-financas">
+                <h3 class="finance-title">Detalhes Financeiros</h3>
                 <div class="finance-panel">
                     <div class="finance-item">
                         <span class="lab">Despesas</span>
