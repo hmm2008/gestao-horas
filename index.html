@@ -568,16 +568,21 @@
         }
         function sincronizarNavHome() { navegarPara('home'); }
         
-        // Função de scroll adicionada
+        // Função atualizada com scroll para baixo ao ocultar
         function toggleFinancas() { 
             const p = document.getElementById('painel-financas');
             const b = document.querySelector('.btn-toggle-finance'); 
+            const form = document.querySelector('.form-centralized');
+            
             if(p.style.display==='block') { 
                 p.style.display='none'; 
-                b.innerText='💰 Mostrar Detalhes Financeiros'; 
+                b.innerText='💰 Mostrar Detalhes Financeiros';
+                // Scroll para cima ao ocultar
+                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else { 
                 p.style.display='block'; 
                 b.innerText='🔼 Ocultar Detalhes Financeiros'; 
+                // Scroll para centrar o painel ao mostrar
                 setTimeout(() => { p.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
             } 
         }
