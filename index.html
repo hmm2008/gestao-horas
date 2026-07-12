@@ -17,7 +17,7 @@
             --border-color: #e5e5ea; 
             --accent-color: #007aff; 
             --input-bg: #ffffff; 
-            --bottom-nav-bg: #ffffff; 
+            --bottom-nav-bg: #f9f9fb; 
             --hover-bg: rgba(0, 122, 255, 0.08);
         }
         [data-theme="dark"] { 
@@ -28,7 +28,7 @@
             --border-color: #38383a; 
             --accent-color: #0a84ff; 
             --input-bg: #2c2c2e; 
-            --bottom-nav-bg: #1c1c1e; 
+            --bottom-nav-bg: #111112; 
             --hover-bg: rgba(10, 132, 255, 0.15);
         }
         
@@ -38,15 +38,21 @@
         .sidebar { width: 240px; background: var(--card-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 25px 15px; box-sizing: border-box; z-index: 100; transition: background 0.3s, border 0.3s; }
         .sidebar .brand { font-size: 18px; font-weight: 800; margin-bottom: 35px; padding: 0 10px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.3px; }
         
-        .nav-item-desk { padding: 12px 15px; border-radius: 10px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; border: none; background: transparent; text-align: left; width: 100%; margin-bottom: 8px; }
+        .nav-item-desk { padding: 12px 15px; border-radius: 10px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; border: none; background: transparent; text-align: left; width: 100%; margin-bottom: 5px; }
         .nav-item-desk:hover { background: rgba(128,128,128,0.08); color: var(--text-main); }
         .nav-item-desk.active { background: var(--accent-color); color: white; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); }
+        
+        /* Grupo de botões Exportar na Sidebar */
+        .sidebar-divider { height: 1px; background: var(--border-color); margin: 20px 10px; }
+        .sidebar-title { font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: bold; margin-bottom: 10px; padding: 0 15px; letter-spacing: 0.5px; }
         
         .main-content { flex: 1; overflow-y: auto; padding: 30px; box-sizing: border-box; }
         .app-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .theme-btn { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; font-size: 16px; cursor: pointer; color: var(--text-main); transition: 0.2s; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; position: relative; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; text-align: center; position: absolute; left: 50%; transform: translateX(-50%); width: max-content; }
+        
+        .theme-btn { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; font-size: 16px; cursor: pointer; color: var(--text-main); transition: 0.2s; margin-left: auto; z-index: 10; }
         .theme-btn:hover { background: var(--border-color); }
 
         /* ---------- FORMULÁRIOS E INPUTS ---------- */
@@ -99,10 +105,8 @@
         .btn-acao { border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); }
         .btn-acao:hover:not(:disabled) { background: var(--border-color); }
         .btn-acao:disabled { opacity: 0.4; cursor: not-allowed; }
-        .btn-download { background: #34c759; color: white; border: none; margin-left: auto; }
-        .btn-download:hover { background: #28a745; color: white; }
 
-        /* ---------- SISTEMA DE NOTIFICAÇÕES TOAST ---------- */
+        /* ---------- NOTIFICAÇÕES TOAST ---------- */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 8000; }
         .toast { background: var(--text-main); color: var(--bg-color); padding: 14px 24px; border-radius: 10px; margin-bottom: 10px; opacity: 0; transform: translateY(-10px); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-weight: 500; }
         .toast.show { opacity: 1; transform: translateY(0); }
@@ -146,12 +150,21 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* GAVETA DE OPÇÕES EXTRAS NO MOBILE (Substitui os botões soltos) */
+        .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1400; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(2px); }
+        .drawer-overlay.show { opacity: 1; pointer-events: auto; }
+        .mobile-drawer { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--card-bg); z-index: 1450; padding: 25px 20px 40px; box-sizing: border-box; border-radius: 20px 20px 0 0; transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2); box-shadow: 0 -5px 25px rgba(0,0,0,0.1); }
+        .mobile-drawer.show { bottom: 65px; } /* Fica acima da bottom bar */
+        .drawer-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 15px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 10px; }
+
         /* ---------- COMPACTAÇÃO MOBILE ---------- */
         @media (max-width: 800px) {
             body { display: block; height: auto; overflow: auto; padding-bottom: 85px; } 
             .sidebar { display: none; }
-            .header h1 { font-size: 20px; }
             .main-content { padding: 15px; }
+            
+            .header h1 { font-size: 19px; }
+            .theme-btn { display: none; } /* Em mobile, o botão do tema foi para a Gaveta das opções extras */
             
             .summary-panel { grid-template-columns: 1fr 1fr; }
             .summary-item:last-child { grid-column: span 2; border-right: none; border-top: 1px solid var(--border-color); padding: 15px; }
@@ -174,24 +187,24 @@
             .dashboard-grid { grid-template-columns: 1fr; }
             .search-filter-bar { flex-direction: column; }
             
-            .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bottom-nav-bg); border-top: 1px solid var(--border-color); z-index: 1500; justify-content: space-around; padding: 10px 0; padding-bottom: env(safe-area-inset-bottom, 10px); }
-            .nav-item-mob { display: flex; flex-direction: column; align-items: center; background: none; border: none; color: var(--text-muted); font-size: 11px; font-weight: 600; gap: 4px; }
+            .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bottom-nav-bg); border-top: 1px solid var(--border-color); z-index: 1500; justify-content: space-around; padding: 10px 0; padding-bottom: env(safe-area-inset-bottom, 10px); box-sizing: border-box; }
+            .nav-item-mob { display: flex; flex-direction: column; align-items: center; background: none; border: none; color: var(--text-muted); font-size: 10px; font-weight: 600; gap: 4px; padding: 5px; flex: 1; }
             .nav-item-mob.active { color: var(--accent-color); }
             .nav-item-mob span.icon { font-size: 20px; }
         }
         @media (min-width: 801px) {
             .finance-panel-wrapper { display: block !important; }
             .bottom-nav { display: none; }
+            .drawer-overlay, .mobile-drawer { display: none; }
         }
     </style>
 </head>
 <body>
     <div id="toast-container"></div>
     
-    <!-- Spinner Silencioso no topo -->
     <div id="sync-indicador"><div class="mini-spinner"></div>Sincronizando...</div>
     
-    <!-- ECRÃ DE LOGIN -->
+    <!-- ECRÃ LOGIN (SESSION) -->
     <div id="login-overlay" class="hidden">
         <div class="login-box">
             <h2>🔒 Acesso Restrito</h2>
@@ -232,12 +245,17 @@
             <span>📊</span> Painel Estatístico
         </button>
         
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-title">Exportações</div>
+        <button class="nav-item-desk" onclick="iniciarBackupCSV()">
+            <span>📥</span> Exportar Excel
+        </button>
+        <button class="nav-item-desk" onclick="preVisualizarPDF()">
+            <span>📄</span> Gerar PDF
+        </button>
+
         <div style="flex:1"></div>
-        
-        <div style="display: flex; gap: 10px;">
-            <button class="theme-btn" onclick="alternarTema()" style="flex: 1;" title="Mudar Tema">☀️/🌙</button>
-            <button class="theme-btn" onclick="sairApp()" style="flex: 1; border-color: rgba(255, 59, 48, 0.4); color: #ff3b30;" title="Sair">Sair</button>
-        </div>
+        <button class="nav-item-desk" style="justify-content:center; border: 1px solid var(--border-color); color: #ff3b30;" onclick="sairApp()">Terminar Sessão</button>
     </aside>
 
     <!-- BOTTOM NAV (MOBILE) -->
@@ -246,17 +264,29 @@
         <button class="nav-item-mob" id="mob-despesas" onclick="navegarPara('despesas', this)"><span class="icon">🛒</span><span>Despesas</span></button>
         <button class="nav-item-mob" id="mob-agenda" onclick="navegarPara('agenda', this)"><span class="icon">📅</span><span>Agenda</span></button>
         <button class="nav-item-mob" id="mob-dashboard" onclick="navegarPara('dashboard', this)"><span class="icon">📊</span><span>Estatística</span></button>
+        <button class="nav-item-mob" id="mob-mais" onclick="toggleGavetaMais()"><span class="icon">⚙️</span><span>Mais</span></button>
     </nav>
+    
+    <!-- GAVETA MAIS OPÇÕES E EXPORTAÇÃO (MOBILE) -->
+    <div class="drawer-overlay" id="gaveta-fundo" onclick="toggleGavetaMais()"></div>
+    <div class="mobile-drawer" id="gaveta-opcoes">
+        <div class="sidebar-title" style="padding:0 0 10px 0;">Menu Adicional</div>
+        <button class="drawer-btn" onclick="toggleGavetaMais(); iniciarBackupCSV();"><span>📥 Exportar Excel</span><span>›</span></button>
+        <button class="drawer-btn" onclick="toggleGavetaMais(); preVisualizarPDF();"><span>📄 Gerar PDF</span><span>›</span></button>
+        <button class="drawer-btn" onclick="alternarTema()"><span>☀️ Modo Claro / 🌙 Escuro</span><span></span></button>
+        <button class="drawer-btn" style="color: #ff3b30;" onclick="toggleGavetaMais(); sairApp();"><span>🚪 Terminar Sessão</span><span></span></button>
+    </div>
 
-    <!-- CONTENT -->
+    <!-- MAIN -->
     <main class="main-content">
         <div class="app-container">
             <header class="header">
-                <h1 style="margin:0; letter-spacing: -0.5px;">Gestão de Folhas</h1>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-acao btn-download" onclick="iniciarBackupCSV()">📥 CSV</button>
-                    <button class="btn-acao btn-download" style="background:#ff3b30;" onclick="preVisualizarPDF()">📄 PDF</button>
-                </div>
+                <!-- Vazio à esquerda. Pode adicionar um logo futuramemte se quiser. -->
+                <div style="width: 40px; height: 40px;"></div> 
+                
+                <h1>Gestão de Folhas</h1>
+                
+                <button class="theme-btn" onclick="alternarTema()" title="Mudar Tema">☀️/🌙</button>
             </header>
             
             <div class="summary-panel">
@@ -265,7 +295,7 @@
                 <div class="summary-item"><span class="val" id="total_ganho">0.00 €</span><span class="lab">Faturação Bruta</span></div>
             </div>
 
-            <!-- FORMULÁRIO -->
+            <!-- FORMULÁRIO CENTRALIZADO -->
             <div class="form-centralized">
                 <div class="form-wrapper-inner">
                     <div class="form-row-top">
@@ -310,19 +340,15 @@
                 </div>
             </div>
 
-            <!-- PESQUISA E FILTROS -->
+            <!-- PESQUISA -->
             <div class="search-filter-bar">
-                <div class="search-box">
-                    <span style="color:var(--text-muted); font-size:18px;">🔍</span>
-                    <input type="text" id="pesquisa_geral" placeholder="Pesquisar cliente..." oninput="redefinirPaginaE_Renderizar()">
-                </div>
+                <div class="search-box"><span style="color:var(--text-muted); font-size:18px;">🔍</span><input type="text" id="pesquisa_geral" placeholder="Pesquisar cliente..." oninput="redefinirPaginaE_Renderizar()"></div>
                 <div class="filter-selects">
                     <select id="filtro_mes" onchange="redefinirPaginaE_Renderizar()"><option value="todos">Mês: Todos</option></select>
                     <select id="filtro_cliente" onchange="redefinirPaginaE_Renderizar()"><option value="todos">Cliente: Todos</option></select>
                 </div>
             </div>
 
-            <!-- TABELA PAGINADA -->
             <div class="table-container">
                 <table>
                     <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Valor/h</th><th>Total</th><th style="text-align:right">Ações</th></tr></thead>
@@ -337,7 +363,7 @@
         </div>
     </main>
 
-    <!-- MODAL DE AGENDA -->
+    <!-- MODAIS RESTANTES -->
     <div id="modal-agenda" class="modal-overlay">
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header"><h2 id="titulo_modal_agenda">📅 Agenda de Compromissos</h2></div>
@@ -362,13 +388,10 @@
                     </table>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-agenda'); sincronizarNavHome();">Fechar/Voltar</button>
-            </div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="fecharModal('modal-agenda'); sincronizarNavHome();">Fechar/Voltar</button></div>
         </div>
     </div>
 
-    <!-- MODAL HISTÓRICO DE DESPESAS -->
     <div id="modal-lista-despesas" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -383,13 +406,10 @@
                     </table>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-lista-despesas'); sincronizarNavHome();">Fechar/Voltar</button>
-            </div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="fecharModal('modal-lista-despesas'); sincronizarNavHome();">Fechar/Voltar</button></div>
         </div>
     </div>
 
-    <!-- MODAL ADICIONAR / EDITAR DESPESA -->
     <div id="modal-despesa" class="modal-overlay" style="z-index: 2500;">
         <div class="modal-content" style="max-width: 450px; height: auto;">
             <div class="modal-header"><h2 id="titulo_modal_despesa">🛒 Nova Despesa</h2></div>
@@ -397,36 +417,24 @@
                 <div class="input-group" style="margin-bottom:15px;"><label>Data</label><input type="date" id="d_data"></div>
                 <div class="input-group" style="margin-bottom:15px;"><label>Categoria</label>
                     <select id="d_categoria">
-                        <option value="Combustível">Combustível</option>
-                        <option value="Portagens">Portagens</option>
-                        <option value="Alimentação">Alimentação</option>
-                        <option value="Materiais">Materiais</option>
-                        <option value="Outros">Outros</option>
+                        <option value="Combustível">Combustível</option><option value="Portagens">Portagens</option><option value="Alimentação">Alimentação</option><option value="Materiais">Materiais</option><option value="Outros">Outros</option>
                     </select>
                 </div>
                 <div class="input-group" style="margin-bottom:15px;"><label>Descrição Opcional</label><input type="text" id="d_descricao" placeholder="Ex: Galp A1"></div>
                 <div class="input-group" style="margin-bottom:15px;"><label>Total Pago (€)</label><input type="number" id="d_valor" step="0.01" style="font-size:20px; font-weight:bold;"></div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-despesa')">Cancelar</button>
-                <button class="btn-confirm" onclick="guardarDespesa()">Gravar</button>
-            </div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="fecharModal('modal-despesa')">Cancelar</button><button class="btn-confirm" onclick="guardarDespesa()">Gravar</button></div>
         </div>
     </div>
 
-    <!-- MODAL PRÉ-VISUALIZAÇÃO DO PDF -->
     <div id="modal-pdf" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header"><h2>📄 Visualizador PDF</h2></div>
             <div class="modal-body" style="padding:0; background:#cacaca;"><iframe id="pdf-preview-frame" style="width:100%; height:100%; border:none;"></iframe></div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-pdf')">Anular</button>
-                <button class="btn-confirm" onclick="gravarPDFFinal()">Descarregar Ficheiro</button>
-            </div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="fecharModal('modal-pdf')">Anular</button><button class="btn-confirm" onclick="gravarPDFFinal()">Descarregar Ficheiro</button></div>
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO -->
     <div id="modal-confirm" class="modal-overlay" style="z-index: 3000;">
         <div class="modal-content" style="height: auto; max-width: 400px; padding: 25px;">
             <div id="modal-title" style="font-weight: 800; font-size: 18px; margin-bottom: 12px; text-align: center;">Atenção</div>
@@ -438,7 +446,6 @@
         </div>
     </div>
 
-    <!-- MODAL DASHBOARD -->
     <div id="modal-dashboard" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header"><h2>📈 Estatísticas Financeiras</h2></div>
@@ -449,15 +456,11 @@
                     <div class="chart-container" style="grid-column: 1 / -1;"><h3 style="margin-top:0; font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Distribuição de Despesas</h3><div class="chart-wrapper"><canvas id="graficoDespesas"></canvas></div></div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="fecharModal('modal-dashboard'); sincronizarNavHome();">Fechar/Voltar</button>
-            </div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="fecharModal('modal-dashboard'); sincronizarNavHome();">Fechar/Voltar</button></div>
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!--         MOTOR JAVASCRIPT INTELIGENTE       -->
-    <!-- ========================================== -->
+    <!-- JS CENTRAL -->
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxp9k3cZ8KtDKwPziD7gStD1596mz2SPVo1TLC7hB3fo3VUNknwRaRySKXGiFPm4W5amQ/exec";
         
@@ -466,75 +469,57 @@
         let documentoPDFFinal = null; let nomePDFFinal = ""; 
         let chartClientesInst=null, chartMesesInst=null, chartDespesasInst=null;
         
-        // Paginação
-        let paginaAtual = 1;
-        const ITENS_POR_PAGINA = 15;
+        let paginaAtual = 1; const ITENS_POR_PAGINA = 15;
         
-        // O Storage Agora utiliza Memória de Sessão (Desaparece ao fechar)
+        // Memória da Sessão (Eliminada a palavra passe ao fechar)
         let pinApp = sessionStorage.getItem('app_pin') || '';
 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(reg => reg.update()); 
 
-        // --- SISTEMAS DE NOTIFICAÇÃO E LOADERS ---
+        window.addEventListener("beforeunload", () => {
+             sessionStorage.removeItem('app_pin'); sessionStorage.removeItem('app_cache');
+        });
+
         function showToast(msg, isSync = false) {
-            const t = document.createElement('div');
-            t.className = 'toast ' + (isSync ? 'sync' : '');
-            t.innerHTML = (isSync ? '☁️ ' : 'ℹ️ ') + msg;
-            document.getElementById('toast-container').appendChild(t);
+            const t = document.createElement('div'); t.className = 'toast ' + (isSync ? 'sync' : ''); t.innerHTML = (isSync ? '☁️ ' : 'ℹ️ ') + msg; document.getElementById('toast-container').appendChild(t);
             setTimeout(() => t.classList.add('show'), 10);
             setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, isSync ? 2000 : 3000);
         }
+        function setSyncBackground(ativo) { const ind = document.getElementById('sync-indicador'); if (ativo) ind.classList.add('active'); else ind.classList.remove('active'); }
 
-        function setSyncBackground(ativo) {
-            const ind = document.getElementById('sync-indicador');
-            if (ativo) ind.classList.add('active'); else ind.classList.remove('active');
+        // --- SISTEMA MÓVEL DA GAVETA ---
+        function toggleGavetaMais() {
+            const fundo = document.getElementById('gaveta-fundo'); const gaveta = document.getElementById('gaveta-opcoes'); const bMais = document.getElementById('mob-mais');
+            if(gaveta.classList.contains('show')){ gaveta.classList.remove('show'); fundo.classList.remove('show'); bMais.classList.remove('active'); } 
+            else{ gaveta.classList.add('show'); fundo.classList.add('show'); bMais.classList.add('active'); }
         }
 
-        // --- TECLADO VIRTUAL PIN ---
+        // --- TECLADO E LOGIN ---
         function teclarPIN(num) { const i = document.getElementById('pin-input'); if(i.value.length < 8) { i.value+=num; document.getElementById('pin-error-msg').style.display='none'; } }
         function limparPIN() { document.getElementById('pin-input').value=''; document.getElementById('pin-error-msg').style.display='none'; }
-        function apagarUltimoPIN() { const i = document.getElementById('pin-input'); i.value=i.value.slice(0,-1); document.getElementById('pin-error-msg').style.display='none'; }
+        function apagarUltimoPIN() { const i = document.getElementById('pin-input'); i.value=i.value.slice(0,-1);  }
 
         async function verificarPinLogin() {
-            const p = document.getElementById('pin-input').value;
-            if(!p) { showToast("Insira o código."); return; }
-            pinApp = p; 
-            sessionStorage.setItem('app_pin', pinApp); // Guarda o PIN temporariamente
-            
-            // Pede imediatamente informações à nuvem para validar o PIN
+            const p = document.getElementById('pin-input').value; if(!p) { showToast("Insira o código."); return; }
+            pinApp = p; sessionStorage.setItem('app_pin', pinApp); 
             await puxarDaNuvem(true);
         }
 
         function sairApp() {
-            pinApp = ''; 
-            sessionStorage.removeItem('app_pin');
-            sessionStorage.removeItem('app_cache');
-            document.getElementById('login-overlay').classList.remove('hidden');
-            limparPIN(); registos=[]; despesasRegistadas=[]; agendaRegistada=[];
-            renderizarTabela();
+            pinApp = ''; sessionStorage.removeItem('app_pin'); sessionStorage.removeItem('app_cache');
+            document.getElementById('login-overlay').classList.remove('hidden'); limparPIN(); registos=[]; despesasRegistadas=[]; agendaRegistada=[]; renderizarTabela();
         }
 
-        // --- NAVEGAÇÃO / AMBIENTE DASHBOARD ---
         function navegarPara(seccao, botao) {
-            document.querySelectorAll('.nav-item-desk, .nav-item-mob').forEach(b => b.classList.remove('active'));
-            if(botao) botao.classList.add('active');
+            document.querySelectorAll('.nav-item-desk, .nav-item-mob').forEach(b => b.classList.remove('active')); if(botao) botao.classList.add('active');
             fecharModal('modal-lista-despesas'); fecharModal('modal-agenda'); fecharModal('modal-dashboard');
-            
-            if (seccao === 'despesas') abrirModalListaDespesas();
-            else if (seccao === 'agenda') abrirModalAgenda();
-            else if (seccao === 'dashboard') abrirDashboard();
-            else { 
-                document.getElementById('mob-home').classList.add('active'); 
-                document.getElementById('menu-home').classList.add('active'); 
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
-            }
+            if (seccao === 'despesas') abrirModalListaDespesas(); else if (seccao === 'agenda') abrirModalAgenda(); else if (seccao === 'dashboard') abrirDashboard(); else { document.getElementById('mob-home').classList.add('active'); document.getElementById('menu-home').classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
         }
         function sincronizarNavHome() { navegarPara('home'); }
-        function toggleFinancas() { const p = document.getElementById('painel-financas'), b = document.querySelector('.btn-toggle-finance'); if(p.style.display==='block') { p.style.display='none'; b.innerText='💰 Mostrar Detalhes Financeiros'; } else { p.style.display='block'; b.innerText='🔼 Ocultar Detalhes'; } }
+        function toggleFinancas() { const p = document.getElementById('painel-financas'), b = document.querySelector('.btn-toggle-finance'); if(p.style.display==='block') { p.style.display='none'; b.innerText='💰 Mostrar Detalhes Fnanceiros'; } else { p.style.display='block'; b.innerText='🔼 Ocultar Detalhes'; } }
         function alternarTema() { const t = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('tema_final', t); if(chartClientesInst) gerarGraficosGerais(); }
         function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
 
-        // --- PREPARAÇÃO DE DADOS BÁSICA ---
         function formatDataBR(d) { if(!d) return '--'; return String(d).split('T')[0].split('-').reverse().join('/'); }
         function formatDataForm(d) { if(!d) return ''; return String(d).split('T')[0]; }
         function formatHora(h) { if(!h) return '--:--'; if(String(h).includes('T')) { const obj = new Date(h); return obj.getHours().toString().padStart(2,'0')+':'+obj.getMinutes().toString().padStart(2,'0'); } return String(h).substring(0,5); }
@@ -543,336 +528,78 @@
         function atualizarDropdownsFiltros() {
             const cls = [...new Set(registos.map(r => r.cliente).filter(c => c && c.trim() !== ''))].sort();
             document.getElementById('lista_clientes').innerHTML = cls.map(c => `<option value="${c}">`).join('');
-            
-            const sC = document.getElementById('filtro_cliente'); const valC = sC.value;
-            sC.innerHTML = '<option value="todos">Cliente: Todos</option>' + cls.map(c => `<option value="${c}">${c}</option>`).join('');
-            if(cls.includes(valC)) sC.value = valC;
-
+            const sC = document.getElementById('filtro_cliente'); const valC = sC.value; sC.innerHTML = '<option value="todos">Cliente: Todos</option>' + cls.map(c => `<option value="${c}">${c}</option>`).join(''); if(cls.includes(valC)) sC.value = valC;
             const mss = [...new Set(registos.map(r => r.data ? String(r.data).split('T')[0].substring(0,7) : ''))].filter(m=>m).sort().reverse();
-            const sM = document.getElementById('filtro_mes'); const valM = sM.value;
-            sM.innerHTML = '<option value="todos">Mês: Todos</option>' + mss.map(m => { const [a, ms] = m.split('-'); return `<option value="${m}">${new Date(a, ms-1).toLocaleString('pt-PT', {month:'short'})}/${a}</option>`; }).join('');
-            if(mss.includes(valM)) sM.value = valM;
+            const sM = document.getElementById('filtro_mes'); const valM = sM.value; sM.innerHTML = '<option value="todos">Mês: Todos</option>' + mss.map(m => { const [a, ms] = m.split('-'); return `<option value="${m}">${new Date(a, ms-1).toLocaleString('pt-PT', {month:'short'})}/${a}</option>`; }).join(''); if(mss.includes(valM)) sM.value = valM;
         }
 
-        // --- COMUNICAÇÃO CENTRALIZADA DE ARRANQUE ---
         async function puxarDaNuvem(bloqueante) {
             if(bloqueante) setSyncBackground(true);
             try {
                 const res = await fetch(`${GOOGLE_SCRIPT_URL}?nocache=${Date.now()}&pin=${pinApp}`);
                 const json = await res.json();
-                
-                // O servidor respondeu ativamente a dizer que o código é incorreto
-                if (json.erro && json.erro === "PIN incorreto") {
-                    document.getElementById('login-overlay').classList.remove('hidden');
-                    document.getElementById('pin-error-msg').style.display = 'block';
-                    pinApp = ''; sessionStorage.removeItem('app_pin'); sessionStorage.removeItem('app_cache');
-                    document.getElementById('pin-input').value = '';
-                    if(bloqueante) showToast("PIN Rejeitado pelo Servidor.");
-                    return;
-                }
-
-                // Houve sucesso na ligação!
-                document.getElementById('login-overlay').classList.add('hidden');
-                sessionStorage.setItem('app_cache', JSON.stringify(json));
-                carregarListas(json);
-                if(bloqueante) showToast("Dados verificados.", true);
-
-            } catch (e) {
-                console.error(e); 
-                if(bloqueante) showToast("A funcionar offline");
-            } finally { 
-                setSyncBackground(false); 
-            }
+                if (json.erro && json.erro === "PIN incorreto") { document.getElementById('login-overlay').classList.remove('hidden'); document.getElementById('pin-error-msg').style.display = 'block'; pinApp=''; sessionStorage.removeItem('app_pin'); sessionStorage.removeItem('app_cache'); document.getElementById('pin-input').value=''; if(bloqueante) showToast("PIN Rejeitado."); return; }
+                document.getElementById('login-overlay').classList.add('hidden'); sessionStorage.setItem('app_cache', JSON.stringify(json)); carregarListas(json); if(bloqueante) showToast("Dados verificados.", true);
+            } catch (e) { console.error(e); if(bloqueante) showToast("A funcionar offline"); } finally { setSyncBackground(false); }
         }
 
-        function carregarListas(obj) {
-            const fix = (r) => { if (r.data && String(r.data).includes('T')) { const dt = new Date(r.data); if(!isNaN(dt.getTime())) r.data = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); } };
-            if(Array.isArray(obj)) { obj.forEach(fix); registos = obj; despesasRegistadas = []; agendaRegistada = []; } 
-            else if(obj) {
-                if(obj.registos) { obj.registos.forEach(fix); registos = obj.registos; }
-                if(obj.despesas) { obj.despesas.forEach(fix); despesasRegistadas = obj.despesas; }
-                if(obj.agenda)   { obj.agenda.forEach(fix); agendaRegistada = obj.agenda; }
-            }
-            atualizarDropdownsFiltros(); redefinirPaginaE_Renderizar();
-        }
+        function carregarListas(obj) { const fix = (r) => { if (r.data && String(r.data).includes('T')) { const dt = new Date(r.data); if(!isNaN(dt.getTime())) r.data = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); } }; if(Array.isArray(obj)) { obj.forEach(fix); registos = obj; despesasRegistadas = []; agendaRegistada = []; } else if(obj) { if(obj.registos) { obj.registos.forEach(fix); registos = obj.registos; } if(obj.despesas) { obj.despesas.forEach(fix); despesasRegistadas = obj.despesas; } if(obj.agenda) { obj.agenda.forEach(fix); agendaRegistada = obj.agenda; } } atualizarDropdownsFiltros(); redefinirPaginaE_Renderizar(); }
 
-        // --- FILTROS E PAGINAÇÃO ---
-        function redefinirPaginaE_Renderizar() { paginaAtual = 1; renderizarTabela(); }
-        function mudarPagina(delta) { paginaAtual += delta; renderizarTabela(); }
-        
-        function obterRegistosFiltrados() {
-            const pGeral = document.getElementById('pesquisa_geral').value.toLowerCase();
-            const fMes = document.getElementById('filtro_mes').value;
-            const fCli = document.getElementById('filtro_cliente').value;
-            let filtrados = [...registos].sort((a,b) => new Date(b.data) - new Date(a.data));
-            
-            return filtrados.filter(r => {
-                let p = pGeral === "" || (r.cliente && r.cliente.toLowerCase().includes(pGeral));
-                let m = fMes === 'todos' || (r.data && String(r.data).substring(0,7) === fMes);
-                let c = fCli === 'todos' || r.cliente === fCli;
-                return p && m && c;
-            });
-        }
+        function redefinirPaginaE_Renderizar() { paginaAtual = 1; renderizarTabela(); } function mudarPagina(delta) { paginaAtual += delta; renderizarTabela(); }
+        function obterRegistosFiltrados() { const pGeral = document.getElementById('pesquisa_geral').value.toLowerCase(); const fMes = document.getElementById('filtro_mes').value; const fCli = document.getElementById('filtro_cliente').value; let filtrados = [...registos].sort((a,b) => new Date(b.data) - new Date(a.data)); return filtrados.filter(r => { let p = pGeral === "" || (r.cliente && r.cliente.toLowerCase().includes(pGeral)); let m = fMes === 'todos' || (r.data && String(r.data).substring(0,7) === fMes); let c = fCli === 'todos' || r.cliente === fCli; return p && m && c; }); }
 
         function renderizarTabela() {
-            const tbody = document.getElementById('tabela_registos'); tbody.innerHTML = '';
-            const todosFiltrados = obterRegistosFiltrados();
-            
-            let sMin=0, sVal=0; const dias = new Set();
-            todosFiltrados.forEach(r => { if(r.data) dias.add(r.data); sMin += parseInt(r.minutosTotais||0); sVal += parseFloat(r.valorGasto||0); });
+            const tbody = document.getElementById('tabela_registos'); tbody.innerHTML = ''; const todosFiltrados = obterRegistosFiltrados();
+            let sMin=0, sVal=0; const dias = new Set(); todosFiltrados.forEach(r => { if(r.data) dias.add(r.data); sMin += parseInt(r.minutosTotais||0); sVal += parseFloat(r.valorGasto||0); });
             document.getElementById('total_dias').innerText = dias.size; document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`; document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
-            
-            const totalPags = Math.ceil(todosFiltrados.length / ITENS_POR_PAGINA) || 1;
+            const totalPags = Math.ceil(todosFiltrados.length / ITENS_POR_PAGINA) || 1; 
             if(paginaAtual < 1) paginaAtual = 1; if(paginaAtual > totalPags) paginaAtual = totalPags;
-            document.getElementById('paginacao_info').innerText = `Pág ${paginaAtual}/${totalPags}`;
-            document.getElementById('btn_pag_ant').disabled = paginaAtual === 1;
-            document.getElementById('btn_pag_prox').disabled = paginaAtual === totalPags;
-
+            document.getElementById('paginacao_info').innerText = `Pág ${paginaAtual}/${totalPags}`; document.getElementById('btn_pag_ant').disabled = paginaAtual === 1; document.getElementById('btn_pag_prox').disabled = paginaAtual === totalPags;
             const slice = todosFiltrados.slice((paginaAtual-1)*ITENS_POR_PAGINA, paginaAtual*ITENS_POR_PAGINA);
             if(slice.length === 0) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Sem registos encontrados.</td></tr>';
-            
-            slice.forEach(r => {
-                tbody.innerHTML += `<tr>
-                    <td data-label="Data">${formatDataBR(r.data)}</td>
-                    <td data-label="Cliente"><strong>${r.cliente || '--'}</strong></td>
-                    <td data-label="Início">${formatHora(r.inicio)}</td>
-                    <td data-label="Fim">${formatHora(r.fim)}</td>
-                    <td data-label="Duração"><span style="background:var(--input-bg); padding:4px 8px; border-radius:6px; font-weight:600; font-size:12px; border:1px solid var(--border-color);">${r.duracaoTexto||'--'}</span></td>
-                    <td data-label="Valor/h">${parseFloat(r.taxaUsada||0).toFixed(2)}€</td>
-                    <td data-label="Total" style="color:var(--accent-color); font-weight:bold;">${parseFloat(r.valorGasto||0).toFixed(2)}€</td>
-                    <td class="action-btns">
-                        <button class="edit-btn" onclick="editarRegisto('${r.id}')">✏️</button>
-                        <button class="delete-btn" onclick="perguntarRemover('${r.id}', 'este registo de horas', 'registos')">🗑️</button>
-                    </td>
-                </tr>`;
-            });
+            slice.forEach(r => { tbody.innerHTML += `<tr><td data-label="Data">${formatDataBR(r.data)}</td><td data-label="Cliente"><strong>${r.cliente || '--'}</strong></td><td data-label="Início">${formatHora(r.inicio)}</td><td data-label="Fim">${formatHora(r.fim)}</td><td data-label="Duração"><span style="background:var(--input-bg); padding:4px 8px; border-radius:6px; font-weight:600; font-size:12px; border:1px solid var(--border-color);">${r.duracaoTexto||'--'}</span></td><td data-label="Valor/h">${parseFloat(r.taxaUsada||0).toFixed(2)}€</td><td data-label="Total" style="color:var(--accent-color); font-weight:bold;">${parseFloat(r.valorGasto||0).toFixed(2)}€</td><td class="action-btns"><button class="edit-btn" onclick="editarRegisto('${r.id}')">✏️</button><button class="delete-btn" onclick="perguntarRemover('${r.id}', 'este registo de horas', 'registos')">🗑️</button></td></tr>`; });
             calcularFinancas();
         }
 
-        // --- SISTEMA OPTIMISTIC PARA REGISTOS ---
-        function editarRegisto(id) {
-            const r = registos.find(x => String(x.id) === String(id)); if (!r) return;
-            document.getElementById('data').value = formatDataForm(r.data); document.getElementById('cliente').value = r.cliente || ''; document.getElementById('hora_inicio').value = formatHora(r.inicio); document.getElementById('hora_fim').value = formatHora(r.fim); document.getElementById('taxa_hora').value = r.taxaUsada;
-            idEmEdicao = id; const btn = document.getElementById('btn_submit'); btn.innerText = "GRAVAR ALTERAÇÕES"; btn.style.backgroundColor = "#ff9500"; window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        
-        function adicionarRegisto() {
-            const d=document.getElementById('data').value, cli=document.getElementById('cliente').value, i=document.getElementById('hora_inicio').value, f=document.getElementById('hora_fim').value, t=parseFloat(document.getElementById('taxa_hora').value);
-            if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos obrigatórios."); return; }
-            const c = calcDiferenca(i,f);
-            const req = { pin: pinApp, tipo: 'registo', id: idEmEdicao || 'R_'+Date.now(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec*t, cliente: cli };
-            
-            const idx = registos.findIndex(x => String(x.id) === String(req.id));
-            if(idx > -1) registos[idx] = req; else registos.unshift(req);
-            
-            localStorage.setItem('taxa_hora_guardada', t);
-            idEmEdicao = null; const btn = document.getElementById('btn_submit'); btn.innerText = "+ ADICIONAR REGISTO"; btn.style.backgroundColor = ""; 
-            ['cliente','hora_inicio','hora_fim'].forEach(x=>document.getElementById(x).value='');
-            
-            atualizarDropdownsFiltros(); renderizarTabela();
-            sincronizarAlteracao(req, "Registo guardado com sucesso.");
-        }
+        function editarRegisto(id) { const r = registos.find(x => String(x.id) === String(id)); if (!r) return; document.getElementById('data').value = formatDataForm(r.data); document.getElementById('cliente').value = r.cliente || ''; document.getElementById('hora_inicio').value = formatHora(r.inicio); document.getElementById('hora_fim').value = formatHora(r.fim); document.getElementById('taxa_hora').value = r.taxaUsada; idEmEdicao = id; const btn = document.getElementById('btn_submit'); btn.innerText = "GRAVAR ALTERAÇÕES"; btn.style.backgroundColor = "#ff9500"; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function adicionarRegisto() { const d=document.getElementById('data').value, cli=document.getElementById('cliente').value, i=document.getElementById('hora_inicio').value, f=document.getElementById('hora_fim').value, t=parseFloat(document.getElementById('taxa_hora').value); if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos obrigatórios."); return; } const c = calcDiferenca(i,f); const req = { pin: pinApp, tipo: 'registo', id: idEmEdicao || 'R_'+Date.now(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec*t, cliente: cli }; const idx = registos.findIndex(x => String(x.id) === String(req.id)); if(idx > -1) registos[idx] = req; else registos.unshift(req); localStorage.setItem('taxa_hora_guardada', t); idEmEdicao = null; const btn = document.getElementById('btn_submit'); btn.innerText = "+ ADICIONAR REGISTO"; btn.style.backgroundColor = ""; ['cliente','hora_inicio','hora_fim'].forEach(x=>document.getElementById(x).value=''); atualizarDropdownsFiltros(); renderizarTabela(); sincronizarAlteracao(req, "Registo guardado com sucesso."); }
 
-        // --- SISTEMA OPTIMISTIC DESPESAS ---
-        function abrirModalListaDespesas() {
-            const corp = document.getElementById('lista_despesas_corpo'); corp.innerHTML='';
-            let tds = [...despesasRegistadas].sort((a,b) => new Date(b.data) - new Date(a.data));
-            if(tds.length===0) corp.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:var(--text-muted);">Sem despesas na cloud.</td></tr>`;
-            tds.forEach(d => {
-                corp.innerHTML += `<tr><td data-label="Data">${formatDataBR(d.data)}</td><td data-label="Cat">${d.categoria}</td><td data-label="Desc">${d.descricao}</td><td data-label="Valor"><strong>${parseFloat(d.valor).toFixed(2)}€</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button><button class="delete-btn" onclick="perguntarRemover('${d.id}', 'esta despesa', 'despesasRegistadas')">🗑️</button></td></tr>`;
-            });
-            document.getElementById('modal-lista-despesas').classList.add('show');
-        }
+        function abrirModalListaDespesas() { const corp = document.getElementById('lista_despesas_corpo'); corp.innerHTML=''; let tds = [...despesasRegistadas].sort((a,b) => new Date(b.data) - new Date(a.data)); if(tds.length===0) corp.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:var(--text-muted);">Sem despesas.</td></tr>`; tds.forEach(d => { corp.innerHTML += `<tr><td data-label="Data">${formatDataBR(d.data)}</td><td data-label="Cat">${d.categoria}</td><td data-label="Desc">${d.descricao}</td><td data-label="Valor"><strong>${parseFloat(d.valor).toFixed(2)}€</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button><button class="delete-btn" onclick="perguntarRemover('${d.id}', 'esta despesa', 'despesasRegistadas')">🗑️</button></td></tr>`; }); document.getElementById('modal-lista-despesas').classList.add('show'); }
         function abrirModalDespesa() { idEmEdicaoDespesa=null; document.getElementById('titulo_modal_despesa').innerText="🛒 Nova Despesa"; document.getElementById('d_data').valueAsDate=new Date(); document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; document.getElementById('modal-despesa').classList.add('show'); }
         function editarDespesa(id) { const d = despesasRegistadas.find(x => String(x.id) === String(id)); if(!d) return; idEmEdicaoDespesa=id; document.getElementById('titulo_modal_despesa').innerText="✏️ Atualizar Despesa"; document.getElementById('d_data').value=formatDataForm(d.data); document.getElementById('d_categoria').value=d.categoria; document.getElementById('d_descricao').value=d.descricao; document.getElementById('d_valor').value=d.valor; document.getElementById('modal-despesa').classList.add('show'); }
-        
-        function guardarDespesa() {
-            const d=document.getElementById('d_data').value, cat=document.getElementById('d_categoria').value, desc=document.getElementById('d_descricao').value, val=parseFloat(document.getElementById('d_valor').value);
-            if(!d || isNaN(val)) { showToast("Preencha data e valor!"); return; }
-            const req = { pin: pinApp, tipo: 'despesa', id: idEmEdicaoDespesa || 'D_'+Date.now(), data: d, categoria: cat, descricao: desc, valor: val };
-            
-            const idx = despesasRegistadas.findIndex(x => String(x.id) === String(req.id));
-            if(idx > -1) despesasRegistadas[idx] = req; else despesasRegistadas.unshift(req);
-            
-            fecharModal('modal-despesa'); abrirModalListaDespesas(); calcularFinancas();
-            sincronizarAlteracao(req, "Despesa arquivada.");
-        }
+        function guardarDespesa() { const d=document.getElementById('d_data').value, cat=document.getElementById('d_categoria').value, desc=document.getElementById('d_descricao').value, val=parseFloat(document.getElementById('d_valor').value); if(!d || isNaN(val)) { showToast("Preencha data e valor!"); return; } const req = { pin: pinApp, tipo: 'despesa', id: idEmEdicaoDespesa || 'D_'+Date.now(), data: d, categoria: cat, descricao: desc, valor: val }; const idx = despesasRegistadas.findIndex(x => String(x.id) === String(req.id)); if(idx > -1) despesasRegistadas[idx] = req; else despesasRegistadas.unshift(req); fecharModal('modal-despesa'); abrirModalListaDespesas(); calcularFinancas(); sincronizarAlteracao(req, "Despesa arquivada."); }
 
-        // --- SISTEMA OPTIMISTIC AGENDA ---
         function abrirModalAgenda() { limparFormularioAgenda(); renderizarAgenda(); document.getElementById('modal-agenda').classList.add('show'); }
         function limparFormularioAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerText="Novo Evento"; document.getElementById('a_data').valueAsDate=new Date(); document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; document.getElementById('btn_guardar_agenda').innerText="+ Guardar na Agenda"; document.getElementById('btn_cancelar_agenda').style.display="none"; }
-        function renderizarAgenda() {
-            const crp = document.getElementById('lista_agenda_corpo'); crp.innerHTML='';
-            let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data));
-            if(ods.length===0) { crp.innerHTML=`<tr><td colspan="4" style="text-align:center; padding:15px; color:var(--text-muted);">Agenda limpa.</td></tr>`; return; }
-            ods.forEach(a => crp.innerHTML+=`<tr><td data-label="Data">${formatDataBR(a.data)}</td><td data-label="Hora"><span style="background:var(--card-bg); border:1px solid var(--border-color); padding:3px 8px; border-radius:4px; font-size:11px;">${formatHora(a.hora)}</span></td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="perguntarRemover('${a.id}', 'este evento', 'agendaRegistada')">🗑️</button></td></tr>`);
-        }
+        function renderizarAgenda() { const crp = document.getElementById('lista_agenda_corpo'); crp.innerHTML=''; let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data)); if(ods.length===0) { crp.innerHTML=`<tr><td colspan="4" style="text-align:center; padding:15px; color:var(--text-muted);">Agenda limpa.</td></tr>`; return; } ods.forEach(a => crp.innerHTML+=`<tr><td data-label="Data">${formatDataBR(a.data)}</td><td data-label="Hora"><span style="background:var(--card-bg); border:1px solid var(--border-color); padding:3px 8px; border-radius:4px; font-size:11px;">${formatHora(a.hora)}</span></td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="perguntarRemover('${a.id}', 'este evento', 'agendaRegistada')">🗑️</button></td></tr>`); }
         function editarAgenda(id) { const e = agendaRegistada.find(x => String(x.id) === String(id)); if(!e) return; idEmEdicaoAgenda=id; document.getElementById('titulo_form_agenda').innerText="✏️ A Atualizar Evento"; document.getElementById('a_data').value=formatDataForm(e.data); document.getElementById('a_hora').value=(formatHora(e.hora)!=='--:--')?formatHora(e.hora):''; document.getElementById('a_titulo').value=e.titulo; document.getElementById('btn_guardar_agenda').innerText="Confirmar"; document.getElementById('btn_cancelar_agenda').style.display="block"; }
-        
-        function guardarAgenda() {
-            const d=document.getElementById('a_data').value, h=document.getElementById('a_hora').value, t=document.getElementById('a_titulo').value;
-            if(!d || !t) { showToast("Falta a data ou o título."); return; }
-            const req = { pin: pinApp, tipo: 'agenda', id: idEmEdicaoAgenda || 'A_'+Date.now(), data: d, hora: h, titulo: t };
-            
-            const idx = agendaRegistada.findIndex(x => String(x.id) === String(req.id));
-            if(idx > -1) agendaRegistada[idx] = req; else agendaRegistada.push(req);
-            
-            limparFormularioAgenda(); renderizarAgenda();
-            sincronizarAlteracao(req, "Agenda da Web sincronizada.");
-        }
+        function guardarAgenda() { const d=document.getElementById('a_data').value, h=document.getElementById('a_hora').value, t=document.getElementById('a_titulo').value; if(!d || !t) { showToast("Falta a data ou o título."); return; } const req = { pin: pinApp, tipo: 'agenda', id: idEmEdicaoAgenda || 'A_'+Date.now(), data: d, hora: h, titulo: t }; const idx = agendaRegistada.findIndex(x => String(x.id) === String(req.id)); if(idx > -1) agendaRegistada[idx] = req; else agendaRegistada.push(req); limparFormularioAgenda(); renderizarAgenda(); sincronizarAlteracao(req, "Agenda guardada."); }
 
-        // --- SISTEMA PARTILHADO DE ELIMINAÇÃO OPTIMISTIC ---
-        function perguntarRemover(id, nome, arrayAlvo) {
-            document.getElementById('modal-title').innerText = "Apagar Permanentemente";
-            document.getElementById('modal-text').innerText = `Isto irá apagar ${nome} em todos os dispositivos.`;
-            const btn = document.getElementById('btn-confirm-action'); 
-            const nBtn = btn.cloneNode(true); btn.parentNode.replaceChild(nBtn, btn);
-            nBtn.onclick = () => { fecharModal('modal-confirm'); apagarGeral(id, arrayAlvo); };
-            document.getElementById('modal-confirm').classList.add('show');
-        }
-        
-        function apagarGeral(id, arrayAlvo) {
-            if(arrayAlvo === 'registos') { registos = registos.filter(x => String(x.id) !== String(id)); redefinirPaginaE_Renderizar(); }
-            if(arrayAlvo === 'despesasRegistadas') { despesasRegistadas = despesasRegistadas.filter(x => String(x.id) !== String(id)); abrirModalListaDespesas(); calcularFinancas(); }
-            if(arrayAlvo === 'agendaRegistada') { agendaRegistada = agendaRegistada.filter(x => String(x.id) !== String(id)); renderizarAgenda(); }
-            
-            setSyncBackground(true);
-            fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`)
-                .then(res => res.json())
-                .then(json => { 
-                    if(json.sucesso) showToast("Vaporizado da Nuvem.", true); 
-                    else if(json.erro === "PIN incorreto") window.location.reload();
-                    else showToast("Falhou ao apagar na nuvem."); 
-                })
-                .catch(() => showToast("Falhou conexão à internet."))
-                .finally(() => setSyncBackground(false));
-            
-            sessionStorage.setItem('app_cache', JSON.stringify({registos, despesas:despesasRegistadas, agenda:agendaRegistada}));
-        }
+        function perguntarRemover(id, nome, arrayAlvo) { document.getElementById('modal-title').innerText = "Apagar Permanentemente"; document.getElementById('modal-text').innerText = `Isto irá apagar ${nome} em todos os dispositivos.`; const btn = document.getElementById('btn-confirm-action'); const nBtn = btn.cloneNode(true); btn.parentNode.replaceChild(nBtn, btn); nBtn.onclick = () => { fecharModal('modal-confirm'); apagarGeral(id, arrayAlvo); }; document.getElementById('modal-confirm').classList.add('show'); }
+        function apagarGeral(id, arrayAlvo) { if(arrayAlvo === 'registos') { registos = registos.filter(x => String(x.id) !== String(id)); redefinirPaginaE_Renderizar(); } if(arrayAlvo === 'despesasRegistadas') { despesasRegistadas = despesasRegistadas.filter(x => String(x.id) !== String(id)); abrirModalListaDespesas(); calcularFinancas(); } if(arrayAlvo === 'agendaRegistada') { agendaRegistada = agendaRegistada.filter(x => String(x.id) !== String(id)); renderizarAgenda(); } setSyncBackground(true); fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`).then(res => res.json()).then(json => { if(json.sucesso) showToast("Vaporizado da Nuvem.", true); else if(json.erro === "PIN incorreto") window.location.reload(); else showToast("Falhou ao apagar na nuvem."); }).catch(() => showToast("Falhou conexão.")).finally(() => setSyncBackground(false)); sessionStorage.setItem('app_cache', JSON.stringify({registos, despesas:despesasRegistadas, agenda:agendaRegistada})); }
+        function sincronizarAlteracao(req, msgSucesso) { setSyncBackground(true); fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) }).then(res => res.json()).then(j => { if(j.sucesso) showToast(msgSucesso, true); else if(j.erro === "PIN incorreto") window.location.reload(); else showToast("Erro alojamento: "+j.erro); }).catch(() => showToast("Salvo offline.")).finally(() => setSyncBackground(false)); sessionStorage.setItem('app_cache', JSON.stringify({registos, despesas:despesasRegistadas, agenda:agendaRegistada})); }
 
-        function sincronizarAlteracao(req, msgSucesso) {
-            setSyncBackground(true);
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) })
-                .then(res => res.json())
-                .then(j => { 
-                    if(j.sucesso) showToast(msgSucesso, true); 
-                    else if(j.erro === "PIN incorreto") window.location.reload();
-                    else showToast("Erro alojamento: "+j.erro); 
-                })
-                .catch(() => showToast("Guardado na memória local."))
-                .finally(() => setSyncBackground(false));
-                
-            sessionStorage.setItem('app_cache', JSON.stringify({registos, despesas:despesasRegistadas, agenda:agendaRegistada}));
-        }
+        function calcularFinancas() { const fM = document.getElementById('filtro_mes').value; let df = despesasRegistadas; if(fM !== 'todos') df = df.filter(d => d.data && String(d.data).substring(0,7) === fM); const rReal = df.reduce((s,d) => s + parseFloat(d.valor||0), 0); document.getElementById('f_despesas_totais').innerText = rReal.toFixed(2) + ' €'; const b = parseFloat(document.getElementById('total_ganho').innerText.replace('€',''))||0; const txIRS = (parseFloat(document.getElementById('inp_irs').value)||0)/100; const txSS = (parseFloat(document.getElementById('inp_ss').value)||0)/100; const tImp = b * (txIRS+txSS); document.getElementById('f_impostos').innerText = tImp.toFixed(2) + ' €'; document.getElementById('f_liquido').innerText = (b - rReal - tImp).toFixed(2) + ' €'; localStorage.setItem('tx_irs', document.getElementById('inp_irs').value); localStorage.setItem('tx_ss', document.getElementById('inp_ss').value); }
+        function iniciarBackupCSV() { const f = obterRegistosFiltrados(); if(f.length===0){showToast("Nada para exportar");return;} let c = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Valor Hora;Valor\n"; f.forEach(r => c += `${formatDataForm(r.data)};${r.cliente||''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`); const b = new Blob([c], {type:'text/csv;charset=utf-8;'}); const l = URL.createObjectURL(b); const a = document.createElement("a"); a.href=l; a.download="Registos_Horas.csv"; a.click(); showToast("CSV Guardado."); }
+        function loadScript(src) { return new Promise((res, rej) => { if(document.querySelector(`script[src="${src}"]`)) return res(); const s = document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
 
-        // --- CÁLCULO FINANCEIRO DETALHADO ---
-        function calcularFinancas() {
-            const fM = document.getElementById('filtro_mes').value;
-            let df = despesasRegistadas; if(fM !== 'todos') df = df.filter(d => d.data && String(d.data).substring(0,7) === fM);
-            const rReal = df.reduce((s,d) => s + parseFloat(d.valor||0), 0);
-            document.getElementById('f_despesas_totais').innerText = rReal.toFixed(2) + ' €';
-            const b = parseFloat(document.getElementById('total_ganho').innerText.replace('€',''))||0;
-            const txIRS = (parseFloat(document.getElementById('inp_irs').value)||0)/100;
-            const txSS = (parseFloat(document.getElementById('inp_ss').value)||0)/100;
-            const tImp = b * (txIRS+txSS);
-            document.getElementById('f_impostos').innerText = tImp.toFixed(2) + ' €';
-            document.getElementById('f_liquido').innerText = (b - rReal - tImp).toFixed(2) + ' €';
-            localStorage.setItem('tx_irs', document.getElementById('inp_irs').value); localStorage.setItem('tx_ss', document.getElementById('inp_ss').value);
-        }
-
-        // --- SISTEMAS DE EXPORTAÇÃO CSV ---
-        function iniciarBackupCSV() {
-            const f = obterRegistosFiltrados(); if(f.length===0){showToast("Nada para exportar");return;}
-            let c = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Valor Hora;Valor\n";
-            f.forEach(r => c += `${formatDataForm(r.data)};${r.cliente||''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`);
-            const b = new Blob([c], {type:'text/csv;charset=utf-8;'}); const l = URL.createObjectURL(b);
-            const a = document.createElement("a"); a.href=l; a.download="Registos_Horas.csv"; a.click(); showToast("CSV Guardado.");
-        }
-
-        // --- IMPORTADOR DE LIBRARIAS (LAZY LOAD) ---
-        function loadScript(src) {
-            return new Promise((res, rej) => {
-                if(document.querySelector(`script[src="${src}"]`)) return res();
-                const s = document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s);
-            });
-        }
-
-        async function preVisualizarPDF() {
-            const d = obterRegistosFiltrados(); if(d.length===0){showToast("Tabela vazia.");return;}
-            setSyncBackground(true);
-            try {
-                await loadScript("[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js)");
-                await loadScript("[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js)");
-                const doc = new window.jspdf.jsPDF();
-                doc.setFillColor(29,29,31); doc.rect(0,0,210,35,'F');
-                doc.setTextColor(255,255,255); doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.text("EXTRATO DE HORAS", 14, 23);
-                doc.setTextColor(190,190,190); doc.setFontSize(10); doc.text(`Ref: ${new Date().toLocaleDateString('pt-PT')}`, 14, 45);
-                
-                doc.autoTable({
-                    startY: 55, head: [['Data', 'Cliente', 'Tempo', 'Rate', 'Total']],
-                    body: d.map(r => [formatDataBR(r.data), r.cliente||'-', r.duracaoTexto, parseFloat(r.taxaUsada).toFixed(2)+'€', parseFloat(r.valorGasto).toFixed(2)+'€']),
-                    theme: 'striped', headStyles: { fillColor: [40, 120, 255] }
-                });
-                
-                doc.setFont("helvetica","bold"); doc.setFontSize(14); doc.setTextColor(0,0,0);
-                doc.text(`Valor Bruto Cobrado: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY||55)+15);
-                
-                documentoPDFFinal = doc; nomePDFFinal = "Extrato_Horas.pdf";
-                document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob'));
-                document.getElementById('modal-pdf').classList.add('show');
-            } catch(e) { showToast("Ligação lenta para PDF."); }
-            finally { setSyncBackground(false); }
-        }
+        async function preVisualizarPDF() { const d = obterRegistosFiltrados(); if(d.length===0){showToast("Tabela vazia.");return;} setSyncBackground(true); try { await loadScript("[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js)"); await loadScript("[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js)"); const doc = new window.jspdf.jsPDF(); doc.setFillColor(29,29,31); doc.rect(0,0,210,35,'F'); doc.setTextColor(255,255,255); doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.text("EXTRATO DE HORAS", 14, 23); doc.setTextColor(190,190,190); doc.setFontSize(10); doc.text(`Ref: ${new Date().toLocaleDateString('pt-PT')}`, 14, 45); doc.autoTable({ startY: 55, head: [['Data', 'Cliente', 'Tempo', 'Rate', 'Total']], body: d.map(r => [formatDataBR(r.data), r.cliente||'-', r.duracaoTexto, parseFloat(r.taxaUsada).toFixed(2)+'€', parseFloat(r.valorGasto).toFixed(2)+'€']), theme: 'striped', headStyles: { fillColor: [40, 120, 255] } }); doc.setFont("helvetica","bold"); doc.setFontSize(14); doc.setTextColor(0,0,0); doc.text(`Valor Bruto Cobrado: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY||55)+15); documentoPDFFinal = doc; nomePDFFinal = "Extrato_Horas.pdf"; document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob')); document.getElementById('modal-pdf').classList.add('show'); } catch(e) { showToast("Ligação lenta para PDF."); } finally { setSyncBackground(false); } }
         function gravarPDFFinal() { if(documentoPDFFinal) { documentoPDFFinal.save(nomePDFFinal); fecharModal('modal-pdf'); showToast("PDF Aprovado!"); } }
 
-        // --- DASHBOARD GRÁFICOS CHART.JS ---
-        async function abrirDashboard() {
-            if(registos.length===0){showToast("Dados insuficientes.");return;}
-            setSyncBackground(true);
-            try {
-                await loadScript("[cdn.jsdelivr.net](https://cdn.jsdelivr.net/npm/chart.js)");
-                document.getElementById('modal-dashboard').classList.add('show');
-                gerarGraficosGerais();
-            } catch(e) { showToast("Falha num pacote."); }
-            finally { setSyncBackground(false); }
-        }
+        async function abrirDashboard() { if(registos.length===0){showToast("Dados insuficientes.");return;} setSyncBackground(true); try { await loadScript("[cdn.jsdelivr.net](https://cdn.jsdelivr.net/npm/chart.js)"); document.getElementById('modal-dashboard').classList.add('show'); gerarGraficosGerais(); } catch(e) { showToast("Falha num pacote."); } finally { setSyncBackground(false); } }
+        function gerarGraficosGerais() { if(chartClientesInst) chartClientesInst.destroy(); if(chartMesesInst) chartMesesInst.destroy(); if(chartDespesasInst) chartDespesasInst.destroy(); const corText = document.documentElement.getAttribute('data-theme')==='dark' ? '#f5f5f7' : '#1d1d1f'; let ptCl="", horas={}, deps={}; registos.forEach(x => { ptCl = x.cliente||"S/ Nome"; horas[ptCl] = (horas[ptCl]||0)+parseFloat(x.valorGasto||0); let m = x.data?String(x.data).substring(0,7):null; if(m) deps[m] = (deps[m]||0)+(parseInt(x.minutosTotais||0)/60); }); let grcat={}; despesasRegistadas.forEach(x => grcat[x.categoria||"Outras"] = (grcat[x.categoria||"Outras"]||0)+parseFloat(x.valor||0)); chartClientesInst = new Chart(document.getElementById('graficoClientes'), { type:'pie', data:{ labels:Object.keys(horas), datasets:[{data:Object.values(horas), backgroundColor:['#007aff','#34c759','#ff9500','#ff3b30','#af52de']}] }, options:{plugins:{legend:{labels:{color:corText}}}} }); chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type:'bar', data:{ labels:Object.keys(deps), datasets:[{label:'Horas Gastas', data:Object.values(deps), backgroundColor:'#0a84ff'}] }, options:{scales:{y:{ticks:{color:corText}},x:{ticks:{color:corText}}}} }); chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type:'doughnut', data:{ labels:Object.keys(grcat), datasets:[{data:Object.values(grcat), backgroundColor:['#ff3b30','#ff9500','#34c759','#5856d6','#8e8e93']}] }, options:{maintainAspectRatio:false, plugins:{legend:{labels:{color:corText}}}} }); }
 
-        function gerarGraficosGerais() {
-            if(chartClientesInst) chartClientesInst.destroy(); if(chartMesesInst) chartMesesInst.destroy(); if(chartDespesasInst) chartDespesasInst.destroy();
-            const corText = document.documentElement.getAttribute('data-theme')==='dark' ? '#f5f5f7' : '#1d1d1f';
-            let ptCl="", horas={}, deps={};
-            registos.forEach(x => { ptCl = x.cliente||"S/ Nome"; horas[ptCl] = (horas[ptCl]||0)+parseFloat(x.valorGasto||0); let m = x.data?String(x.data).substring(0,7):null; if(m) deps[m] = (deps[m]||0)+(parseInt(x.minutosTotais||0)/60); });
-            let grcat={}; despesasRegistadas.forEach(x => grcat[x.categoria||"Outras"] = (grcat[x.categoria||"Outras"]||0)+parseFloat(x.valor||0));
-
-            chartClientesInst = new Chart(document.getElementById('graficoClientes'), { type:'pie', data:{ labels:Object.keys(horas), datasets:[{data:Object.values(horas), backgroundColor:['#007aff','#34c759','#ff9500','#ff3b30','#af52de']}] }, options:{plugins:{legend:{labels:{color:corText}}}} });
-            chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type:'bar', data:{ labels:Object.keys(deps), datasets:[{label:'Horas Gastas', data:Object.values(deps), backgroundColor:'#0a84ff'}] }, options:{scales:{y:{ticks:{color:corText}},x:{ticks:{color:corText}}}} });
-            chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type:'doughnut', data:{ labels:Object.keys(grcat), datasets:[{data:Object.values(grcat), backgroundColor:['#ff3b30','#ff9500','#34c759','#5856d6','#8e8e93']}] }, options:{maintainAspectRatio:false, plugins:{legend:{labels:{color:corText}}}} });
-        }
-
-        // --- ARRANQUE MESTRE DA APP ---
         window.onload = async () => {
             if(localStorage.getItem('tema_final')==='dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
             const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
             ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
             
-            // LER A MEMÓRIA DA SESSÃO ATUAL
             const tempCache = sessionStorage.getItem('app_cache');
-            
             if (pinApp) { 
-                // Se existe PIN, abre os dados previamente e avalia atualizações.
-                if (tempCache) {
-                    carregarListas(JSON.parse(tempCache));
-                    document.getElementById('login-overlay').classList.add('hidden');
-                }
-                
-                // Em cenário Online, confirma o PIN junto do servidor na tranquilidade do background
+                if (tempCache) { carregarListas(JSON.parse(tempCache)); document.getElementById('login-overlay').classList.add('hidden'); }
                 if(navigator.onLine) await puxarDaNuvem(!tempCache); 
-
-            } else { 
-                // A Sessão expirou (Janela fechada ou Utilizador deslogado via Botão Sair)
-                document.getElementById('login-overlay').classList.remove('hidden'); 
-            }
+            } else { document.getElementById('login-overlay').classList.remove('hidden'); }
         };
     </script>
 </body>
