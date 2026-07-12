@@ -73,8 +73,11 @@
         
         .input-group { display: flex; flex-direction: column; flex: 1; min-width: 120px; }
         label { font-size: 10px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; letter-spacing: 0.5px;}
+        
+        /* --- ESTILO UNIFORMIZADO DE INPUTS --- */
         input, select { padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box; color-scheme: light dark; }
         input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--hover-bg); }
+        
         .preco-input { width: 85px; text-align: center; }
 
         .btn-add { background: var(--accent-color); color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2); }
@@ -90,7 +93,7 @@
         .finance-panel-wrapper { transition: 0.3s; }
         .finance-panel { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--hover-bg); padding: 20px; border-radius: 12px; border: 1px dashed rgba(0, 122, 255, 0.2); align-items: center; }
         .finance-item { display: flex; flex-direction: column; text-align: center; justify-content: center; align-items: center;}
-        .finance-item input { text-align: center; margin-top: 5px; padding: 8px; font-size: 14px; width: 80%; background: var(--card-bg); }
+        .finance-item input { text-align: center; margin-top: 5px; }
         .finance-item.result-item { border-left: 1px dashed rgba(0, 122, 255, 0.3); }
         .finance-item.highlight .val { color: var(--accent-color); }
         .btn-toggle-finance { display: none; }
@@ -445,7 +448,7 @@
                     </select>
                 </div>
                 <div class="input-group" style="margin-bottom:15px;"><label>Descrição Opcional</label><input type="text" id="d_descricao" placeholder="Ex: Galp A1"></div>
-                <div class="input-group" style="margin-bottom:15px;"><label>Total Pago (€)</label><input type="number" id="d_valor" step="0.01" style="font-size:20px; font-weight:bold;"></div>
+                <div class="input-group" style="margin-bottom:15px;"><label>Total Pago (€)</label><input type="number" id="d_valor" step="0.01"></div>
             </div>
             <div class="modal-footer"><button class="btn-cancel" onclick="fecharModal('modal-despesa')">Cancelar</button><button class="btn-confirm" onclick="guardarDespesa()">Gravar</button></div>
         </div>
@@ -519,7 +522,6 @@
             else{ gaveta.classList.add('show'); fundo.classList.add('show'); bMais.classList.add('active'); }
         }
 
-        // --- TECLADO E LOGIN ---
         function teclarPIN(num) { 
             const i = document.getElementById('pin-input'); 
             if(i.value.length < 4) { 
@@ -612,7 +614,6 @@
             } catch (e) { console.error(e); showToast("A funcionar offline"); return false; } finally { setCarregando(false); }
         }
 
-        // --- SISTEMA DE PAGINAÇÃO ---
         function redefinirPaginaE_Renderizar() {
             paginaAtual = 1;
             renderizarTabela();
@@ -660,7 +661,6 @@
             calcularFinancas();
         }
 
-        // Função Editada para Scroll + Focus
         function editarRegisto(id) { 
             const r = registos.find(x => String(x.id) === String(id)); if (!r) return; 
             document.getElementById('data').value = formatDataForm(r.data); 
@@ -688,7 +688,6 @@
         function abrirModalListaDespesas() { const corp = document.getElementById('lista_despesas_corpo'); corp.innerHTML=''; let tds = [...despesasRegistadas].sort((a,b) => new Date(b.data) - new Date(a.data)); if(tds.length===0) corp.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:var(--text-muted);">Sem despesas.</td></tr>`; tds.forEach(d => { corp.innerHTML += `<tr><td data-label="Data">${formatDataBR(d.data)}</td><td data-label="Cat">${d.categoria}</td><td data-label="Desc">${d.descricao}</td><td data-label="Valor"><strong>${parseFloat(d.valor).toFixed(2)}€</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${d.id}', 'esta despesa')">🗑️</button></td></tr>`; }); document.getElementById('modal-lista-despesas').classList.add('show'); }
         function abrirModalDespesa() { idEmEdicaoDespesa=null; document.getElementById('titulo_modal_despesa').innerText="🛒 Nova Despesa"; document.getElementById('d_data').valueAsDate=new Date(); document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; document.getElementById('modal-despesa').classList.add('show'); setTimeout(() => document.getElementById('d_data').focus(), 300); }
         
-        // Função Editada para Focus
         function editarDespesa(id) { 
             const d = despesasRegistadas.find(x => String(x.id) === String(id)); if(!d) return; 
             idEmEdicaoDespesa=id; 
@@ -713,7 +712,6 @@
         function limparFormularioAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerText="Novo Evento"; document.getElementById('a_data').valueAsDate=new Date(); document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; document.getElementById('btn_guardar_agenda').innerText="+ Guardar na Agenda"; document.getElementById('btn_cancelar_agenda').style.display="none"; }
         function renderizarAgenda() { const crp = document.getElementById('lista_agenda_corpo'); crp.innerHTML=''; let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data)); if(ods.length===0) { crp.innerHTML=`<tr><td colspan="4" style="text-align:center; padding:15px; color:var(--text-muted);">Agenda limpa.</td></tr>`; return; } ods.forEach(a => crp.innerHTML+=`<tr><td data-label="Data">${formatDataBR(a.data)}</td><td data-label="Hora"><span style="background:var(--card-bg); border:1px solid var(--border-color); padding:3px 8px; border-radius:4px; font-size:11px;">${formatHora(a.hora)}</span></td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${a.id}', 'este evento')">🗑️</button></td></tr>`); }
         
-        // Função Editada para Focus
         function editarAgenda(id) { 
             const e = agendaRegistada.find(x => String(x.id) === String(id)); if(!e) return; 
             idEmEdicaoAgenda=id; 
