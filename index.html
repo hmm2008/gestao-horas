@@ -489,18 +489,16 @@
 
     <!-- JS CENTRAL -->
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4TRkUv-hOtT20q7006GKeggV4rdU024MH0BmxeNsbptoy0H5LZZxebkRpQCRis2pnpQ/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxe57HbpTo8_V1fJ0aPoF3HB_w3IKnBGo4xjuvCtlk0sRFRirX_HVbvquj7B-SbGZXGCw/exec";
         
         let registos = []; let despesasRegistadas = []; let agendaRegistada = []; 
         let idEmEdicao = null; let idEmEdicaoDespesa = null; let idEmEdicaoAgenda = null;
         let documentoPDFFinal = null; let nomePDFFinal = ""; 
         let chartClientesInst=null, chartMesesInst=null, chartDespesasInst=null;
         
-        // Paginação Restaurada
         let paginaAtual = 1; 
         const ITENS_POR_PAGINA = 15;
 
-        // Fim de Sessão Automático
         let pinApp = sessionStorage.getItem('app_pin') || '';
 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(reg => reg.update()); 
@@ -568,17 +566,13 @@
         function formatDataBR(d) { if(!d) return '--'; return String(d).split('T')[0].split('-').reverse().join('/'); }
         function formatDataForm(d) { if(!d) return ''; return String(d).split('T')[0]; }
         
-        // CORREÇÃO DEFINITIVA (À prova de fusos horários):
-        // Vai ler os caracteres exatos que formam as horas (ex: extrai o 10:00 ignorando qualquer cálculo de Date)
+        // CORREÇÃO: Formatação de horas robusta compatível com a correção no Google Apps Script
         function formatHora(h) { 
             if(!h) return '--:--'; 
             const s = String(h);
             if(s.includes('T')) { 
-                // Exemplo: 1899-12-30T10:00:00.000Z -> Apanha exatamente o que está à frente do 'T'
-                const match = s.match(/T(\d{2}:\d{2})/);
-                if (match && match[1]) {
-                    return match[1];
-                }
+                const dt = new Date(s);
+                if(!isNaN(dt.getTime())) return dt.getHours().toString().padStart(2,'0') + ':' + dt.getMinutes().toString().padStart(2,'0');
             } 
             return s.substring(0,5); 
         }
@@ -596,12 +590,10 @@
         async function carregarDadosDoGoogle() {
             setCarregando(true, "A sincronizar dados...");
             try {
-                // Previne o cache do navegador
                 const res = await fetch(`${GOOGLE_SCRIPT_URL}?nocache=${Date.now()}&pin=${pinApp}`);
                 const json = await res.json();
                 if (json.erro && json.erro === "PIN incorreto") return false;
                 
-                // CORREÇÃO DATA: Separa a data sem ser pela conversão de horário
                 const fix = (r) => { 
                     if (r.data && String(r.data).includes('T')) { 
                         r.data = String(r.data).split('T')[0]; 
