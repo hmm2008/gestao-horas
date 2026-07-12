@@ -209,8 +209,15 @@
             
             .btn-toggle-finance { display: block; width: 100%; background: var(--accent-color); color: white; padding: 12px; border-radius: 8px; margin: 15px 0; font-weight: bold; text-align: center; border: none; font-size: 14px; }
             .finance-panel-wrapper { display: none; } 
-            .finance-panel { grid-template-columns: 1fr 1fr; gap: 8px; padding: 15px; }
-            .finance-item.result-item { grid-column: span 2; border-left: none; border-top: 1px solid var(--border-color); padding-top: 12px; }
+            
+            /* --- NOVA REORGANIZAÇÃO FINANÇAS MOBILE --- */
+            .finance-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+            .finance-item.result-item { border-left: none; } 
+            #fi-despesas { order: 1; }
+            #fi-impostos { order: 2; }
+            #fi-ss { order: 3; }
+            #fi-irs { order: 4; }
+            #fi-liquido { order: 5; grid-column: span 2; border-top: 1px solid var(--border-color); padding-top: 12px; }
             
             .dashboard-grid { grid-template-columns: 1fr; }
             .filter-panel { flex-direction: column; }
@@ -371,24 +378,24 @@
                     <!-- TÍTULO ADICIONADO AQUI -->
                     <div class="hide-mobile" style="grid-column: 1 / -1; text-align: center; margin-bottom: 15px; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Detalhes Financeiros</div>
                     
-                    <div class="finance-item">
+                    <div class="finance-item" id="fi-despesas">
                         <span class="lab">Despesas</span>
                         <span class="val" id="f_despesas_totais" style="font-size: 18px; margin: 3px 0; font-weight:bold;">0.00 €</span>
                     </div>
-                    <div class="finance-item">
+                    <div class="finance-item" id="fi-irs">
                         <span class="lab">IRS (%)</span>
                         <input type="number" id="inp_irs" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
                     </div>
-                    <div class="finance-item">
+                    <div class="finance-item" id="fi-ss">
                         <span class="lab">SS (%)</span>
                         <input type="number" id="inp_ss" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
                     </div>
-                    <div class="finance-item result-item">
+                    <div class="finance-item result-item" id="fi-impostos">
                         <span class="lab">Impostos</span>
                         <span class="val" id="f_impostos" style="font-size: 18px; font-weight:bold;">0.00 €</span>
                     </div>
-                    <div class="finance-item result-item highlight">
-                        <span class="lab">Líquido</span>
+                    <div class="finance-item result-item highlight" id="fi-liquido">
+                        <span class="lab">Líquido a Receber</span>
                         <span class="val" id="f_liquido" style="font-size: 18px; font-weight:bold;">0.00 €</span>
                     </div>
                 </div>
