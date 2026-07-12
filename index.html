@@ -91,11 +91,61 @@
         .val { font-size: 26px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.5px; }
         .lab { font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
+        /* --- DETALHES FINANCEIROS (DESKTOP) --- */
         .finance-panel-wrapper { transition: 0.3s; }
-        .finance-panel { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--hover-bg); padding: 20px; border-radius: 12px; border: 1px dashed rgba(0, 122, 255, 0.2); align-items: center; }
+        .finance-panel { 
+            display: grid; 
+            grid-template-columns: 1.2fr 1fr 1fr 1.2fr; /* Colunas simétricas: margens maiores, meio igual */
+            gap: 15px 10px; 
+            background: var(--hover-bg); 
+            padding: 20px; 
+            border-radius: 12px; 
+            border: 1px dashed rgba(0, 122, 255, 0.2); 
+            align-items: center; 
+        }
+        
+        .finance-title {
+            grid-column: 1 / -1; 
+            text-align: center; 
+            margin-bottom: 5px; 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: var(--text-muted); 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+
+        #fi-despesas {
+            grid-column: 1 / 2;
+            grid-row: 2 / 4;
+            border-right: 1px dashed rgba(0, 122, 255, 0.3);
+            height: 100%;
+        }
+        
+        #fi-impostos {
+            grid-column: 2 / 4;
+            grid-row: 2 / 3;
+        }
+        
+        #fi-ss {
+            grid-column: 2 / 3;
+            grid-row: 3 / 4;
+        }
+        
+        #fi-irs {
+            grid-column: 3 / 4;
+            grid-row: 3 / 4;
+        }
+        
+        #fi-liquido {
+            grid-column: 4 / 5;
+            grid-row: 2 / 4;
+            border-left: 1px dashed rgba(0, 122, 255, 0.3);
+            height: 100%;
+        }
+
         .finance-item { display: flex; flex-direction: column; text-align: center; justify-content: center; align-items: center;}
         .finance-item input { text-align: center; margin-top: 5px; }
-        .finance-item.result-item { border-left: 1px dashed rgba(0, 122, 255, 0.3); }
         .finance-item.highlight .val { color: var(--accent-color); }
         .btn-toggle-finance { display: none; }
 
@@ -211,13 +261,13 @@
             .finance-panel-wrapper { display: none; } 
             
             /* --- NOVA REORGANIZAÇÃO FINANÇAS MOBILE --- */
-            .finance-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-            .finance-item.result-item { border-left: none; } 
-            #fi-despesas { order: 1; }
-            #fi-impostos { order: 2; }
-            #fi-ss { order: 3; }
-            #fi-irs { order: 4; }
-            #fi-liquido { order: 5; grid-column: span 2; border-top: 1px solid var(--border-color); padding-top: 12px; }
+            .finance-panel { grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+            
+            #fi-despesas { grid-column: 1 / 2; grid-row: 1 / 2; border: none; height: auto; }
+            #fi-impostos { grid-column: 2 / 3; grid-row: 1 / 2; border: none; height: auto; }
+            #fi-ss       { grid-column: 1 / 2; grid-row: 2 / 3; border: none; height: auto; }
+            #fi-irs      { grid-column: 2 / 3; grid-row: 2 / 3; border: none; height: auto; }
+            #fi-liquido  { grid-column: 1 / -1; grid-row: 3 / 4; border: none; border-top: 1px solid var(--border-color); padding-top: 12px; height: auto; }
             
             .dashboard-grid { grid-template-columns: 1fr; }
             .filter-panel { flex-direction: column; }
@@ -375,26 +425,26 @@
             <button class="btn-toggle-finance" onclick="toggleFinancas()">💰 Mostrar Detalhes Financeiros</button>
             <div class="finance-panel-wrapper" id="painel-financas">
                 <div class="finance-panel">
-                    <!-- TÍTULO ADICIONADO AQUI -->
-                    <div class="hide-mobile" style="grid-column: 1 / -1; text-align: center; margin-bottom: 15px; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Detalhes Financeiros</div>
+                    
+                    <div class="hide-mobile finance-title">Detalhes Financeiros</div>
                     
                     <div class="finance-item" id="fi-despesas">
                         <span class="lab">Despesas</span>
                         <span class="val" id="f_despesas_totais" style="font-size: 18px; margin: 3px 0; font-weight:bold;">0.00 €</span>
                     </div>
-                    <div class="finance-item" id="fi-irs">
-                        <span class="lab">IRS (%)</span>
-                        <input type="number" id="inp_irs" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
+                    <div class="finance-item" id="fi-impostos">
+                        <span class="lab">Impostos</span>
+                        <span class="val" id="f_impostos" style="font-size: 18px; font-weight:bold;">0.00 €</span>
                     </div>
                     <div class="finance-item" id="fi-ss">
                         <span class="lab">SS (%)</span>
                         <input type="number" id="inp_ss" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
                     </div>
-                    <div class="finance-item result-item" id="fi-impostos">
-                        <span class="lab">Impostos</span>
-                        <span class="val" id="f_impostos" style="font-size: 18px; font-weight:bold;">0.00 €</span>
+                    <div class="finance-item" id="fi-irs">
+                        <span class="lab">IRS (%)</span>
+                        <input type="number" id="inp_irs" value="0" step="1" max="100" min="0" oninput="calcularFinancas()">
                     </div>
-                    <div class="finance-item result-item highlight" id="fi-liquido">
+                    <div class="finance-item highlight" id="fi-liquido">
                         <span class="lab">Líquido a Receber</span>
                         <span class="val" id="f_liquido" style="font-size: 18px; font-weight:bold;">0.00 €</span>
                     </div>
