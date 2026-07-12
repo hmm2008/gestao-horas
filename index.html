@@ -95,7 +95,8 @@
         .finance-panel-wrapper { transition: 0.3s; }
         .finance-panel { 
             display: grid; 
-            grid-template-columns: 1.2fr 1fr 1fr 1.2fr; /* Colunas simétricas: margens maiores, meio igual */
+            /* A esquerda e direita (1.2fr) são maiores que o centro (0.75fr). Isto centra perfeitamente o meio e reduz a largura de SS e IRS */
+            grid-template-columns: 1.2fr 0.75fr 0.75fr 1.2fr; 
             gap: 15px 10px; 
             background: var(--hover-bg); 
             padding: 20px; 
@@ -128,12 +129,12 @@
         }
         
         #fi-ss {
-            grid-column: 2 / 3;
+            grid-column: 2 / 3; /* SS à esquerda no centro */
             grid-row: 3 / 4;
         }
         
         #fi-irs {
-            grid-column: 3 / 4;
+            grid-column: 3 / 4; /* IRS à direita no centro */
             grid-row: 3 / 4;
         }
         
