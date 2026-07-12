@@ -520,7 +520,6 @@
         }
 
         // --- TECLADO E LOGIN ---
-        // CORREÇÃO: Autenticação automática ao atingir 4 dígitos
         function teclarPIN(num) { 
             const i = document.getElementById('pin-input'); 
             if(i.value.length < 4) { 
@@ -661,7 +660,21 @@
             calcularFinancas();
         }
 
-        function editarRegisto(id) { const r = registos.find(x => String(x.id) === String(id)); if (!r) return; document.getElementById('data').value = formatDataForm(r.data); document.getElementById('cliente').value = r.cliente || ''; document.getElementById('hora_inicio').value = formatHora(r.inicio); document.getElementById('hora_fim').value = formatHora(r.fim); document.getElementById('taxa_hora').value = r.taxaUsada; idEmEdicao = id; const btn = document.getElementById('btn_submit'); btn.innerText = "GRAVAR ALTERAÇÕES"; btn.style.backgroundColor = "#ff9500"; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        // Função Editada para Scroll + Focus
+        function editarRegisto(id) { 
+            const r = registos.find(x => String(x.id) === String(id)); if (!r) return; 
+            document.getElementById('data').value = formatDataForm(r.data); 
+            document.getElementById('cliente').value = r.cliente || ''; 
+            document.getElementById('hora_inicio').value = formatHora(r.inicio); 
+            document.getElementById('hora_fim').value = formatHora(r.fim); 
+            document.getElementById('taxa_hora').value = r.taxaUsada; 
+            idEmEdicao = id; 
+            const btn = document.getElementById('btn_submit'); 
+            btn.innerText = "GRAVAR ALTERAÇÕES"; 
+            btn.style.backgroundColor = "#ff9500"; 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            setTimeout(() => document.getElementById('data').focus(), 500); 
+        }
         
         async function adicionarRegisto() { 
             const d=document.getElementById('data').value, cli=document.getElementById('cliente').value, i=document.getElementById('hora_inicio').value, f=document.getElementById('hora_fim').value, t=parseFloat(document.getElementById('taxa_hora').value); 
@@ -673,8 +686,9 @@
         }
 
         function abrirModalListaDespesas() { const corp = document.getElementById('lista_despesas_corpo'); corp.innerHTML=''; let tds = [...despesasRegistadas].sort((a,b) => new Date(b.data) - new Date(a.data)); if(tds.length===0) corp.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:var(--text-muted);">Sem despesas.</td></tr>`; tds.forEach(d => { corp.innerHTML += `<tr><td data-label="Data">${formatDataBR(d.data)}</td><td data-label="Cat">${d.categoria}</td><td data-label="Desc">${d.descricao}</td><td data-label="Valor"><strong>${parseFloat(d.valor).toFixed(2)}€</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${d.id}', 'esta despesa')">🗑️</button></td></tr>`; }); document.getElementById('modal-lista-despesas').classList.add('show'); }
-        function abrirModalDespesa() { idEmEdicaoDespesa=null; document.getElementById('titulo_modal_despesa').innerText="🛒 Nova Despesa"; document.getElementById('d_data').valueAsDate=new Date(); document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; document.getElementById('modal-despesa').classList.add('show'); }
+        function abrirModalDespesa() { idEmEdicaoDespesa=null; document.getElementById('titulo_modal_despesa').innerText="🛒 Nova Despesa"; document.getElementById('d_data').valueAsDate=new Date(); document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; document.getElementById('modal-despesa').classList.add('show'); setTimeout(() => document.getElementById('d_data').focus(), 300); }
         
+        // Função Editada para Focus
         function editarDespesa(id) { 
             const d = despesasRegistadas.find(x => String(x.id) === String(id)); if(!d) return; 
             idEmEdicaoDespesa=id; 
@@ -683,7 +697,8 @@
             document.getElementById('d_categoria').value=d.categoria; 
             document.getElementById('d_descricao').value=d.descricao; 
             document.getElementById('d_valor').value=d.valor; 
-            document.getElementById('modal-despesa').classList.add('show'); 
+            document.getElementById('modal-despesa').classList.add('show');
+            setTimeout(() => document.getElementById('d_data').focus(), 300);
         }
         
         async function guardarDespesa() { 
@@ -698,6 +713,7 @@
         function limparFormularioAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerText="Novo Evento"; document.getElementById('a_data').valueAsDate=new Date(); document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; document.getElementById('btn_guardar_agenda').innerText="+ Guardar na Agenda"; document.getElementById('btn_cancelar_agenda').style.display="none"; }
         function renderizarAgenda() { const crp = document.getElementById('lista_agenda_corpo'); crp.innerHTML=''; let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data)); if(ods.length===0) { crp.innerHTML=`<tr><td colspan="4" style="text-align:center; padding:15px; color:var(--text-muted);">Agenda limpa.</td></tr>`; return; } ods.forEach(a => crp.innerHTML+=`<tr><td data-label="Data">${formatDataBR(a.data)}</td><td data-label="Hora"><span style="background:var(--card-bg); border:1px solid var(--border-color); padding:3px 8px; border-radius:4px; font-size:11px;">${formatHora(a.hora)}</span></td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${a.id}', 'este evento')">🗑️</button></td></tr>`); }
         
+        // Função Editada para Focus
         function editarAgenda(id) { 
             const e = agendaRegistada.find(x => String(x.id) === String(id)); if(!e) return; 
             idEmEdicaoAgenda=id; 
@@ -710,6 +726,7 @@
             
             const modalBody = document.querySelector('#modal-agenda .modal-body');
             if(modalBody) modalBody.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => document.getElementById('a_data').focus(), 300);
         }
         
         async function guardarAgenda() { 
