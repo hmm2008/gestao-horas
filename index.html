@@ -568,7 +568,20 @@
         }
         function sincronizarNavHome() { navegarPara('home'); }
         
-        function toggleFinancas() { const p = document.getElementById('painel-financas'), b = document.querySelector('.btn-toggle-finance'); if(p.style.display==='block') { p.style.display='none'; b.innerText='💰 Mostrar Detalhes Financeiros'; } else { p.style.display='block'; b.innerText='🔼 Ocultar Detalhes Financeiros'; } }
+        // Função de scroll adicionada
+        function toggleFinancas() { 
+            const p = document.getElementById('painel-financas');
+            const b = document.querySelector('.btn-toggle-finance'); 
+            if(p.style.display==='block') { 
+                p.style.display='none'; 
+                b.innerText='💰 Mostrar Detalhes Financeiros'; 
+            } else { 
+                p.style.display='block'; 
+                b.innerText='🔼 Ocultar Detalhes Financeiros'; 
+                setTimeout(() => { p.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+            } 
+        }
+
         function alternarTema() { const t = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('tema_final', t); if(chartClientesInst) gerarGraficosGerais(); }
         function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
 
