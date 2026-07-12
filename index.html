@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     
-    <!-- Bibliotecas Externas (Garantem o funcionamento do PDF e Gráficos) -->
+    <!-- Bibliotecas Externas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -178,7 +178,6 @@
             .sidebar { display: none; }
             .main-content { padding: 15px; }
             
-            /* Novo Ajuste Cabeçalho Mobile: Título e Botões na mesma linha */
             .header { padding: 5px 0; justify-content: space-between; }
             .header h1 { position: static; transform: none; font-size: 18px; margin: 0; text-align: left; }
             .hide-mobile { display: none; }
@@ -317,7 +316,6 @@
                 </div>
             </header>
             
-            <!-- FORMULÁRIO CENTRALIZADO -->
             <div class="form-centralized">
                 <div class="form-wrapper-inner">
                     <div class="form-row-top">
@@ -375,7 +373,6 @@
                 <select id="filtro_cliente" onchange="redefinirPaginaE_Renderizar()"><option value="todos">Cliente: Todos</option></select>
             </div>
 
-            <!-- TABELA COM PAGINAÇÃO RESTAURADA -->
             <div class="table-container">
                 <table>
                     <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Valor/h</th><th>Valor</th><th style="text-align:right">Ações</th></tr></thead>
@@ -390,7 +387,7 @@
         </div>
     </main>
 
-    <!-- MODAIS RESTANTES -->
+    <!-- MODAIS -->
     <div id="modal-agenda" class="modal-overlay">
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header"><h2 id="titulo_modal_agenda">📅 Agenda</h2></div>
@@ -523,7 +520,18 @@
         }
 
         // --- TECLADO E LOGIN ---
-        function teclarPIN(num) { const i = document.getElementById('pin-input'); if(i.value.length < 8) { i.value+=num; document.getElementById('pin-error-msg').style.display='none'; } }
+        // CORREÇÃO: Autenticação automática ao atingir 4 dígitos
+        function teclarPIN(num) { 
+            const i = document.getElementById('pin-input'); 
+            if(i.value.length < 4) { 
+                i.value += num; 
+                document.getElementById('pin-error-msg').style.display = 'none'; 
+                if(i.value.length === 4) {
+                    verificarPinLogin();
+                }
+            } 
+        }
+
         function limparPIN() { document.getElementById('pin-input').value=''; document.getElementById('pin-error-msg').style.display='none'; }
         function apagarUltimoPIN() { const i = document.getElementById('pin-input'); i.value=i.value.slice(0,-1);  }
 
@@ -566,7 +574,6 @@
         function formatDataBR(d) { if(!d) return '--'; return String(d).split('T')[0].split('-').reverse().join('/'); }
         function formatDataForm(d) { if(!d) return ''; return String(d).split('T')[0]; }
         
-        // CORREÇÃO: Formatação de horas robusta compatível com a correção no Google Apps Script
         function formatHora(h) { 
             if(!h) return '--:--'; 
             const s = String(h);
@@ -623,14 +630,12 @@
             const tbody = document.getElementById('tabela_registos'); tbody.innerHTML = ''; 
             const todosFiltrados = obterRegistosFiltrados();
             
-            // Cálculos Globais (sobre todos os filtrados)
             let sMin=0, sVal=0; const dias = new Set(); 
             todosFiltrados.forEach(r => { if(r.data) dias.add(r.data); sMin += parseInt(r.minutosTotais||0); sVal += parseFloat(r.valorGasto||0); });
             document.getElementById('total_dias').innerText = dias.size; 
             document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`; 
             document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
             
-            // Lógica de Paginação
             const totalPags = Math.ceil(todosFiltrados.length / ITENS_POR_PAGINA) || 1; 
             if(paginaAtual < 1) paginaAtual = 1; 
             if(paginaAtual > totalPags) paginaAtual = totalPags;
@@ -643,7 +648,6 @@
             const bProx = document.getElementById('btn_pag_prox');
             if(bProx) bProx.disabled = (paginaAtual === totalPags);
 
-            // Corte para exibir apenas a página atual
             const slice = todosFiltrados.slice((paginaAtual-1)*ITENS_POR_PAGINA, paginaAtual*ITENS_POR_PAGINA);
             
             if(todosFiltrados.length === 0) {
