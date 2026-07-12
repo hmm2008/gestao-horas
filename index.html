@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     
-    <!-- Bibliotecas Externas com DEFER para não bloquear o arranque -->
+    <!-- Bibliotecas Externas com DEFER -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
@@ -39,8 +39,8 @@
         
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; transition: background 0.3s; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Oculta completamente o resto da app até o PIN ser inserido */
-        body.is-locked > *:not(#login-overlay):not(#toast-container):not(#global-loader):not(script) {
+        /* Proteção contra Flash: Oculta tudo enquanto carrega */
+        body.is-locked > *:not(#login-overlay):not(#toast-container):not(#global-loader) {
             display: none !important;
         }
 
@@ -131,8 +131,10 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* ---------- OVERLAY LOGIN ---------- */
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s; }
-        #login-overlay.hidden { opacity: 0; pointer-events: none; }
+        /* Oculto por defeito para evitar flash */
+        #login-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 99999; flex-direction: column; justify-content: center; align-items: center; }
+        #login-overlay.visible { display: flex; }
+        
         .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 340px; border: 1px solid var(--border-color); }
         .login-box h2 { margin-top: 0; margin-bottom: 20px; font-size: 20px; color: var(--text-main); }
         .login-box input { width: 100%; padding: 15px; margin-bottom: 5px; text-align: center; font-size: 28px; letter-spacing: 12px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: bold; outline: none; caret-color: transparent; transition: 0.2s; }
@@ -155,7 +157,6 @@
         .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
         .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); }
         
-        /* Botões Standadizados de Confirmação / Cancelamento */
         .btn-cancel { border: 1px solid var(--border-color); padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: bold; background: var(--input-bg); color: var(--text-main); cursor: pointer; transition: 0.2s; }
         .btn-cancel:hover { background: var(--border-color); }
         .btn-confirm { background: var(--accent-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2); }
@@ -221,7 +222,7 @@
         }
     </style>
 </head>
-<body class="is-locked"> <!-- is-locked garante ecrã em branco na estrutura base até validar PIN -->
+<body class="is-locked">
     <div id="toast-container"></div>
     
     <div id="global-loader">
@@ -252,6 +253,20 @@
             <button class="btn-confirm" style="width: 100%; padding: 14px; font-size: 15px;" onclick="verificarPinLogin()">ENTRAR</button>
         </div>
     </div>
+
+    <!-- Script de verificação imediata para evitar flash -->
+    <script>
+        (function() {
+            const savedPin = sessionStorage.getItem('app_pin');
+            if (savedPin) {
+                // Se existe PIN, o body perde a classe que bloqueia a UI
+                document.body.classList.remove('is-locked');
+            } else {
+                // Se não existe, mostra o overlay imediatamente
+                document.getElementById('login-overlay').classList.add('visible');
+            }
+        })();
+    </script>
     
     <!-- SIDEBAR (DESKTOP) -->
     <aside class="sidebar">
@@ -505,6 +520,7 @@
         let paginaAtual = 1; 
         const ITENS_POR_PAGINA = 15;
 
+        // Recupera o PIN da sessão logo que possível
         let pinApp = sessionStorage.getItem('app_pin') || '';
 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(reg => reg.update()); 
@@ -554,12 +570,12 @@
             setCarregando(false);
             const erroMsg = document.getElementById('pin-error-msg');
             if (sucesso) {
-                document.getElementById('login-overlay').classList.add('hidden');
-                document.body.classList.remove('is-locked'); // Liberta a UI
+                document.getElementById('login-overlay').classList.remove('visible');
+                document.body.classList.remove('is-locked');
                 erroMsg.style.display = 'none';
                 redefinirPaginaE_Renderizar();
             } else {
-                document.getElementById('login-overlay').classList.remove('hidden');
+                document.getElementById('login-overlay').classList.add('visible');
                 erroMsg.style.display = 'block';
                 pinApp = ''; sessionStorage.removeItem('app_pin'); document.getElementById('pin-input').value = ''; 
             }
@@ -567,8 +583,8 @@
 
         function sairApp() {
             pinApp = ''; sessionStorage.removeItem('app_pin');
-            document.body.classList.add('is-locked'); // Esconde a UI novamente
-            document.getElementById('login-overlay').classList.remove('hidden'); 
+            document.body.classList.add('is-locked');
+            document.getElementById('login-overlay').classList.add('visible'); 
             limparPIN(); registos=[]; despesasRegistadas=[]; agendaRegistada=[]; redefinirPaginaE_Renderizar();
         }
 
@@ -686,14 +702,11 @@
             calcularFinancas();
         }
 
-        // --- MÉTODOS OTIMISTAS COM BACKGROUND SYNC E BOTÕES UNIFORMIZADOS ---
-        
         async function adicionarRegisto() { 
             const d=document.getElementById('data').value, cli=document.getElementById('cliente').value, i=document.getElementById('hora_inicio').value, f=document.getElementById('hora_fim').value, t=parseFloat(document.getElementById('taxa_hora').value); 
             if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos."); return; } 
             const c = calcDiferenca(i,f); 
             const novoId = idEmEdicao || 'R_'+Date.now();
-            
             const novoRegisto = { id: novoId, data: d, cliente: cli, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec*t };
             
             if(idEmEdicao) {
@@ -712,7 +725,6 @@
                 .then(res => res.json())
                 .then(data => { if(!data.sucesso) showToast("Erro ao sincronizar registo."); })
                 .catch(() => showToast("Sincronização pendente (Offline)"));
-                
             localStorage.setItem('taxa_hora_guardada', t);
         }
 
@@ -918,16 +930,17 @@
             chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type:'doughnut', data:{ labels:Object.keys(grcat), datasets:[{data:Object.values(grcat), backgroundColor:['#ff3b30','#ff9500','#34c759','#5856d6','#8e8e93']}] }, options:{maintainAspectRatio:false, plugins:{legend:{labels:{color:corText}}}} }); 
         }
 
-        window.onload = async () => {
+        window.onload = () => {
             if(localStorage.getItem('tema_final')==='dark') alternarTema();
             document.getElementById('data').valueAsDate = new Date();
             const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
             ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
             
+            // A carga de dados já foi iniciada pelo script inline no body se o utilizador já tiver sessão
             if (pinApp) { 
-                await iniciarAppApósLogin(); 
-            } else { 
-                document.getElementById('login-overlay').classList.remove('hidden'); 
+                // Apenas garante que os selects estão preenchidos se o login foi via cache
+                atualizarDropdownsFiltros(); 
+                redefinirPaginaE_Renderizar();
             }
         };
     </script>
