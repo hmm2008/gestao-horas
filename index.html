@@ -567,7 +567,17 @@
 
         function formatDataBR(d) { if(!d) return '--'; return String(d).split('T')[0].split('-').reverse().join('/'); }
         function formatDataForm(d) { if(!d) return ''; return String(d).split('T')[0]; }
-        function formatHora(h) { if(!h) return '--:--'; if(String(h).includes('T')) { const obj = new Date(h); return obj.getHours().toString().padStart(2,'0')+':'+obj.getMinutes().toString().padStart(2,'0'); } return String(h).substring(0,5); }
+        
+        // CORREÇÃO: Utilizar getUTCHours para evitar que o fuso horário local adicione ou retire 1 hora[cite: 1].
+        function formatHora(h) { 
+            if(!h) return '--:--'; 
+            if(String(h).includes('T')) { 
+                const obj = new Date(h); 
+                return obj.getUTCHours().toString().padStart(2,'0')+':'+obj.getUTCMinutes().toString().padStart(2,'0'); 
+            } 
+            return String(h).substring(0,5); 
+        }
+        
         function calcDiferenca(i, f) { const [hI,mI]=i.split(':').map(Number), [hF,mF]=f.split(':').map(Number); let tot=(hF*60+mF)-(hI*60+mI); if(tot<0) tot+=24*60; const h=Math.floor(tot/60); return { texto:`${h}h ${(tot%60).toString().padStart(2,'0')}m`, mins:tot, dec:h+((tot%60)/60) }; }
 
         function atualizarDropdownsFiltros() {
@@ -584,7 +594,15 @@
                 const res = await fetch(`${GOOGLE_SCRIPT_URL}?nocache=${Date.now()}&pin=${pinApp}`);
                 const json = await res.json();
                 if (json.erro && json.erro === "PIN incorreto") return false;
-                const fix = (r) => { if (r.data && String(r.data).includes('T')) { const dt = new Date(r.data); if(!isNaN(dt.getTime())) r.data = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); } }; 
+                
+                // CORREÇÃO: Utilizar getUTCFullYear, etc. para prevenir que as datas mudem por causa do fuso local[cite: 1].
+                const fix = (r) => { 
+                    if (r.data && String(r.data).includes('T')) { 
+                        const dt = new Date(r.data); 
+                        if(!isNaN(dt.getTime())) r.data = dt.getUTCFullYear()+'-'+String(dt.getUTCMonth()+1).padStart(2,'0')+'-'+String(dt.getUTCDate()).padStart(2,'0'); 
+                    } 
+                }; 
+                
                 if(Array.isArray(json)) { json.forEach(fix); registos = json; despesasRegistadas = []; agendaRegistada = []; } 
                 else if(json) { if(json.registos) { json.registos.forEach(fix); registos = json.registos; } if(json.despesas) { json.despesas.forEach(fix); despesasRegistadas = json.despesas; } if(json.agenda) { json.agenda.forEach(fix); agendaRegistada = json.agenda; } } 
                 atualizarDropdownsFiltros(); return true;
