@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Horas Cloud Pro</title>
+    <title>Gestão de Folhas Cloud Pro</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
@@ -217,7 +217,7 @@
     
     <!-- SIDEBAR (DESKTOP) -->
     <aside class="sidebar">
-        <div class="brand"><span style="font-size: 24px;">⏱️</span>Gestão de Horas</div>
+        <div class="brand"><span style="font-size: 24px;">⏱️</span> CloudApp</div>
         
         <button class="nav-item-desk active" id="menu-home" onclick="navegarPara('home', this)">
             <span>📝</span> Registos Auto
@@ -252,7 +252,7 @@
     <main class="main-content">
         <div class="app-container">
             <header class="header">
-                <h1 style="margin:0; letter-spacing: -0.5px;">Gestão de Horas</h1>
+                <h1 style="margin:0; letter-spacing: -0.5px;">Gestão de Folhas</h1>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn-acao btn-download" onclick="iniciarBackupCSV()">📥 CSV</button>
                     <button class="btn-acao btn-download" style="background:#ff3b30;" onclick="preVisualizarPDF()">📄 PDF</button>
@@ -470,7 +470,8 @@
         let paginaAtual = 1;
         const ITENS_POR_PAGINA = 15;
         
-        let pinApp = localStorage.getItem('app_pin') || '';
+        // O Storage Agora utiliza Memória de Sessão (Desaparece ao fechar)
+        let pinApp = sessionStorage.getItem('app_pin') || '';
 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(reg => reg.update()); 
 
@@ -497,13 +498,17 @@
         async function verificarPinLogin() {
             const p = document.getElementById('pin-input').value;
             if(!p) { showToast("Insira o código."); return; }
-            pinApp = p; localStorage.setItem('app_pin', pinApp);
-            await carregarAppBoot();
+            pinApp = p; 
+            sessionStorage.setItem('app_pin', pinApp); // Guarda o PIN temporariamente
+            
+            // Pede imediatamente informações à nuvem para validar o PIN
+            await puxarDaNuvem(true);
         }
 
         function sairApp() {
-            pinApp = ''; localStorage.removeItem('app_pin');
-            localStorage.removeItem('app_cache');
+            pinApp = ''; 
+            sessionStorage.removeItem('app_pin');
+            sessionStorage.removeItem('app_cache');
             document.getElementById('login-overlay').classList.remove('hidden');
             limparPIN(); registos=[]; despesasRegistadas=[]; agendaRegistada=[];
             renderizarTabela();
@@ -525,8 +530,8 @@
             }
         }
         function sincronizarNavHome() { navegarPara('home'); }
-        function toggleFinancas() { const p = document.getElementById('painel-financas'), b = document.querySelector('.btn-toggle-finance'); if(p.style.display==='block') { p.style.display='none'; b.innerText='💰 Mostrar Detalhes Fnanceiros'; } else { p.style.display='block'; b.innerText='🔼 Ocultar Detalhes'; } }
-        function alternarTema() { const t = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('tema_final', t); if(chartClientesInst) gerarGraficos(); }
+        function toggleFinancas() { const p = document.getElementById('painel-financas'), b = document.querySelector('.btn-toggle-finance'); if(p.style.display==='block') { p.style.display='none'; b.innerText='💰 Mostrar Detalhes Financeiros'; } else { p.style.display='block'; b.innerText='🔼 Ocultar Detalhes'; } }
+        function alternarTema() { const t = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('tema_final', t); if(chartClientesInst) gerarGraficosGerais(); }
         function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
 
         // --- PREPARAÇÃO DE DADOS BÁSICA ---
@@ -549,37 +554,35 @@
             if(mss.includes(valM)) sM.value = valM;
         }
 
-        // --- SISTEMA OFFLINE FIRST & RENDERIZAÇÃO INSTANTÂNEA ---
-        async function carregarAppBoot() {
-            const cache = localStorage.getItem('app_cache');
-            if (cache) {
-                try { carregarListas(JSON.parse(cache)); } catch(e){} // Instant load from cache
-                document.getElementById('login-overlay').classList.add('hidden');
-                document.getElementById('pin-error-msg').style.display = 'none';
-            }
-            if(!navigator.onLine) { if(cache) showToast("A funcionar em modo Offline."); return; }
-            await puxarDaNuvem(!cache); // Call network silently if cached, blocking if no cache
-        }
-
+        // --- COMUNICAÇÃO CENTRALIZADA DE ARRANQUE ---
         async function puxarDaNuvem(bloqueante) {
             if(bloqueante) setSyncBackground(true);
             try {
                 const res = await fetch(`${GOOGLE_SCRIPT_URL}?nocache=${Date.now()}&pin=${pinApp}`);
                 const json = await res.json();
                 
-                if (json.erro === "PIN incorreto") {
+                // O servidor respondeu ativamente a dizer que o código é incorreto
+                if (json.erro && json.erro === "PIN incorreto") {
                     document.getElementById('login-overlay').classList.remove('hidden');
                     document.getElementById('pin-error-msg').style.display = 'block';
-                    pinApp = ''; localStorage.removeItem('app_pin'); document.getElementById('pin-input').value='';
+                    pinApp = ''; sessionStorage.removeItem('app_pin'); sessionStorage.removeItem('app_cache');
+                    document.getElementById('pin-input').value = '';
+                    if(bloqueante) showToast("PIN Rejeitado pelo Servidor.");
                     return;
                 }
+
+                // Houve sucesso na ligação!
                 document.getElementById('login-overlay').classList.add('hidden');
-                localStorage.setItem('app_cache', JSON.stringify(json));
+                sessionStorage.setItem('app_cache', JSON.stringify(json));
                 carregarListas(json);
-                if(bloqueante) showToast("Dados atualizados com sucesso", true);
+                if(bloqueante) showToast("Dados verificados.", true);
+
             } catch (e) {
-                console.error(e); if(bloqueante) showToast("Falha. A usar apenas memória local.");
-            } finally { setSyncBackground(false); }
+                console.error(e); 
+                if(bloqueante) showToast("A funcionar offline");
+            } finally { 
+                setSyncBackground(false); 
+            }
         }
 
         function carregarListas(obj) {
@@ -601,7 +604,6 @@
             const pGeral = document.getElementById('pesquisa_geral').value.toLowerCase();
             const fMes = document.getElementById('filtro_mes').value;
             const fCli = document.getElementById('filtro_cliente').value;
-            // Ordenação: MAIS RECENTES PRIMEIRO (descendente)
             let filtrados = [...registos].sort((a,b) => new Date(b.data) - new Date(a.data));
             
             return filtrados.filter(r => {
@@ -616,12 +618,10 @@
             const tbody = document.getElementById('tabela_registos'); tbody.innerHTML = '';
             const todosFiltrados = obterRegistosFiltrados();
             
-            // Calculos globais
             let sMin=0, sVal=0; const dias = new Set();
             todosFiltrados.forEach(r => { if(r.data) dias.add(r.data); sMin += parseInt(r.minutosTotais||0); sVal += parseFloat(r.valorGasto||0); });
             document.getElementById('total_dias').innerText = dias.size; document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`; document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
             
-            // Aplicação da Paginação
             const totalPags = Math.ceil(todosFiltrados.length / ITENS_POR_PAGINA) || 1;
             if(paginaAtual < 1) paginaAtual = 1; if(paginaAtual > totalPags) paginaAtual = totalPags;
             document.getElementById('paginacao_info').innerText = `Pág ${paginaAtual}/${totalPags}`;
@@ -649,7 +649,7 @@
             calcularFinancas();
         }
 
-        // --- SISTEMA OPTIMISTIC PARA REGISTOS (MÁXIMA VELOCIDADE) ---
+        // --- SISTEMA OPTIMISTIC PARA REGISTOS ---
         function editarRegisto(id) {
             const r = registos.find(x => String(x.id) === String(id)); if (!r) return;
             document.getElementById('data').value = formatDataForm(r.data); document.getElementById('cliente').value = r.cliente || ''; document.getElementById('hora_inicio').value = formatHora(r.inicio); document.getElementById('hora_fim').value = formatHora(r.fim); document.getElementById('taxa_hora').value = r.taxaUsada;
@@ -662,18 +662,14 @@
             const c = calcDiferenca(i,f);
             const req = { pin: pinApp, tipo: 'registo', id: idEmEdicao || 'R_'+Date.now(), data: d, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec*t, cliente: cli };
             
-            // 1. Atualizar Front-end (Instantâneo)
             const idx = registos.findIndex(x => String(x.id) === String(req.id));
-            if(idx > -1) registos[idx] = req; else registos.unshift(req); // põe no topo
+            if(idx > -1) registos[idx] = req; else registos.unshift(req);
             
             localStorage.setItem('taxa_hora_guardada', t);
             idEmEdicao = null; const btn = document.getElementById('btn_submit'); btn.innerText = "+ ADICIONAR REGISTO"; btn.style.backgroundColor = ""; 
             ['cliente','hora_inicio','hora_fim'].forEach(x=>document.getElementById(x).value='');
             
-            atualizarDropdownsFiltros();
-            renderizarTabela();
-            
-            // 2. Enviar para Traseiras
+            atualizarDropdownsFiltros(); renderizarTabela();
             sincronizarAlteracao(req, "Registo guardado com sucesso.");
         }
 
@@ -698,9 +694,7 @@
             const idx = despesasRegistadas.findIndex(x => String(x.id) === String(req.id));
             if(idx > -1) despesasRegistadas[idx] = req; else despesasRegistadas.unshift(req);
             
-            fecharModal('modal-despesa');
-            abrirModalListaDespesas();
-            calcularFinancas();
+            fecharModal('modal-despesa'); abrirModalListaDespesas(); calcularFinancas();
             sincronizarAlteracao(req, "Despesa arquivada.");
         }
 
@@ -709,7 +703,7 @@
         function limparFormularioAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerText="Novo Evento"; document.getElementById('a_data').valueAsDate=new Date(); document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; document.getElementById('btn_guardar_agenda').innerText="+ Guardar na Agenda"; document.getElementById('btn_cancelar_agenda').style.display="none"; }
         function renderizarAgenda() {
             const crp = document.getElementById('lista_agenda_corpo'); crp.innerHTML='';
-            let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data)); // Eventos por ordem cronologica a seguir
+            let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data));
             if(ods.length===0) { crp.innerHTML=`<tr><td colspan="4" style="text-align:center; padding:15px; color:var(--text-muted);">Agenda limpa.</td></tr>`; return; }
             ods.forEach(a => crp.innerHTML+=`<tr><td data-label="Data">${formatDataBR(a.data)}</td><td data-label="Hora"><span style="background:var(--card-bg); border:1px solid var(--border-color); padding:3px 8px; border-radius:4px; font-size:11px;">${formatHora(a.hora)}</span></td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="perguntarRemover('${a.id}', 'este evento', 'agendaRegistada')">🗑️</button></td></tr>`);
         }
@@ -723,15 +717,14 @@
             const idx = agendaRegistada.findIndex(x => String(x.id) === String(req.id));
             if(idx > -1) agendaRegistada[idx] = req; else agendaRegistada.push(req);
             
-            limparFormularioAgenda();
-            renderizarAgenda();
+            limparFormularioAgenda(); renderizarAgenda();
             sincronizarAlteracao(req, "Agenda da Web sincronizada.");
         }
 
         // --- SISTEMA PARTILHADO DE ELIMINAÇÃO OPTIMISTIC ---
         function perguntarRemover(id, nome, arrayAlvo) {
             document.getElementById('modal-title').innerText = "Apagar Permanentemente";
-            document.getElementById('modal-text').innerText = `Isto irá apagar ${nome} em todos os dispositivos ligados à Google Cloud.`;
+            document.getElementById('modal-text').innerText = `Isto irá apagar ${nome} em todos os dispositivos.`;
             const btn = document.getElementById('btn-confirm-action'); 
             const nBtn = btn.cloneNode(true); btn.parentNode.replaceChild(nBtn, btn);
             nBtn.onclick = () => { fecharModal('modal-confirm'); apagarGeral(id, arrayAlvo); };
@@ -739,32 +732,37 @@
         }
         
         function apagarGeral(id, arrayAlvo) {
-            // Optimistic Delete -> Front-end imediato
             if(arrayAlvo === 'registos') { registos = registos.filter(x => String(x.id) !== String(id)); redefinirPaginaE_Renderizar(); }
             if(arrayAlvo === 'despesasRegistadas') { despesasRegistadas = despesasRegistadas.filter(x => String(x.id) !== String(id)); abrirModalListaDespesas(); calcularFinancas(); }
             if(arrayAlvo === 'agendaRegistada') { agendaRegistada = agendaRegistada.filter(x => String(x.id) !== String(id)); renderizarAgenda(); }
             
-            // Sync Delete (Background)
             setSyncBackground(true);
             fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`)
                 .then(res => res.json())
-                .then(json => { if(json.sucesso) showToast("Registo vaporizado da Nuvem.", true); else showToast("Falhou ao apagar na nuvem."); })
-                .catch(() => showToast("Erro: Modificação só aplicada na memória."))
+                .then(json => { 
+                    if(json.sucesso) showToast("Vaporizado da Nuvem.", true); 
+                    else if(json.erro === "PIN incorreto") window.location.reload();
+                    else showToast("Falhou ao apagar na nuvem."); 
+                })
+                .catch(() => showToast("Falhou conexão à internet."))
                 .finally(() => setSyncBackground(false));
             
-            // Atualiza cache em memória silenciosamente
-            localStorage.setItem('app_cache', JSON.stringify({registos, despesas:despesasRegistadas, agenda:agendaRegistada}));
+            sessionStorage.setItem('app_cache', JSON.stringify({registos, despesas:despesasRegistadas, agenda:agendaRegistada}));
         }
 
         function sincronizarAlteracao(req, msgSucesso) {
             setSyncBackground(true);
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(req) })
                 .then(res => res.json())
-                .then(j => { if(j.sucesso) showToast(msgSucesso, true); else showToast("Erro alojamento: "+j.erro); })
-                .catch(() => showToast("Guardado na memória (Cloud insucessível)."))
+                .then(j => { 
+                    if(j.sucesso) showToast(msgSucesso, true); 
+                    else if(j.erro === "PIN incorreto") window.location.reload();
+                    else showToast("Erro alojamento: "+j.erro); 
+                })
+                .catch(() => showToast("Guardado na memória local."))
                 .finally(() => setSyncBackground(false));
                 
-            localStorage.setItem('app_cache', JSON.stringify({registos, despesas:despesasRegistadas, agenda:agendaRegistada}));
+            sessionStorage.setItem('app_cache', JSON.stringify({registos, despesas:despesasRegistadas, agenda:agendaRegistada}));
         }
 
         // --- CÁLCULO FINANCEIRO DETALHADO ---
@@ -791,7 +789,7 @@
             const a = document.createElement("a"); a.href=l; a.download="Registos_Horas.csv"; a.click(); showToast("CSV Guardado.");
         }
 
-        // --- LAZY LOAD: IMPORTADOR DE LIBRARIAS PESADAS ON-DEMAND ---
+        // --- IMPORTADOR DE LIBRARIAS (LAZY LOAD) ---
         function loadScript(src) {
             return new Promise((res, rej) => {
                 if(document.querySelector(`script[src="${src}"]`)) return res();
@@ -807,7 +805,7 @@
                 await loadScript("[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js)");
                 const doc = new window.jspdf.jsPDF();
                 doc.setFillColor(29,29,31); doc.rect(0,0,210,35,'F');
-                doc.setTextColor(255,255,255); doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.text("EXTRATO DE SERVIÇOS", 14, 23);
+                doc.setTextColor(255,255,255); doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.text("EXTRATO DE HORAS", 14, 23);
                 doc.setTextColor(190,190,190); doc.setFontSize(10); doc.text(`Ref: ${new Date().toLocaleDateString('pt-PT')}`, 14, 45);
                 
                 doc.autoTable({
@@ -822,12 +820,12 @@
                 documentoPDFFinal = doc; nomePDFFinal = "Extrato_Horas.pdf";
                 document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob'));
                 document.getElementById('modal-pdf').classList.add('show');
-            } catch(e) { showToast("Ligação lenta para importar PDF maker."); }
+            } catch(e) { showToast("Ligação lenta para PDF."); }
             finally { setSyncBackground(false); }
         }
         function gravarPDFFinal() { if(documentoPDFFinal) { documentoPDFFinal.save(nomePDFFinal); fecharModal('modal-pdf'); showToast("PDF Aprovado!"); } }
 
-        // --- DASHBOARD (GRÁFICOS CHART.JS ON-DEMAND) ---
+        // --- DASHBOARD GRÁFICOS CHART.JS ---
         async function abrirDashboard() {
             if(registos.length===0){showToast("Dados insuficientes.");return;}
             setSyncBackground(true);
@@ -835,7 +833,7 @@
                 await loadScript("[cdn.jsdelivr.net](https://cdn.jsdelivr.net/npm/chart.js)");
                 document.getElementById('modal-dashboard').classList.add('show');
                 gerarGraficosGerais();
-            } catch(e) { showToast("Falha ao injetar pacote analítico."); }
+            } catch(e) { showToast("Falha num pacote."); }
             finally { setSyncBackground(false); }
         }
 
@@ -858,8 +856,23 @@
             const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
             ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
             
-            if (pinApp) { await carregarAppBoot(); } 
-            else { document.getElementById('login-overlay').classList.remove('hidden'); }
+            // LER A MEMÓRIA DA SESSÃO ATUAL
+            const tempCache = sessionStorage.getItem('app_cache');
+            
+            if (pinApp) { 
+                // Se existe PIN, abre os dados previamente e avalia atualizações.
+                if (tempCache) {
+                    carregarListas(JSON.parse(tempCache));
+                    document.getElementById('login-overlay').classList.add('hidden');
+                }
+                
+                // Em cenário Online, confirma o PIN junto do servidor na tranquilidade do background
+                if(navigator.onLine) await puxarDaNuvem(!tempCache); 
+
+            } else { 
+                // A Sessão expirou (Janela fechada ou Utilizador deslogado via Botão Sair)
+                document.getElementById('login-overlay').classList.remove('hidden'); 
+            }
         };
     </script>
 </body>
