@@ -53,7 +53,7 @@
         .sidebar-divider { height: 1px; background: var(--border-color); margin: 20px 10px; }
         .sidebar-title { font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: bold; margin-bottom: 10px; padding: 0 15px; letter-spacing: 0.5px; }
         
-        .main-content { flex: 1; overflow-y: auto; padding: 30px; box-sizing: border-box; }
+        .main-content { flex: 1; overflow-y: auto; padding: 30px; box-sizing: border-box; scroll-behavior: smooth; }
         .app-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
         
         /* ---------- CABEÇALHO ---------- */
@@ -142,7 +142,7 @@
         .modal-overlay.show .modal-content { transform: translateY(0); }
         .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { margin: 0; font-size: 18px; color: var(--accent-color); }
-        .modal-body { flex: 1; overflow-y: auto; background: var(--bg-color); padding: 20px;}
+        .modal-body { flex: 1; overflow-y: auto; background: var(--bg-color); padding: 20px; scroll-behavior: smooth;}
         .modal-body iframe { width: 100%; height: 100%; border: none; display: block; }
         .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); background: var(--card-bg); }
         .btn-cancel { border: 1px solid var(--border-color); padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: bold; background: var(--input-bg); color: var(--text-main); cursor: pointer; }
@@ -254,8 +254,9 @@
         <button class="nav-item-desk" id="menu-despesas" onclick="navegarPara('despesas', this)">
             <span>🛒</span> Centro de Despesas
         </button>
+        <!-- AQUI FOI ALTERADO O NOME DO BOTÃO DA AGENDA -->
         <button class="nav-item-desk" id="menu-agenda" onclick="navegarPara('agenda', this)">
-            <span>📅</span> Gestor de Eventos
+            <span>📅</span> Agenda
         </button>
         <button class="nav-item-desk" id="menu-dashboard" onclick="navegarPara('dashboard', this)">
             <span>📊</span> Painel Estatístico
@@ -377,7 +378,8 @@
     <!-- MODAIS RESTANTES -->
     <div id="modal-agenda" class="modal-overlay">
         <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header"><h2 id="titulo_modal_agenda">📅 Agenda de Compromissos</h2></div>
+            <!-- AQUI FOI ALTERADO O TÍTULO PARA A CAIXA DE DIÁLOGO DA AGENDA -->
+            <div class="modal-header"><h2 id="titulo_modal_agenda">📅 Agenda</h2></div>
             <div class="modal-body">
                 <div style="background:var(--hover-bg); padding:15px; border-radius:12px; border:1px dashed rgba(0,122,255,0.3); margin-bottom: 20px;">
                     <h3 id="titulo_form_agenda" style="margin-top:0; font-size:14px; color:var(--accent-color); text-transform:uppercase;">Novo Evento</h3>
@@ -594,7 +596,17 @@
 
         function abrirModalListaDespesas() { const corp = document.getElementById('lista_despesas_corpo'); corp.innerHTML=''; let tds = [...despesasRegistadas].sort((a,b) => new Date(b.data) - new Date(a.data)); if(tds.length===0) corp.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:var(--text-muted);">Sem despesas.</td></tr>`; tds.forEach(d => { corp.innerHTML += `<tr><td data-label="Data">${formatDataBR(d.data)}</td><td data-label="Cat">${d.categoria}</td><td data-label="Desc">${d.descricao}</td><td data-label="Valor"><strong>${parseFloat(d.valor).toFixed(2)}€</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${d.id}', 'esta despesa')">🗑️</button></td></tr>`; }); document.getElementById('modal-lista-despesas').classList.add('show'); }
         function abrirModalDespesa() { idEmEdicaoDespesa=null; document.getElementById('titulo_modal_despesa').innerText="🛒 Nova Despesa"; document.getElementById('d_data').valueAsDate=new Date(); document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; document.getElementById('modal-despesa').classList.add('show'); }
-        function editarDespesa(id) { const d = despesasRegistadas.find(x => String(x.id) === String(id)); if(!d) return; idEmEdicaoDespesa=id; document.getElementById('titulo_modal_despesa').innerText="✏️ Atualizar Despesa"; document.getElementById('d_data').value=formatDataForm(d.data); document.getElementById('d_categoria').value=d.categoria; document.getElementById('d_descricao').value=d.descricao; document.getElementById('d_valor').value=d.valor; document.getElementById('modal-despesa').classList.add('show'); }
+        
+        function editarDespesa(id) { 
+            const d = despesasRegistadas.find(x => String(x.id) === String(id)); if(!d) return; 
+            idEmEdicaoDespesa=id; 
+            document.getElementById('titulo_modal_despesa').innerText="✏️ Atualizar Despesa"; 
+            document.getElementById('d_data').value=formatDataForm(d.data); 
+            document.getElementById('d_categoria').value=d.categoria; 
+            document.getElementById('d_descricao').value=d.descricao; 
+            document.getElementById('d_valor').value=d.valor; 
+            document.getElementById('modal-despesa').classList.add('show'); 
+        }
         
         async function guardarDespesa() { 
             const d=document.getElementById('d_data').value, cat=document.getElementById('d_categoria').value, desc=document.getElementById('d_descricao').value, val=parseFloat(document.getElementById('d_valor').value); 
@@ -607,7 +619,21 @@
         function abrirModalAgenda() { limparFormularioAgenda(); renderizarAgenda(); document.getElementById('modal-agenda').classList.add('show'); }
         function limparFormularioAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerText="Novo Evento"; document.getElementById('a_data').valueAsDate=new Date(); document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; document.getElementById('btn_guardar_agenda').innerText="+ Guardar na Agenda"; document.getElementById('btn_cancelar_agenda').style.display="none"; }
         function renderizarAgenda() { const crp = document.getElementById('lista_agenda_corpo'); crp.innerHTML=''; let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data)); if(ods.length===0) { crp.innerHTML=`<tr><td colspan="4" style="text-align:center; padding:15px; color:var(--text-muted);">Agenda limpa.</td></tr>`; return; } ods.forEach(a => crp.innerHTML+=`<tr><td data-label="Data">${formatDataBR(a.data)}</td><td data-label="Hora"><span style="background:var(--card-bg); border:1px solid var(--border-color); padding:3px 8px; border-radius:4px; font-size:11px;">${formatHora(a.hora)}</span></td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')">✏️</button><button class="delete-btn" onclick="apagarRegisto('${a.id}', 'este evento')">🗑️</button></td></tr>`); }
-        function editarAgenda(id) { const e = agendaRegistada.find(x => String(x.id) === String(id)); if(!e) return; idEmEdicaoAgenda=id; document.getElementById('titulo_form_agenda').innerText="✏️ A Atualizar Evento"; document.getElementById('a_data').value=formatDataForm(e.data); document.getElementById('a_hora').value=(formatHora(e.hora)!=='--:--')?formatHora(e.hora):''; document.getElementById('a_titulo').value=e.titulo; document.getElementById('btn_guardar_agenda').innerText="Confirmar"; document.getElementById('btn_cancelar_agenda').style.display="block"; }
+        
+        // AQUI FOI ADICIONADO O SCROLL PARA O TOPO NO MOBILE AO EDITAR A AGENDA
+        function editarAgenda(id) { 
+            const e = agendaRegistada.find(x => String(x.id) === String(id)); if(!e) return; 
+            idEmEdicaoAgenda=id; 
+            document.getElementById('titulo_form_agenda').innerText="✏️ Atualizar Evento"; 
+            document.getElementById('a_data').value=formatDataForm(e.data); 
+            document.getElementById('a_hora').value=(formatHora(e.hora)!=='--:--')?formatHora(e.hora):''; 
+            document.getElementById('a_titulo').value=e.titulo; 
+            document.getElementById('btn_guardar_agenda').innerText="Confirmar"; 
+            document.getElementById('btn_cancelar_agenda').style.display="block"; 
+            
+            const modalBody = document.querySelector('#modal-agenda .modal-body');
+            if(modalBody) modalBody.scrollTo({ top: 0, behavior: 'smooth' });
+        }
         
         async function guardarAgenda() { 
             const d=document.getElementById('a_data').value, h=document.getElementById('a_hora').value, t=document.getElementById('a_titulo').value; 
