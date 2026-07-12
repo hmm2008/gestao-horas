@@ -8,10 +8,10 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     
-    <!-- Bibliotecas Externas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Bibliotecas Externas com DEFER para não bloquear o arranque -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     
     <style>
         :root { 
@@ -39,6 +39,11 @@
         
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; transition: background 0.3s; display: flex; height: 100vh; overflow: hidden; }
         
+        /* Oculta completamente o resto da app até o PIN ser inserido */
+        body.is-locked > *:not(#login-overlay):not(#toast-container):not(#global-loader):not(script) {
+            display: none !important;
+        }
+
         /* ---------- ESTRUTURA DASHBOARD & SIDEBAR ---------- */
         .sidebar { width: 240px; background: var(--card-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 25px 15px; box-sizing: border-box; z-index: 100; transition: background 0.3s, border 0.3s; }
         .sidebar .brand { margin-bottom: 35px; padding: 0 10px; display: flex; align-items: center; gap: 10px; letter-spacing: 0.3px; }
@@ -118,7 +123,7 @@
         .toast { background: var(--text-main); color: var(--bg-color); padding: 14px 24px; border-radius: 10px; margin-bottom: 10px; opacity: 0; transform: translateY(-10px); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); font-weight: 500; }
         .toast.show { opacity: 1; transform: translateY(0); }
 
-        #global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(3px); }
+        #global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: 100000; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(3px); }
         [data-theme="dark"] #global-loader { background: rgba(0, 0, 0, 0.85); }
         #global-loader.active { opacity: 1; pointer-events: auto; }
         .spinner { border: 4px solid var(--border-color); border-top: 4px solid var(--accent-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
@@ -216,7 +221,7 @@
         }
     </style>
 </head>
-<body>
+<body class="is-locked"> <!-- is-locked garante ecrã em branco na estrutura base até validar PIN -->
     <div id="toast-container"></div>
     
     <div id="global-loader">
@@ -225,7 +230,7 @@
     </div>
     
     <!-- ECRÃ DE LOGIN PIN -->
-    <div id="login-overlay" class="hidden">
+    <div id="login-overlay">
         <div class="login-box">
             <h2>🔒 Acesso Restrito</h2>
             <div id="pin-error-msg">⚠️ PIN Incorreto. Tente novamente.</div>
@@ -550,6 +555,7 @@
             const erroMsg = document.getElementById('pin-error-msg');
             if (sucesso) {
                 document.getElementById('login-overlay').classList.add('hidden');
+                document.body.classList.remove('is-locked'); // Liberta a UI
                 erroMsg.style.display = 'none';
                 redefinirPaginaE_Renderizar();
             } else {
@@ -561,7 +567,9 @@
 
         function sairApp() {
             pinApp = ''; sessionStorage.removeItem('app_pin');
-            document.getElementById('login-overlay').classList.remove('hidden'); limparPIN(); registos=[]; despesasRegistadas=[]; agendaRegistada=[]; redefinirPaginaE_Renderizar();
+            document.body.classList.add('is-locked'); // Esconde a UI novamente
+            document.getElementById('login-overlay').classList.remove('hidden'); 
+            limparPIN(); registos=[]; despesasRegistadas=[]; agendaRegistada=[]; redefinirPaginaE_Renderizar();
         }
 
         function navegarPara(seccao, botao) {
