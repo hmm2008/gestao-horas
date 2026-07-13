@@ -1403,17 +1403,20 @@
             chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type:'bar', data:{ labels:Object.keys(deps), datasets:[{label:'Horas Gastas', data:Object.values(deps), backgroundColor:'#0a84ff'}] }, options:{scales:{y:{ticks:{color:corText}},x:{ticks:{color:corText}}}} }); 
             chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type:'doughnut', data:{ labels:Object.keys(grcat), datasets:[{data:Object.values(grcat), backgroundColor:['#ff3b30','#ff9500','#34c759','#5856d6','#8e8e93']}] }, options:{maintainAspectRatio:false, plugins:{legend:{labels:{color:corText}}}} }); 
         }
+
         window.onload = () => {
-    if(localStorage.getItem('tema_final')==='dark') alternarTema();
-    document.getElementById('data').valueAsDate = new Date();
-    const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
-    ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
-    
-    // NOVO: Se o utilizador já tem o PIN na sessão (fez refresh), força a ida à nuvem buscar os dados
-    if (pinApp) { 
-        iniciarAppApósLogin();
-    }
-};
+            if(localStorage.getItem('tema_final')==='dark') alternarTema();
+            document.getElementById('data').valueAsDate = new Date();
+            const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
+            ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
+            
+            // A carga de dados já foi iniciada pelo script inline no body se o utilizador já tiver sessão
+            if (pinApp) { 
+                // Apenas garante que os selects estão preenchidos se o login foi via cache
+                atualizarDropdownsFiltros(); 
+                redefinirPaginaE_Renderizar();
+            }
+        };
     </script>
 </body>
 </html>
