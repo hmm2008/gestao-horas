@@ -1,36 +1,34 @@
 <!DOCTYPE html>
-<html lang="pt-PT" data-theme="light">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gestão de Horas Cloud</title>
-    
-    <!-- Bibliotecas e Ícones -->
+    <title>Gestor F&A</title>
+    <!-- Adicionamos o Font Awesome para ícones melhores -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     
     <style>
         :root {
-            /* Paleta Modo Claro */
-            --primary: #4F46E5;       
+            /* Cores e Variáveis (como no original) */
+            --primary: #4F46E5;       /* Índigo principal */
             --primary-dark: #4338CA;
             --primary-light: #EEF2FF;
-            --secondary: #10B981;     
+            --secondary: #10B981;     /* Esmeralda / Verde */
             --secondary-dark: #059669;
-            --danger: #EF4444;        
-            --warning: #F59E0B;       
-            --gray-50: #F9FAFB;
-            --gray-100: #F3F4F6;
-            --gray-200: #E5E7EB;
-            --gray-300: #D1D5DB;
-            --gray-400: #9CA3AF;
-            --gray-500: #6B7280;
-            --gray-600: #4B5563;
-            --gray-700: #374151;
-            --gray-800: #1F2937;
+            --secondary-light: #D1FAE5;
+            --danger: #EF4444;        /* Vermelho */
+            --danger-dark: #DC2626;
+            --warning: #F59E0B;       /* Amarelo/Laranja */
+            --dark: #1F2937;
             --gray-900: #111827;
+            --gray-800: #1F2937;
+            --gray-700: #374151;
+            --gray-600: #4B5563;
+            --gray-500: #6B7280;
+            --gray-400: #9CA3AF;
+            --gray-300: #D1D5DB;
+            --gray-200: #E5E7EB;
+            --gray-100: #F3F4F6;
             --bg-color: #F8FAFC;
             --surface: #FFFFFF;
             
@@ -43,761 +41,1528 @@
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             
+            /* Altura do header e tab bar para cálculos */
             --header-height: 60px;
             --tab-bar-height: 65px;
         }
 
-        /* Paleta Modo Escuro */
-        [data-theme="dark"] {
-            --primary-light: #1e1b4b;
-            --gray-50: #0f172a;
-            --gray-100: #1e293b;
-            --gray-200: #334155;
-            --gray-300: #475569;
-            --gray-400: #64748b;
-            --gray-500: #94a3b8;
-            --gray-600: #cbd5e1;
-            --gray-700: #e2e8f0;
-            --gray-800: #f1f5f9;
-            --gray-900: #f8fafc;
-            --bg-color: #020617;
-            --surface: #0f172a;
-            color-scheme: dark;
+        /* --- O SEU TÍTULO DESKTOP: DETALHES FINANCEIROS --- */
+        .titulo-desktop-financeiros {
+            display: none; /* Escondido por defeito (mobile) */
+            text-align: center;
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            width: 100%;
+            letter-spacing: -0.025em;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        @media (min-width: 768px) {
+            .titulo-desktop-financeiros {
+                display: block; /* Apenas visível em ecrãs tipo desktop ou tablet */
+            }
+        }
+        /* ---------------------------------------------------- */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
-            font-family: var(--font-family); background-color: var(--bg-color); color: var(--gray-800);
-            line-height: 1.5; overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh;
-            transition: background-color 0.3s, color 0.3s;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--gray-800);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        h1, h2, h3, h4 { color: var(--gray-900); font-weight: 600; letter-spacing: -0.025em; }
+        /* TIPOGRAFIA */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--gray-900);
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
         h2 { font-size: 1.25rem; margin-bottom: 1rem; }
         h3 { font-size: 1.125rem; margin-bottom: 0.75rem; }
 
-        /* --- TELA DE LOGIN --- */
+        /* TELA DE LOGIN (PIN) */
         #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; transition: opacity 0.5s ease-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
         }
+
         .login-card {
-            background-color: var(--surface); padding: 40px 30px; border-radius: var(--border-radius-xl);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); width: 90%; max-width: 400px; text-align: center;
+            background-color: var(--surface);
+            padding: 40px 30px;
+            border-radius: var(--border-radius-xl);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .login-icon { width: 70px; height: 70px; background-color: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; margin: 0 auto 20px auto; }
-        .login-title { font-size: 1.5rem; margin-bottom: 8px; }
-        .pin-display { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; margin-top: 20px; }
-        .pin-dot { width: 16px; height: 16px; border-radius: 50%; background-color: var(--gray-200); transition: var(--transition); }
-        .pin-dot.filled { background-color: var(--primary); transform: scale(1.2); }
-        .teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-        .tecla { background-color: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--border-radius-lg); font-size: 1.5rem; font-weight: 500; padding: 15px 0; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: var(--transition); user-select: none; }
-        .tecla:active { background-color: var(--gray-200); transform: scale(0.95); }
-        .tecla.tecla-acao { background-color: var(--gray-100); color: var(--gray-600); font-size: 1.2rem; }
-        .btn-entrar { width: 100%; background-color: var(--primary); color: white; border: none; padding: 16px; border-radius: var(--border-radius); font-size: 1rem; font-weight: 600; cursor: pointer; transition: var(--transition); }
-        .btn-entrar:disabled { background-color: var(--gray-300); cursor: not-allowed; color: var(--gray-500); }
 
-        /* --- APP PRINCIPAL E HEADER --- */
-        #app-content { display: none; flex-direction: column; height: 100vh; width: 100%; }
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
 
+        .login-icon {
+            width: 70px; height: 70px;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 28px;
+            margin: 0 auto 20px auto;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+        
+        .login-subtitle {
+            color: var(--gray-500);
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        .pin-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .pin-dot {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background-color: var(--gray-200);
+            transition: var(--transition);
+        }
+
+        .pin-dot.filled {
+            background-color: var(--primary);
+            transform: scale(1.2);
+        }
+        
+        .pin-dot.error {
+            background-color: var(--danger);
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+
+        .teclado {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tecla {
+            background-color: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius-lg);
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--gray-800);
+            padding: 15px 0;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .tecla:active {
+            background-color: var(--gray-200);
+            transform: scale(0.95);
+        }
+        
+        .tecla.tecla-acao {
+            background-color: var(--gray-100);
+            color: var(--gray-600);
+            font-size: 1.2rem;
+        }
+
+        .btn-entrar {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-entrar:hover, .btn-entrar:active {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-entrar:disabled {
+            background-color: var(--gray-300);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ESTRUTURA PRINCIPAL (APP) */
+        #app-content {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* HEADER */
         header {
-            background-color: var(--primary); color: white; height: var(--header-height);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100; box-shadow: var(--shadow);
+            background-color: var(--primary);
+            color: white;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+            safe-area-inset-top: env(safe-area-inset-top);
         }
-        .header-side { flex: 1; display: flex; align-items: center; }
-        .header-side.left { justify-content: flex-start; font-size: 1.8rem; opacity: 0.9; }
-        .header-side.right { justify-content: flex-end; gap: 15px; }
-        
-        .header-title { flex: 2; text-align: center; font-size: 1.1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
-        
-        .header-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 5px; opacity: 0.8; transition: var(--transition); }
-        .header-btn:hover { opacity: 1; transform: scale(1.1); }
 
-        main { flex: 1; padding: calc(var(--header-height) + 15px) 15px calc(var(--tab-bar-height) + 20px) 15px; overflow-y: auto; scroll-behavior: smooth; }
-        .section-container { display: none; max-width: 1000px; margin: 0 auto; }
-        .section-container.active { display: block; animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+        }
 
-        /* --- TAB BAR INFERIOR (MOBILE) --- */
+        .header-actions {
+            display: flex; gap: 15px;
+        }
+        
+        .header-btn {
+            background: none; border: none; color: white;
+            font-size: 1.2rem; cursor: pointer;
+            padding: 5px;
+            transition: var(--transition);
+            opacity: 0.8;
+        }
+        
+        .header-btn:hover { opacity: 1; }
+
+        /* ÁREA DE CONTEÚDO (SCROLL) */
+        main {
+            flex: 1;
+            padding: calc(var(--header-height) + 15px) 15px calc(var(--tab-bar-height) + 20px) 15px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .section-container {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .section-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* TAB BAR (Navegação Inferior) */
         nav.tab-bar {
-            background-color: var(--surface); height: var(--tab-bar-height); display: flex; justify-content: space-around; align-items: center;
-            position: fixed; bottom: 0; left: 0; right: 0; border-top: 1px solid var(--gray-200); z-index: 100; box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-        .tab-btn { background: none; border: none; flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; color: var(--gray-500); font-size: 0.75rem; font-weight: 600; cursor: pointer; }
-        .tab-btn i { font-size: 1.25rem; transition: var(--transition); }
-        .tab-btn.active { color: var(--primary); }
-        .tab-btn.active i { transform: scale(1.15); }
-        
-        .desktop-only { display: none !important; }
-        .sidebar-divider { font-size: 0.65rem; text-transform: uppercase; color: var(--gray-400); font-weight: bold; width: 100%; text-align: center; margin: 20px 0 5px 0; letter-spacing: 0.5px; }
-
-        /* --- GAVETA (DRAWER) OPÇÕES MOBILE --- */
-        .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1400; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(2px); }
-        .drawer-overlay.show { opacity: 1; pointer-events: auto; }
-        .mobile-drawer { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--surface); z-index: 1450; padding: 20px 20px 40px; border-radius: 20px 20px 0 0; transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2); box-shadow: 0 -5px 25px rgba(0,0,0,0.2); }
-        .mobile-drawer.show { bottom: 65px; }
-        .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--gray-200); padding-bottom: 10px; }
-        .drawer-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 15px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--border-radius); font-size: 1rem; font-weight: 600; color: var(--gray-800); margin-bottom: 10px; cursor: pointer; }
-
-        /* --- CARTÕES (Cards) E FORMULÁRIOS --- */
-        .card { background-color: var(--surface); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); margin-bottom: 20px; }
-        .form-group { margin-bottom: 16px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--gray-600); text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;}
-        input, select { width: 100%; padding: 12px; border: 1px solid var(--gray-300); border-radius: var(--border-radius-sm); font-family: inherit; font-size: 1rem; background-color: var(--surface); color: var(--gray-900); transition: var(--transition); }
-        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        .btn { display: inline-flex; justify-content: center; align-items: center; gap: 8px; width: 100%; padding: 14px; border-radius: var(--border-radius-sm); font-size: 1rem; font-weight: 600; cursor: pointer; border: none; transition: var(--transition); }
-        .btn-primary { background-color: var(--primary); color: white; }
-        .btn-cancel { background-color: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-300); }
-        
-        /* --- PAINEL RESUMO E FINANÇAS --- */
-        .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface); border-radius: var(--border-radius); border: 1px solid var(--gray-200); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 15px; }
-        .summary-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-right: 1px solid var(--gray-200); padding: 20px 10px; }
-        .summary-item:last-child { border-right: none; }
-        .summary-item .val { font-size: 1.5rem; font-weight: 800; color: var(--gray-900); }
-        .summary-item .lab { font-size: 0.75rem; color: var(--gray-500); text-transform: uppercase; font-weight: 600; }
-
-        .finance-panel { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; background: var(--primary-light); padding: 20px; border-radius: var(--border-radius); border: 1px dashed rgba(79, 70, 229, 0.3); align-items: center; margin-bottom: 20px; }
-        .finance-item { display: flex; flex-direction: column; text-align: center; justify-content: center; align-items: center;}
-        .finance-item input { text-align: center; margin-top: 5px; background: var(--surface); border: 1px solid var(--gray-300); padding: 8px;}
-        .finance-item .lab { font-size: 0.75rem; color: var(--primary); text-transform: uppercase; font-weight: 700; }
-        .finance-item .val { font-size: 1.1rem; font-weight: bold; margin-top: 5px; color: var(--gray-900);}
-        .finance-item.highlight .val { color: var(--primary); font-size: 1.3rem;}
-        
-        .filter-panel { display: flex; gap: 10px; background: var(--surface); padding: 12px; border-radius: var(--border-radius); border: 1px solid var(--gray-200); margin-bottom: 15px; }
-        .filter-panel select { flex: 1; font-weight: 500; font-size: 13px; padding: 10px; }
-
-        /* --- TABELA E PAGINAÇÃO --- */
-        .table-container { overflow-x: auto; background: var(--surface); border-radius: var(--border-radius); border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 15px 15px; border-bottom: 1px solid var(--gray-200); font-size: 0.9rem; white-space: nowrap; }
-        th { background: var(--gray-50); color: var(--gray-500); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
-        .action-btns { display: flex; gap: 12px; align-items: center; justify-content: flex-end; }
-        .edit-btn { background: none; border: none; color: var(--warning); cursor: pointer; font-size: 1.2rem; }
-        .delete-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.2rem; }
-        
-        .pagination { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--surface); border-top: 1px solid var(--gray-200); }
-        .pagination .btn-acao { border: 1px solid var(--gray-300); padding: 8px 16px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; background: var(--surface); color: var(--gray-800); }
-        .pagination .btn-acao:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* --- GRÁFICOS (Estatísticas) --- */
-        .dashboard-grid { display: grid; gap: 20px; grid-template-columns: 1fr 1fr; }
-        .chart-container { background: var(--surface); padding: 20px; border-radius: var(--border-radius); border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm); }
-        .chart-wrapper { width: 100%; height: 250px; position: relative; margin-top: 15px; }
-        .chart-title { font-size: 0.75rem; font-weight: 700; color: var(--gray-500); text-transform: uppercase; }
-
-        /* --- MODAIS --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(4px); }
-        .modal-overlay.show { opacity: 1; pointer-events: auto; }
-        .modal-content { background: var(--surface); width: 90%; max-width: 800px; max-height: 85vh; border-radius: var(--border-radius-lg); display: flex; flex-direction: column; overflow: hidden; transform: translateY(20px); transition: 0.3s; border: 1px solid var(--gray-200); }
-        .modal-overlay.show .modal-content { transform: translateY(0); }
-        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { margin: 0; font-size: 1.1rem; color: var(--primary); }
-        .modal-body { flex: 1; overflow-y: auto; padding: 20px; }
-        .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--gray-200); background: var(--gray-50); }
-
-        /* LOADING & TOAST */
-        #global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 100000; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(3px); }
-        #global-loader.active { opacity: 1; pointer-events: auto; }
-        .spinner { border: 4px solid var(--gray-200); border-top: 4px solid var(--primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        #toast-container { position: fixed; bottom: calc(var(--tab-bar-height) + 20px); left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background-color: var(--gray-900); color: white; padding: 12px 16px; border-radius: var(--border-radius-sm); font-size: 0.9rem; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-lg); animation: toastIn 0.3s forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- RESPONSIVIDADE (MOBILE COMPACTO) --- */
-        @media (max-width: 800px) {
-            .header-title { font-size: 0.95rem; }
-            .summary-panel { grid-template-columns: 1fr 1fr; }
-            .summary-item:last-child { grid-column: span 2; border-top: 1px solid var(--gray-200); border-right: none; }
-            
-            .finance-panel { grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-            #fi-ss, #fi-irs { border-bottom: 1px solid var(--gray-200); padding-bottom: 10px;}
-            #fi-impostos, #fi-despesas { padding-top: 5px; }
-            #fi-liquido { grid-column: span 2; border-top: 1px solid var(--primary-light); padding-top: 10px; }
-            
-            .dashboard-grid { grid-template-columns: 1fr; }
-            .filter-panel { flex-direction: column; }
-            
-            table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
-            thead tr { display: none; } 
-            tr { border: 1px solid var(--gray-200); border-radius: 10px; margin-bottom: 10px; padding: 12px; }
-            td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-100); padding: 10px 0; font-size: 0.9rem; }
-            td:last-child { border-bottom: none; }
-            td::before { content: attr(data-label); font-weight: 700; font-size: 0.7rem; color: var(--gray-500); text-transform: uppercase; margin-right: 10px; }
-            .action-btns { border-top: 1px dashed var(--gray-200); padding-top: 12px; margin-top: 6px; }
+            background-color: var(--surface);
+            height: var(--tab-bar-height);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            border-top: 1px solid var(--gray-200);
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 100;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
-        /* --- RESPONSIVIDADE DESKTOP (SIDEBAR LARGURA AJUSTADA & EXPORT) --- */
-        @media (min-width: 801px) {
-            #app-content { flex-direction: row; }
-            nav.tab-bar { position: static; flex-direction: column; width: 110px; height: 100vh; justify-content: flex-start; padding-top: calc(var(--header-height) + 20px); border-top: none; border-right: 1px solid var(--gray-200); }
-            .tab-btn { height: 75px; flex: none; width: 100%; }
-            .tab-btn span { display: block; margin-top: 5px; font-size: 0.75rem; }
-            header { width: calc(100% - 110px); left: 110px; }
-            main { width: calc(100% - 110px); margin-left: 0; padding-bottom: 30px; }
+        .tab-btn {
+            background: none;
+            border: none;
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            color: var(--gray-500);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tab-btn i {
+            font-size: 1.25rem;
+            transition: var(--transition);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+        
+        .tab-btn.active i {
+            transform: scale(1.15);
+        }
+
+        /* CARTÕES (Cards Genéricos) */
+        .card {
+            background-color: var(--surface);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--gray-100);
+            padding-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+            margin: 0;
+        }
+
+        /* DASHBOARD - ESTATÍSTICAS */
+        .resumo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--surface);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-title {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            font-weight: 500;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .stat-card.destaque {
+            grid-column: span 2;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+            color: white;
+            border: none;
+        }
+        
+        .stat-card.destaque .stat-title,
+        .stat-card.destaque .stat-value {
+            color: white;
+        }
+        
+        .stat-card.destaque .stat-value {
+            font-size: 1.8rem;
+        }
+
+        /* FORMULÁRIOS */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius-sm);
+            font-family: var(--font-family);
+            font-size: 1rem;
+            background-color: var(--surface);
+            color: var(--gray-900);
+            transition: var(--transition);
+            -webkit-appearance: none;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        input[type="date"], input[type="time"] {
+            position: relative;
+        }
+        
+        /* Select customizado (setinha) */
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-primary:active {
+            background-color: var(--primary-dark);
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+        
+        .btn-secondary:active {
+            background-color: var(--gray-200);
+        }
+
+        /* LISTAS (Registos, Despesas, Agenda) */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .list-item {
+            background-color: var(--surface);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .list-item-content {
+            flex: 1;
+        }
+
+        .item-data {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-bottom: 4px;
+            display: flex; gap: 8px; align-items: center;
+        }
+
+        .item-titulo {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .item-detalhes {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+
+        .item-valor {
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-align: right;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+        
+        .item-valor.ganho { color: var(--secondary-dark); }
+        .item-valor.despesa { color: var(--danger); }
+
+        .btn-apagar {
+            background: none;
+            border: none;
+            color: var(--gray-400);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+            margin-left: 10px;
+        }
+
+        .btn-apagar:hover, .btn-apagar:active {
+            color: var(--danger);
+            background-color: #FEE2E2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-500);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--gray-300);
+            margin-bottom: 15px;
+        }
+
+        /* FILTROS MÊS/ANO */
+        .filtros-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .filtros-row select {
+            padding: 8px 30px 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        /* LOADING SPINNER Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(2px);
+            display: none; /* Flex when active */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ALERTAS (TOAST) */
+        #toast-container {
+            position: fixed;
+            bottom: calc(var(--tab-bar-height) + 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background-color: var(--gray-900);
+            color: white;
+            padding: 12px 16px;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: var(--shadow-lg);
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            pointer-events: auto;
+        }
+        
+        .toast.success { border-left: 4px solid var(--secondary); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.closing { animation: toastOut 0.3s ease-in forwards; }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(20px); }
+        }
+        
+        /* CORREÇÕES ÚTEIS WIDGETS */
+        .widget-row {
+            display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;
+        }
+        
+        .widget-label { color: var(--gray-600); }
+        .widget-val { font-weight: 600; color: var(--gray-900); }
+        
+        hr { border: 0; border-top: 1px solid var(--gray-200); margin: 15px 0; }
+
+        /* Ajustes Desktop para melhorar navegação */
+        @media (min-width: 768px) {
+            #app-content {
+                flex-direction: row;
+            }
             
-            .desktop-only { display: flex !important; }
-            .sidebar-divider.desktop-only { display: block !important; }
-            .mobile-only { display: none !important; }
-            .mobile-drawer, .drawer-overlay { display: none !important; }
+            nav.tab-bar {
+                position: static;
+                flex-direction: column;
+                width: 80px;
+                height: 100vh;
+                justify-content: flex-start;
+                padding-top: var(--header-height);
+                border-top: none;
+                border-right: 1px solid var(--gray-200);
+            }
+            
+            .tab-btn {
+                height: 80px;
+                flex: none;
+            }
+            
+            header {
+                width: calc(100% - 80px);
+                left: 80px;
+            }
+            
+            main {
+                padding-bottom: 30px;
+                width: calc(100% - 80px);
+                margin-left: 80px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div id="global-loader"><div class="spinner"></div><div style="font-weight: 600; color: #fff;">A processar...</div></div>
+    <!-- OVERLAY DE LOADING -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="color: var(--gray-700); font-weight: 500;" id="loading-text">A Processar...</div>
+    </div>
+
+    <!-- TOAST INFORMAÇÃO -->
     <div id="toast-container"></div>
 
-    <!-- ECRÃ DE LOGIN -->
+    <!-- TELA LOGIN PIN -->
     <div id="login-screen">
         <div class="login-card">
             <div class="login-icon"><i class="fa-solid fa-lock"></i></div>
             <h1 class="login-title">Área Restrita</h1>
-            <p style="color: var(--gray-500); font-size: 0.95rem; margin-bottom: 20px;">Introduza o seu PIN</p>
+            <p class="login-subtitle">Introduza o seu PIN de acesso</p>
+            
             <div class="pin-display">
-                <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
             </div>
+            
             <div class="teclado">
-                <div class="tecla" onclick="teclarPIN('1')">1</div><div class="tecla" onclick="teclarPIN('2')">2</div><div class="tecla" onclick="teclarPIN('3')">3</div>
-                <div class="tecla" onclick="teclarPIN('4')">4</div><div class="tecla" onclick="teclarPIN('5')">5</div><div class="tecla" onclick="teclarPIN('6')">6</div>
-                <div class="tecla" onclick="teclarPIN('7')">7</div><div class="tecla" onclick="teclarPIN('8')">8</div><div class="tecla" onclick="teclarPIN('9')">9</div>
-                <div class="tecla tecla-acao" onclick="limparPIN()">C</div><div class="tecla" onclick="teclarPIN('0')">0</div><div class="tecla tecla-acao" onclick="apagarUltimoPIN()"><i class="fa-solid fa-delete-left"></i></div>
+                <div class="tecla" onclick="inserirNumero(1)">1</div>
+                <div class="tecla" onclick="inserirNumero(2)">2</div>
+                <div class="tecla" onclick="inserirNumero(3)">3</div>
+                
+                <div class="tecla" onclick="inserirNumero(4)">4</div>
+                <div class="tecla" onclick="inserirNumero(5)">5</div>
+                <div class="tecla" onclick="inserirNumero(6)">6</div>
+                
+                <div class="tecla" onclick="inserirNumero(7)">7</div>
+                <div class="tecla" onclick="inserirNumero(8)">8</div>
+                <div class="tecla" onclick="inserirNumero(9)">9</div>
+                
+                <div class="tecla tecla-acao" onclick="limparPin()">C</div>
+                <div class="tecla" onclick="inserirNumero(0)">0</div>
+                <div class="tecla tecla-acao" onclick="apagarNumero()"><i class="fa-solid fa-delete-left"></i></div>
             </div>
-            <button class="btn-entrar" id="btn-login" onclick="verificarPinLogin()" disabled>ENTRAR</button>
+            
+            <button class="btn-entrar" id="btn-login" onclick="validarPin()" disabled>ENTRAR</button>
         </div>
     </div>
 
-    <!-- APP -->
+    <!-- APP PRINCIPAL -->
     <div id="app-content">
         <header>
-            <div class="header-side left">
-                <i class="fa-solid fa-clock"></i>
+            <div class="header-title" id="main-title">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
             </div>
-            
-            <div class="header-title" id="main-title">GESTÃO DE HORAS</div>
-            
-            <div class="header-side right">
-                <button class="header-btn" onclick="alternarTema()" title="Mudar Tema"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
-                <button class="header-btn" onclick="atualizarDados(true)" title="Sincronizar"><i class="fa-solid fa-rotate-right"></i></button>
-                <button class="header-btn" onclick="sairApp()" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
+            <div class="header-actions">
+                <button class="header-btn" onclick="atualizarDados(true)"><i class="fa-solid fa-rotate-right"></i></button>
+                <button class="header-btn" onclick="fazerLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
         </header>
 
-        <!-- MENU (BOTTOM MOBILE / SIDE DESKTOP) -->
+        <!-- NAVEGAÇÃO INFERIOR -->
         <nav class="tab-bar">
-            <button class="tab-btn active" id="menu-horas" onclick="mudarSeparador('horas', this)">
-                <i class="fa-solid fa-stopwatch"></i><span>Registos</span>
+            <button class="tab-btn active" onclick="mudarSeparador('dashboard', this)">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Resumo</span>
             </button>
-            <button class="tab-btn" id="menu-despesas" onclick="mudarSeparador('despesas', this)">
-                <i class="fa-solid fa-receipt"></i><span>Despesas</span>
+            <button class="tab-btn" onclick="mudarSeparador('horas', this)">
+                <i class="fa-solid fa-clock"></i>
+                <span>Horas</span>
             </button>
-            <button class="tab-btn" id="menu-agenda" onclick="mudarSeparador('agenda', this)">
-                <i class="fa-solid fa-calendar-alt"></i><span>Agenda</span>
+            <button class="tab-btn" onclick="mudarSeparador('despesas', this)">
+                <i class="fa-solid fa-receipt"></i>
+                <span>Gastos</span>
             </button>
-            <button class="tab-btn" id="menu-estatisticas" onclick="mudarSeparador('estatisticas', this)">
-                <i class="fa-solid fa-chart-pie"></i><span>Estatística</span>
-            </button>
-            
-            <!-- Apenas Mobile: Botão MAIS -->
-            <button class="tab-btn mobile-only" onclick="toggleGavetaMais()">
-                <i class="fa-solid fa-ellipsis"></i><span>Mais</span>
-            </button>
-
-            <!-- Apenas Desktop: Botões de Exportação na lateral -->
-            <div class="sidebar-divider desktop-only">Exportação</div>
-            <button class="tab-btn desktop-only" onclick="iniciarBackupCSV()">
-                <i class="fa-solid fa-file-csv" style="color: var(--primary);"></i><span>Excel</span>
-            </button>
-            <button class="tab-btn desktop-only" onclick="preVisualizarPDF()">
-                <i class="fa-solid fa-file-pdf" style="color: var(--primary);"></i><span>PDF</span>
+            <button class="tab-btn" onclick="mudarSeparador('agenda', this)">
+                <i class="fa-solid fa-calendar-alt"></i>
+                <span>Agenda</span>
             </button>
         </nav>
 
-        <!-- GAVETA MAIS OPÇÕES (MOBILE) -->
-        <div class="drawer-overlay" id="gaveta-fundo" onclick="toggleGavetaMais()"></div>
-        <div class="mobile-drawer" id="gaveta-opcoes">
-            <div class="drawer-header">
-                <span style="font-size: 12px; text-transform: uppercase; font-weight: bold; color: var(--gray-500);">Exportações</span>
-                <button onclick="toggleGavetaMais()" style="background:none; border:none; color:var(--gray-700); font-size:0.9rem; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px;">
-                    <i class="fa-solid fa-arrow-left"></i> Voltar
-                </button>
-            </div>
-            <button class="drawer-btn" onclick="toggleGavetaMais(); iniciarBackupCSV();"><span style="color:var(--primary)"><i class="fa-solid fa-file-csv"></i> Exportar Excel</span><i class="fa-solid fa-chevron-right"></i></button>
-            <button class="drawer-btn" onclick="toggleGavetaMais(); preVisualizarPDF();"><span style="color:var(--primary)"><i class="fa-solid fa-file-pdf"></i> Gerar PDF</span><i class="fa-solid fa-chevron-right"></i></button>
-        </div>
-
-        <main id="main-scroll-area">
-            <!-- 1. REGISTOS DE HORAS E FINANÇAS -->
-            <section id="horas" class="section-container active">
+        <main>
+            <!-- DASHBOARD -->
+            <section id="dashboard" class="section-container active">
                 
-                <!-- PAINÉIS DE RESUMO FINANCEIRO -->
-                <div class="summary-panel">
-                    <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
-                    <div class="summary-item"><span class="val" id="total_horas">0h 00m</span><span class="lab">Total Horas</span></div>
-                    <div class="summary-item"><span class="val" id="total_ganho">0.00 €</span><span class="lab">Faturação Bruta</span></div>
+                <!-- TÍTULO DETALHES FINANCEIROS INSERIDO AQUI -->
+                <h2 class="titulo-desktop-financeiros">Detalhes Financeiros</h2>
+                
+                <div class="resumo-grid">
+                    <div class="stat-card destaque">
+                        <div class="stat-title">Lucro Líquido (Global)</div>
+                        <div class="stat-value" id="resumo-lucro">0.00 €</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Ganhos em Horas</div>
+                        <div class="stat-value" id="resumo-ganhos" style="color: var(--secondary-dark);">0.00 €</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Total Despesas</div>
+                        <div class="stat-value" id="resumo-despesas" style="color: var(--danger);">0.00 €</div>
+                    </div>
                 </div>
 
-                <div class="finance-panel" id="painel-financas">
-                    <div style="grid-column: 1 / -1; text-align: center; font-weight: 800; font-size: 1rem; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Detalhes Financeiros</div>
-                    <div class="finance-item" id="fi-ss"><span class="lab">SS (%)</span><input type="number" id="inp_ss" value="0" step="1" max="100" min="0" oninput="calcularFinancas()"></div>
-                    <div class="finance-item" id="fi-irs"><span class="lab">IRS (%)</span><input type="number" id="inp_irs" value="0" step="1" max="100" min="0" oninput="calcularFinancas()"></div>
-                    <div class="finance-item" id="fi-impostos"><span class="lab">Impostos</span><span class="val" id="f_impostos">0.00 €</span></div>
-                    <div class="finance-item" id="fi-despesas"><span class="lab">Despesas</span><span class="val" id="f_despesas_totais" style="color: var(--danger);">0.00 €</span></div>
-                    <div class="finance-item highlight" id="fi-liquido"><span class="lab">Líquido a Receber</span><span class="val" id="f_liquido">0.00 €</span></div>
+                <div class="filtros-row">
+                    <select id="filtro-mes" onchange="atualizarInterface()">
+                        <option value="todos">Todos os Meses</option>
+                        <option value="0">Janeiro</option>
+                        <option value="1">Fevereiro</option>
+                        <option value="2">Março</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Maio</option>
+                        <option value="5">Junho</option>
+                        <option value="6">Julho</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Setembro</option>
+                        <option value="9">Outubro</option>
+                        <option value="10">Novembro</option>
+                        <option value="11">Dezembro</option>
+                    </select>
+                    <select id="filtro-ano" onchange="atualizarInterface()"></select>
                 </div>
 
-                <!-- FORMULÁRIO DE REGISTO -->
-                <div class="card" id="cartao_form_registo">
-                    <h3 id="titulo_form_registo"><i class="fa-solid fa-stopwatch" style="color: var(--primary);"></i> Novo Serviço</h3>
-                    <div class="form-row">
-                        <div class="form-group"><label>Data</label><input type="date" id="data"></div>
-                        <div class="form-group"><label>Preço/h (€)</label><input type="number" id="taxa_hora" step="0.5"></div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fa-solid fa-chart-bar" style="color: var(--primary);"></i> Balanço Filtrado</h3>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Início</label><input type="time" id="hora_inicio"></div>
-                        <div class="form-group"><label>Fim</label><input type="time" id="hora_fim"></div>
+                    <div class="widget-row">
+                        <span class="widget-label">Horas Faturadas:</span>
+                        <span class="widget-val" id="filter-ganho" style="color: var(--secondary-dark);">0.00 €</span>
                     </div>
+                    <div class="widget-row">
+                        <span class="widget-label">Despesas Acumuladas:</span>
+                        <span class="widget-val" id="filter-gasto" style="color: var(--danger);">0.00 €</span>
+                    </div>
+                    <hr>
+                    <div class="widget-row" style="font-size: 1.1rem;">
+                        <span class="widget-label" style="font-weight: 600; color: var(--gray-900);">Total Mês/Ano:</span>
+                        <span class="widget-val" id="filter-lucro">0.00 €</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REGISTO DE HORAS -->
+            <section id="horas" class="section-container">
+                <div class="card">
+                    <h3 class="card-title" style="margin-bottom: 20px;">
+                        <i class="fa-solid fa-stopwatch" style="color: var(--primary);"></i> Novo Serviço
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" id="data-hora">
+                    </div>
+                    
                     <div class="form-group">
                         <label>Cliente / Projeto</label>
-                        <input type="text" id="cliente" list="lista_clientes" placeholder="Ex: João Silva" autocomplete="off">
-                        <datalist id="lista_clientes"></datalist>
+                        <input type="text" id="cliente" placeholder="Nome do cliente ou referência" autocomplete="off">
                     </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-cancel" id="btn_cancelar_registo" style="display:none; flex:1;" onclick="cancelarEdicaoRegisto()">Cancelar</button>
-                        <button class="btn btn-primary" id="btn_submit_registo" style="flex:2;" onclick="adicionarRegisto()"><i class="fa-solid fa-check"></i> Guardar Registo</button>
+                    
+                    <div class="form-row form-group">
+                        <div>
+                            <label>Hora Início</label>
+                            <input type="time" id="inicio">
+                        </div>
+                        <div>
+                            <label>Hora Fim</label>
+                            <input type="time" id="fim">
+                        </div>
                     </div>
+                    
+                    <div class="form-group">
+                        <label>Valor / Hora (€)</label>
+                        <input type="number" id="taxa" step="0.01" value="10.00" inputmode="decimal">
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="submeterHoras()">
+                        <i class="fa-solid fa-check"></i> Guardar Registo
+                    </button>
                 </div>
 
-                <!-- FILTROS E TABELA -->
-                <div class="filter-panel">
-                    <select id="filtro_mes" onchange="redefinirPaginaE_Renderizar()"><option value="todos">Mês: Todos</option></select>
-                    <select id="filtro_cliente" onchange="redefinirPaginaE_Renderizar()"><option value="todos">Cliente: Todos</option></select>
-                </div>
-
-                <div class="table-container">
-                    <table>
-                        <thead><tr><th>Data</th><th>Cliente</th><th>Início</th><th>Fim</th><th>Duração</th><th>Valor/h</th><th>Total</th><th style="text-align:right">Ações</th></tr></thead>
-                        <tbody id="tabela_registos"></tbody>
-                    </table>
-                    <div class="pagination">
-                        <button class="btn-acao" id="btn_pag_ant" onclick="mudarPagina(-1)"><i class="fa-solid fa-chevron-left"></i> Anterior</button>
-                        <span id="paginacao_info" style="font-size:0.8rem; font-weight:600; color:var(--gray-500);">Pág 1/1</span>
-                        <button class="btn-acao" id="btn_pag_prox" onclick="mudarPagina(1)">Próxima <i class="fa-solid fa-chevron-right"></i></button>
-                    </div>
+                <h3 style="margin-top: 30px; margin-bottom: 15px; font-size: 1rem; color: var(--gray-600);">Registos Recentes</h3>
+                <div id="lista-registos" class="list-container">
+                    <!-- Registos via JS -->
                 </div>
             </section>
 
-            <!-- 2. DESPESAS -->
+            <!-- DESPESAS -->
             <section id="despesas" class="section-container">
-                <div class="card" id="cartao_form_despesa">
-                    <h3 id="titulo_form_despesa"><i class="fa-solid fa-file-invoice-dollar" style="color: var(--danger);"></i> Nova Despesa</h3>
-                    <div class="form-row">
-                        <div class="form-group"><label>Data</label><input type="date" id="d_data"></div>
-                        <div class="form-group"><label>Valor (€)</label><input type="number" id="d_valor" step="0.01" placeholder="0.00"></div>
+                <div class="card">
+                    <h3 class="card-title" style="margin-bottom: 20px;">
+                        <i class="fa-solid fa-file-invoice-dollar" style="color: var(--danger);"></i> Nova Despesa
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" id="data-despesa">
                     </div>
-                    <div class="form-group"><label>Categoria</label>
-                        <select id="d_categoria">
-                            <option value="Combustível">Combustível</option><option value="Portagens">Portagens</option><option value="Alimentação">Alimentação</option><option value="Materiais">Materiais</option><option value="Outros">Outros</option>
+                    
+                    <div class="form-group">
+                        <label>Valor (€)</label>
+                        <input type="number" id="valor-despesa" step="0.01" placeholder="0.00" inputmode="decimal">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="categoria-despesa">
+                            <option value="Materiais">Materiais</option>
+                            <option value="Deslocação">Deslocação / Combustível</option>
+                            <option value="Alimentação">Alimentação</option>
+                            <option value="Ferramentas">Software / Ferramentas</option>
+                            <option value="Outros">Outros</option>
                         </select>
                     </div>
-                    <div class="form-group"><label>Descrição (Opcional)</label><input type="text" id="d_descricao" placeholder="Ex: Galp A1"></div>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn btn-cancel" id="btn_cancelar_despesa" style="display:none; flex:1;" onclick="cancelarEdicaoDespesa()">Cancelar</button>
-                        <button class="btn btn-primary" style="flex:2;" onclick="guardarDespesa()"><i class="fa-solid fa-check"></i> Guardar Despesa</button>
+                    
+                    <div class="form-group">
+                        <label>Descrição (Opcional)</label>
+                        <input type="text" id="desc-despesa" placeholder="Nota rápida" autocomplete="off">
                     </div>
+                    
+                    <button class="btn btn-primary" onclick="submeterDespesa()">
+                        <i class="fa-solid fa-check"></i> Guardar Despesa
+                    </button>
                 </div>
-                
-                <h3 style="font-size: 1rem; color: var(--gray-600); margin: 20px 0 10px 0;">Histórico de Despesas</h3>
-                <div class="table-container">
-                    <table>
-                        <thead><tr><th>Data</th><th>Cat.</th><th>Descrição</th><th>Valor</th><th style="text-align:right">Ações</th></tr></thead>
-                        <tbody id="tabela_despesas"></tbody>
-                    </table>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px; font-size: 1rem; color: var(--gray-600);">Despesas Recentes</h3>
+                <div id="lista-despesas" class="list-container">
+                    <!-- Despesas via JS -->
                 </div>
             </section>
-
-            <!-- 3. AGENDA -->
+            
+            <!-- AGENDA -->
             <section id="agenda" class="section-container">
-                <div class="card" id="cartao_form_agenda">
-                    <h3 id="titulo_form_agenda"><i class="fa-regular fa-calendar-plus" style="color: var(--warning);"></i> Novo Evento</h3>
-                    <div class="form-row">
-                        <div class="form-group"><label>Data</label><input type="date" id="a_data"></div>
-                        <div class="form-group"><label>Hora (Opcional)</label><input type="time" id="a_hora"></div>
+                <div class="card">
+                    <h3 class="card-title" style="margin-bottom: 20px;">
+                        <i class="fa-regular fa-calendar-plus" style="color: var(--warning);"></i> Novo Evento
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label>Data do Evento</label>
+                        <input type="date" id="data-agenda">
                     </div>
-                    <div class="form-group"><label>Evento / Título</label><input type="text" id="a_titulo" placeholder="Ex: Reunião João Silva"></div>
-                    <p style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 15px;"><i class="fa-solid fa-info-circle"></i> Sincroniza com o Google Calendar</p>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn btn-cancel" id="btn_cancelar_agenda" style="display:none; flex:1;" onclick="cancelarEdicaoAgenda()">Cancelar</button>
-                        <button class="btn btn-primary" style="flex:2;" onclick="guardarAgenda()"><i class="fa-solid fa-calendar-check"></i> Agendar</button>
+                    
+                    <div class="form-group">
+                        <label>Hora (Opcional)</label>
+                        <input type="time" id="hora-agenda">
                     </div>
+                    
+                    <div class="form-group">
+                        <label>Título / Descrição</label>
+                        <input type="text" id="titulo-agenda" placeholder="Ex: Reunião Cliente X" autocomplete="off">
+                    </div>
+                    
+                    <p style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 15px;">
+                        <i class="fa-solid fa-info-circle"></i> O evento será sincronizado com o seu Google Calendar.
+                    </p>
+                    
+                    <button class="btn btn-primary" onclick="submeterAgenda()">
+                        <i class="fa-solid fa-calendar-check"></i> Agendar
+                    </button>
                 </div>
 
-                <h3 style="font-size: 1rem; color: var(--gray-600); margin: 20px 0 10px 0;">Próximos Eventos</h3>
-                <div class="table-container">
-                    <table>
-                        <thead><tr><th>Data</th><th>Hora</th><th>Evento</th><th style="text-align:right">Ações</th></tr></thead>
-                        <tbody id="tabela_agenda"></tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- 4. ESTATÍSTICAS -->
-            <section id="estatisticas" class="section-container">
-                <div class="dashboard-grid">
-                    <div class="chart-container"><div class="chart-title">Volume por Cliente</div><div class="chart-wrapper"><canvas id="graficoClientes"></canvas></div></div>
-                    <div class="chart-container"><div class="chart-title">Horas Lançadas (Mês)</div><div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div></div>
-                    <div class="chart-container" style="grid-column: 1 / -1;"><div class="chart-title">Distribuição de Despesas</div><div class="chart-wrapper" style="height: 300px;"><canvas id="graficoDespesas"></canvas></div></div>
+                <h3 style="margin-top: 30px; margin-bottom: 15px; font-size: 1rem; color: var(--gray-600);">Próximos Eventos</h3>
+                <div id="lista-agenda" class="list-container">
+                    <!-- Agenda via JS -->
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- MODAIS DE EXPORTAÇÃO E CONFIRMAÇÃO -->
-    <div id="modal-pdf" class="modal-overlay">
-        <div class="modal-content" style="height: 85vh;">
-            <div class="modal-header"><h2><i class="fa-solid fa-file-pdf"></i> Visualizador PDF</h2></div>
-            <div class="modal-body" style="padding:0; background:#e5e7eb;"><iframe id="pdf-preview-frame" style="width:100%; height:100%; border:none;"></iframe></div>
-            <div class="modal-footer"><button class="btn btn-cancel" style="width:auto; padding:10px 20px;" onclick="fecharModal('modal-pdf')">Cancelar</button><button class="btn btn-primary" style="width:auto; padding:10px 20px;" onclick="gravarPDFFinal()"><i class="fa-solid fa-download"></i> Descarregar</button></div>
-        </div>
-    </div>
-
-    <div id="modal-confirm" class="modal-overlay" style="z-index: 3000;">
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-body" style="text-align: center; padding: 30px 20px;">
-                <h2 id="modal-title" style="margin-bottom: 10px;">Atenção</h2>
-                <p id="modal-text" style="color: var(--gray-600); margin-bottom: 25px;">Tem a certeza?</p>
-                <div style="display: flex; gap: 15px;">
-                    <button class="btn btn-cancel" onclick="fecharModal('modal-confirm')">Cancelar</button>
-                    <button id="btn-confirm-action" class="btn btn-primary" style="background-color: var(--danger);">Confirmar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SCRIPT CENTRAL -->
+    <!-- SCRIPT PRINCIPAL -->
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLab0sFwlmf7f4I8O0nd8BijAb4nshh6DyY3GrbLnSEQlhEsra148aehlV3sZNX4iq_A/exec";
+        // ==========================================
+        //  CONFIGURAÇÃO DA URL DO WEB APP (APPS SCRIPT)
+        // ==========================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkLqbxqQdoM3Taf-gwVmpJENPRuyTXzVBgJPRXn26qaazhut0MFWfzH4d4Q4jZbCNmxA/exec"; // <--- SUBSTITUIR AQUI
         
-        let registos = []; let despesasRegistadas = []; let agendaRegistada = []; 
-        let idEmEdicao = null; let idEmEdicaoDespesa = null; let idEmEdicaoAgenda = null;
-        let documentoPDFFinal = null; let nomePDFFinal = ""; 
-        let chartClientesInst=null, chartMesesInst=null, chartDespesasInst=null;
+        // VARIÁVEIS GLOBAIS
+        let pinAtual = "";
+        let pinCorreto = false; // Estado local (validação real é no servidor)
+        let dadosApp = { registos: [], despesas: [], agenda: [] };
         
-        let paginaAtual = 1; const ITENS_POR_PAGINA = 15;
-        let pinApp = localStorage.getItem('app_pin') || '';
-
-        // ============================ UI & NAVEGAÇÃO ============================
+        // ==========================================
+        // 1. INICIALIZAÇÃO
+        // ==========================================
         window.onload = () => {
-            // Verifica tema
-            if(localStorage.getItem('tema_final') === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                document.getElementById('theme-icon').className = 'fa-solid fa-sun';
+            configurarDataAtual();
+            preencherFiltroAnos();
+            
+            // Verifica se tem sessão guardada (por demo local apenas, o PIN vai sempre nos requests)
+            const pinGuardado = localStorage.getItem('appPin');
+            if(pinGuardado) {
+                pinAtual = pinGuardado;
+                mostrarLoginLoad();
+                verificarPinNoServidor(pinGuardado);
             }
-
-            document.getElementById('data').valueAsDate = new Date();
-            document.getElementById('d_data').valueAsDate = new Date();
-            document.getElementById('a_data').valueAsDate = new Date();
-            
-            const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
-            ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
-            
-            if (pinApp) iniciarAppApósLogin();
         };
 
-        function alternarTema() { 
-            const root = document.documentElement;
-            const isDark = root.getAttribute('data-theme') === 'dark';
-            root.setAttribute('data-theme', isDark ? 'light' : 'dark'); 
-            localStorage.setItem('tema_final', isDark ? 'light' : 'dark'); 
-            document.getElementById('theme-icon').className = isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-            if(chartClientesInst) gerarGraficosGerais(); // Atualiza cores dos gráficos
-        }
-
-        function setCarregando(ativo) {
-            const loader = document.getElementById('global-loader');
-            if (ativo) loader.classList.add('active'); else loader.classList.remove('active');
-        }
-
-        function showToast(msg, tipo="success") {
-            const t = document.createElement('div'); t.className = 'toast'; 
-            const icon = tipo==='success'?'fa-check-circle':'fa-circle-exclamation';
-            const cor = tipo==='success'?'var(--secondary)':'var(--danger)';
-            t.style.borderLeft = `4px solid ${cor}`;
-            t.innerHTML = `<i class="fa-solid ${icon}" style="color:${cor}"></i> <span>${msg}</span>`;
-            document.getElementById('toast-container').appendChild(t);
-            setTimeout(() => { t.style.animation = 'toastIn 0.3s reverse forwards'; setTimeout(()=>t.remove(),300); }, 3000);
-        }
-
-        function mudarSeparador(id, btnElement) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            if(btnElement) btnElement.classList.add('active');
-            else document.getElementById('menu-'+id).classList.add('active');
+        function configurarDataAtual() {
+            const hoje = new Date();
+            const formatada = hoje.toISOString().split('T')[0];
+            document.getElementById('data-hora').value = formatada;
+            document.getElementById('data-despesa').value = formatada;
+            document.getElementById('data-agenda').value = formatada;
             
-            const titles = { 'horas': 'GESTÃO DE HORAS', 'despesas': 'DESPESAS', 'agenda': 'AGENDA', 'estatisticas': 'ESTATÍSTICA' };
-            document.getElementById('main-title').innerText = titles[id];
+            // Set filtro mês para o atual
+            document.getElementById('filtro-mes').value = hoje.getMonth().toString();
+        }
 
+        function preencherFiltroAnos() {
+            const select = document.getElementById('filtro-ano');
+            const anoAtual = new Date().getFullYear();
+            select.innerHTML = '<option value="todos">Todos os Anos</option>';
+            for(let i = anoAtual; i >= anoAtual - 5; i--) {
+                select.innerHTML += `<option value="${i}">${i}</option>`;
+            }
+            select.value = anoAtual.toString();
+        }
+
+        // ==========================================
+        // 2. SISTEMA DE LOGIN (PIN)
+        // ==========================================
+        function inserirNumero(num) {
+            if (pinAtual.length < 4) {
+                pinAtual += num;
+                atualizarBolinhas();
+            }
+            if (pinAtual.length === 4) {
+                document.getElementById('btn-login').disabled = false;
+            }
+        }
+
+        function apagarNumero() {
+            pinAtual = pinAtual.slice(0, -1);
+            atualizarBolinhas();
+            document.getElementById('btn-login').disabled = true;
+        }
+
+        function limparPin() {
+            pinAtual = "";
+            atualizarBolinhas();
+            document.getElementById('btn-login').disabled = true;
+        }
+
+        function atualizarBolinhas(erro = false) {
+            const dots = document.querySelectorAll('.pin-dot');
+            dots.forEach((dot, index) => {
+                dot.className = 'pin-dot';
+                if(erro) dot.classList.add('error');
+                else if (index < pinAtual.length) dot.classList.add('filled');
+            });
+        }
+        
+        function mostrarLoginLoad() {
+            const btn = document.getElementById('btn-login');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+        }
+
+        async function validarPin() {
+            mostrarLoginLoad();
+            await verificarPinNoServidor(pinAtual);
+        }
+
+        async function verificarPinNoServidor(pinStr) {
+            try {
+                // Tenta fazer um fetch de dados simulando login
+                const response = await fetch(`${SCRIPT_URL}?pin=${pinStr}`);
+                const result = await response.json();
+                
+                if (result.erro === "PIN incorreto") {
+                    erroLogin("PIN Incorreto");
+                    return;
+                }
+                
+                // Se não deu erro de PIN, os dados vieram correitamente
+                sucessoLogin(pinStr, result);
+                
+            } catch (error) {
+                erroLogin("Erro de conexão. Tente novamente.");
+                console.error(error);
+            }
+        }
+        
+        function erroLogin(msg) {
+            mostrarToast(msg, "error");
+            atualizarBolinhas(true);
+            setTimeout(() => { limparPin(); }, 500);
+            const btn = document.getElementById('btn-login');
+            btn.innerHTML = 'ENTRAR';
+            localStorage.removeItem('appPin');
+        }
+
+        function sucessoLogin(pinStr, dadosRecebidos) {
+            pinCorreto = true;
+            localStorage.setItem('appPin', pinStr);
+            
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'flex';
+                
+                if (dadosRecebidos) {
+                    processarDadosRecebidos(dadosRecebidos);
+                    mostrarToast("Bem-vindo de volta!", "success");
+                } else {
+                    atualizarDados(false);
+                }
+            }, 400);
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('appPin');
+            location.reload();
+        }
+
+        // ==========================================
+        // 3. NAVEGAÇÃO ENTRE TABS
+        // ==========================================
+        function mudarSeparador(id, btnElement) {
+            // Atualiza botões
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            
+            // Atualiza Título
+            const titleMap = {
+                'dashboard': '<i class="fa-solid fa-chart-pie"></i> Dashboard',
+                'horas': '<i class="fa-solid fa-clock"></i> Gestão de Horas',
+                'despesas': '<i class="fa-solid fa-receipt"></i> Gestão de Gastos',
+                'agenda': '<i class="fa-solid fa-calendar-alt"></i> Agenda Eventos'
+            };
+            document.getElementById('main-title').innerHTML = titleMap[id];
+
+            // Atualiza Secções
             document.querySelectorAll('.section-container').forEach(sec => sec.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             window.scrollTo(0, 0);
-
-            if(id === 'estatisticas') gerarGraficosGerais();
         }
 
-        function toggleGavetaMais() {
-            const f = document.getElementById('gaveta-fundo'); const g = document.getElementById('gaveta-opcoes');
-            if(g.classList.contains('show')){ g.classList.remove('show'); f.classList.remove('show'); } 
-            else{ g.classList.add('show'); f.classList.add('show'); }
+        function toggleMenuLoading(showing) {
+            document.getElementById('loading-overlay').style.display = showing ? 'flex' : 'none';
         }
-        function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
 
-        // ============================ LOGIN ============================
-        let pinTemp = "";
-        function teclarPIN(num) {
-            if (pinTemp.length < 4) { pinTemp += num; atualizarBolinhas(); }
-            if (pinTemp.length === 4) document.getElementById('btn-login').disabled = false;
+        function mostrarToast(msg, tipo = "success") {
+            const c = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `toast ${tipo}`;
+            const icon = tipo === 'success' ? 'fa-check-circle' : 'fa-triangle-exclamation';
+            el.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
+            
+            c.appendChild(el);
+            setTimeout(() => {
+                el.classList.add('closing');
+                setTimeout(() => el.remove(), 300);
+            }, 3000);
         }
-        function limparPIN() { pinTemp = ""; atualizarBolinhas(); document.getElementById('btn-login').disabled = true; }
-        function apagarUltimoPIN() { pinTemp = pinTemp.slice(0, -1); atualizarBolinhas(); document.getElementById('btn-login').disabled = true; }
-        function atualizarBolinhas(erro = false) {
-            document.querySelectorAll('.pin-dot').forEach((dot, idx) => {
-                dot.className = 'pin-dot';
-                if(erro) dot.style.backgroundColor = 'var(--danger)';
-                else if (idx < pinTemp.length) dot.classList.add('filled');
-            });
-        }
-        async function verificarPinLogin() {
-            pinApp = pinTemp; localStorage.setItem('app_pin', pinApp);
-            await iniciarAppApósLogin();
-        }
-        async function iniciarAppApósLogin() {
-            setCarregando(true);
-            const sucesso = await carregarDadosDoGoogle();
-            setCarregando(false);
-            if (sucesso) {
-                document.getElementById('login-screen').style.opacity = '0';
-                setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-content').style.display = 'flex'; redefinirPaginaE_Renderizar(); }, 500);
-            } else {
-                atualizarBolinhas(true); setTimeout(() => limparPIN(), 600);
-                pinApp = ''; localStorage.removeItem('app_pin'); showToast("PIN Incorreto", "error");
+
+        // ==========================================
+        // 4. LÓGICA DE DADOS (API Apps Script)
+        // ==========================================
+        async function atualizarDados(mostrarLoad = true) {
+            if (!pinCorreto) return;
+            if (mostrarLoad) toggleMenuLoading(true);
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?pin=${pinAtual}`);
+                const data = await response.json();
+                
+                if (data.erro) {
+                    mostrarToast(data.erro, "error");
+                    if (data.erro === "PIN incorreto") fazerLogout();
+                } else {
+                    processarDadosRecebidos(data);
+                    if (mostrarLoad) mostrarToast("Dados sincronizados", "success");
+                }
+            } catch (err) {
+                mostrarToast("Erro ao carregar dados", "error");
+                console.error(err);
+            } finally {
+                if (mostrarLoad) toggleMenuLoading(false);
             }
         }
-        function sairApp() { pinApp = ''; localStorage.removeItem('app_pin'); location.reload(); }
 
-        // ============================ BUSCA DADOS API ============================
-        async function carregarDadosDoGoogle() {
+        function processarDadosRecebidos(data) {
+            dadosApp = data;
+            // Ordenar por data mais recente
+            dadosApp.registos.sort((a,b) => new Date(b.data) - new Date(a.data));
+            dadosApp.despesas.sort((a,b) => new Date(b.data) - new Date(a.data));
+            // Agenda ordenada da mais próxima para a mais longe (ascendente)
+            dadosApp.agenda.sort((a,b) => new Date(a.data) - new Date(b.data));
+            
+            atualizarInterface();
+        }
+
+        function atualizarInterface() {
+            renderizarRegistos();
+            renderizarDespesas();
+            renderizarAgenda();
+            calcularEstatisticas();
+        }
+
+        async function apagarRegistoGenerico(idStr, elementoHtml) {
+            if(!confirm("Tem a certeza que deseja apagar? Se for um evento, vai apagá-lo também do Calendário.")) return;
+            
+            elementoHtml.style.opacity = '0.5';
+            
             try {
-                const res = await fetch(`${GOOGLE_SCRIPT_URL}?nocache=${Date.now()}&pin=${pinApp}`);
-                const json = await res.json();
-                if (json.erro && json.erro === "PIN incorreto") return false;
+                const url = `${SCRIPT_URL}?pin=${pinAtual}&apagar=${encodeURIComponent(idStr)}`;
+                const response = await fetch(url);
+                const data = await response.json();
                 
-                const fix = (r) => { if (r.data && String(r.data).includes('T')) r.data = String(r.data).split('T')[0]; }; 
-                if(json.registos) { json.registos.forEach(fix); registos = json.registos; } 
-                if(json.despesas) { json.despesas.forEach(fix); despesasRegistadas = json.despesas; } 
-                if(json.agenda) { json.agenda.forEach(fix); agendaRegistada = json.agenda; } 
-                atualizarDropdownsFiltros(); return true;
-            } catch (e) { showToast("Modo Offline Ativo", "error"); return false; }
-        }
-        async function atualizarDados(mostrar=false) { if(mostrar) setCarregando(true); await carregarDadosDoGoogle(); if(mostrar) { setCarregando(false); redefinirPaginaE_Renderizar(); showToast("Dados Atualizados");} }
-
-        // ============================ FUNÇÕES AUXILIARES ============================
-        function formatDataBR(d) { if(!d) return '--'; return String(d).split('T')[0].split('-').reverse().join('/'); }
-        function formatDataForm(d) { if(!d) return ''; return String(d).split('T')[0]; }
-        function formatHora(h) { 
-            if(!h) return '--:--'; const s = String(h);
-            if(s.includes('T')) { const dt = new Date(s); if(!isNaN(dt.getTime())) return dt.getHours().toString().padStart(2,'0') + ':' + dt.getMinutes().toString().padStart(2,'0'); } 
-            return s.substring(0,5); 
-        }
-        function calcDiferenca(i, f) { const [hI,mI]=i.split(':').map(Number), [hF,mF]=f.split(':').map(Number); let tot=(hF*60+mF)-(hI*60+mI); if(tot<0) tot+=24*60; const h=Math.floor(tot/60); return { texto:`${h}h ${(tot%60).toString().padStart(2,'0')}m`, mins:tot, dec:h+((tot%60)/60) }; }
-
-        function confirmarAcao(titulo, msg, cor, texto, callback) {
-            document.getElementById('modal-title').innerText = titulo; document.getElementById('modal-text').innerText = msg;
-            const btn = document.getElementById('btn-confirm-action'); btn.innerText = texto; btn.style.backgroundColor = cor;
-            btn.onclick = () => { fecharModal('modal-confirm'); callback(); };
-            document.getElementById('modal-confirm').classList.add('show');
+                if (data.sucesso) {
+                    mostrarToast("Registo apagado", "success");
+                    atualizarDados(false);
+                } else {
+                    mostrarToast(data.erro || "Erro ao apagar", "error");
+                    elementoHtml.style.opacity = '1';
+                }
+            } catch (err) {
+                mostrarToast("Falha na comunicação", "error");
+                elementoHtml.style.opacity = '1';
+            }
         }
 
-        async function sincronizarAPI(payload, sucessoMsg) {
-            try {
-                const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const data = await res.json();
-                if(data.sucesso) showToast(sucessoMsg); else showToast("Erro na nuvem", "error");
-            } catch(e) { showToast("Sincronização pendente", "error"); }
-        }
-
-        // ============================ REGISTOS (HORAS) ============================
-        function atualizarDropdownsFiltros() {
-            const cls = [...new Set(registos.map(r => r.cliente).filter(c => c))].sort();
-            document.getElementById('lista_clientes').innerHTML = cls.map(c => `<option value="${c}">`).join('');
-            const sC = document.getElementById('filtro_cliente'); const valC = sC.value; sC.innerHTML = '<option value="todos">Cliente: Todos</option>' + cls.map(c => `<option value="${c}">${c}</option>`).join(''); if(cls.includes(valC)) sC.value = valC;
-            const mss = [...new Set(registos.map(r => r.data ? String(r.data).substring(0,7) : ''))].filter(m=>m).sort().reverse();
-            const sM = document.getElementById('filtro_mes'); const valM = sM.value; sM.innerHTML = '<option value="todos">Mês: Todos</option>' + mss.map(m => { const [a, ms] = m.split('-'); return `<option value="${m}">${new Date(a, ms-1).toLocaleString('pt-PT', {month:'long'})} ${a}</option>`; }).join(''); if(mss.includes(valM)) sM.value = valM;
-        }
-
-        function redefinirPaginaE_Renderizar() { paginaAtual = 1; renderizarTabelaRegistos(); renderizarDespesas(); renderizarAgenda(); }
-        function mudarPagina(d) { paginaAtual += d; renderizarTabelaRegistos(); window.scrollTo(0, 0); }
-        function obterRegistosFiltrados() { const fM = document.getElementById('filtro_mes').value, fC = document.getElementById('filtro_cliente').value; return registos.sort((a,b)=>new Date(b.data)-new Date(a.data)).filter(r => (fM==='todos'||(r.data&&String(r.data).substring(0,7)===fM)) && (fC==='todos'||r.cliente===fC)); }
-
-        function renderizarTabelaRegistos() {
-            const tb = document.getElementById('tabela_registos'); tb.innerHTML = ''; const todos = obterRegistosFiltrados();
-            let sMin=0, sVal=0; const dias = new Set(); 
-            todos.forEach(r => { if(r.data) dias.add(r.data); sMin += parseInt(r.minutosTotais||0); sVal += parseFloat(r.valorGasto||0); });
-            document.getElementById('total_dias').innerText = dias.size; document.getElementById('total_horas').innerText = `${Math.floor(sMin/60)}h ${(sMin%60).toString().padStart(2,'0')}m`; document.getElementById('total_ganho').innerText = `${sVal.toFixed(2)} €`;
+        // ==========================================
+        // 5. REGISTO DE HORAS
+        // ==========================================
+        function calcularDiferenca(inicio, fim) {
+            const d1 = new Date(`2000-01-01T${inicio}`);
+            let d2 = new Date(`2000-01-01T${fim}`);
+            if (d2 < d1) d2.setDate(d2.getDate() + 1);
             
-            const totalP = Math.ceil(todos.length / ITENS_POR_PAGINA) || 1; 
-            if(paginaAtual<1) paginaAtual=1; if(paginaAtual>totalP) paginaAtual=totalP;
-            document.getElementById('paginacao_info').innerText = `Pág ${paginaAtual}/${totalP}`; 
-            document.getElementById('btn_pag_ant').disabled = (paginaAtual===1); document.getElementById('btn_pag_prox').disabled = (paginaAtual===totalP);
+            const diffMs = d2 - d1;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            const h = Math.floor(diffMins / 60);
+            const m = diffMins % 60;
+            return {
+                texto: `${h}h ${m}m`,
+                minutosTotais: diffMins
+            };
+        }
 
-            const slice = todos.slice((paginaAtual-1)*ITENS_POR_PAGINA, paginaAtual*ITENS_POR_PAGINA);
-            if(slice.length===0) tb.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--gray-500);">Sem registos.</td></tr>';
-            slice.forEach(r => { 
-                tb.innerHTML += `<tr><td data-label="Data"><i class="fa-regular fa-calendar" style="color:var(--gray-400);"></i> ${formatDataBR(r.data)}</td><td data-label="Cliente"><strong>${r.cliente||'--'}</strong></td><td data-label="Início">${formatHora(r.inicio)}</td><td data-label="Fim">${formatHora(r.fim)}</td><td data-label="Duração"><span style="background:var(--primary-light); color:var(--primary); padding:2px 6px; border-radius:4px; font-weight: 600;">${r.duracaoTexto}</span></td><td data-label="Val/h">${parseFloat(r.taxaUsada).toFixed(2)}€</td><td data-label="Total" style="color:var(--secondary-dark); font-weight:bold;">${parseFloat(r.valorGasto).toFixed(2)}€</td><td class="action-btns"><button class="edit-btn" onclick="editarRegisto('${r.id}')"><i class="fa-solid fa-pen"></i></button><button class="delete-btn" onclick="apagarRegistoAPI('${r.id}', 'este registo')"><i class="fa-solid fa-trash"></i></button></td></tr>`; 
+        async function submeterHoras() {
+            const dataV = document.getElementById('data-hora').value;
+            const cli = document.getElementById('cliente').value || "S/ Nome";
+            const ini = document.getElementById('inicio').value;
+            const fim = document.getElementById('fim').value;
+            const taxa = parseFloat(document.getElementById('taxa').value) || 0;
+
+            if (!dataV || !ini || !fim) {
+                mostrarToast("Preencha Data, Início e Fim", "error");
+                return;
+            }
+
+            const calc = calcularDiferenca(ini, fim);
+            const ganho = (calc.minutosTotais / 60) * taxa;
+
+            const payload = {
+                pin: pinAtual,
+                tipo: 'registo',
+                id: gerarId(),
+                data: dataV,
+                cliente: cli,
+                inicio: ini,
+                fim: fim,
+                duracaoTexto: calc.texto,
+                minutosTotais: calc.minutosTotais,
+                taxaUsada: taxa,
+                valorGasto: ganho.toFixed(2)
+            };
+
+            await enviarDados(payload, () => {
+                document.getElementById('cliente').value = "";
+                document.getElementById('inicio').value = "";
+                document.getElementById('fim').value = "";
             });
-            calcularFinancas();
         }
 
-        async function adicionarRegisto() {
-            const d=document.getElementById('data').value, cli=document.getElementById('cliente').value, i=document.getElementById('hora_inicio').value, f=document.getElementById('hora_fim').value, t=parseFloat(document.getElementById('taxa_hora').value); 
-            if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos", "error"); return; } 
-            const c = calcDiferenca(i,f); const id = idEmEdicao || 'R_'+Date.now();
-            const novo = { id: id, data: d, cliente: cli, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec*t };
+        function renderizarRegistos() {
+            const cont = document.getElementById('lista-registos');
+            cont.innerHTML = "";
             
-            if(idEmEdicao) { const idx = registos.findIndex(x=>x.id===idEmEdicao); if(idx!==-1) registos[idx]=novo; } else registos.unshift(novo);
-            cancelarEdicaoRegisto(); atualizarDropdownsFiltros(); renderizarTabelaRegistos();
-            localStorage.setItem('taxa_hora_guardada', t);
-            sincronizarAPI({ pin: pinApp, tipo: 'registo', ...novo }, "Registo Guardado!");
-        }
-        function editarRegisto(id) { 
-            const r = registos.find(x => x.id === id); if (!r) return; idEmEdicao = id;
-            document.getElementById('titulo_form_registo').innerHTML = '<i class="fa-solid fa-pen" style="color: var(--warning);"></i> Editar Serviço';
-            document.getElementById('data').value=formatDataForm(r.data); document.getElementById('cliente').value=r.cliente||''; document.getElementById('hora_inicio').value=formatHora(r.inicio); document.getElementById('hora_fim').value=formatHora(r.fim); document.getElementById('taxa_hora').value=r.taxaUsada; 
-            document.getElementById('btn_cancelar_registo').style.display='block'; 
-            setTimeout(() => document.getElementById('cartao_form_registo').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-        }
-        function cancelarEdicaoRegisto() { idEmEdicao=null; document.getElementById('titulo_form_registo').innerHTML='<i class="fa-solid fa-stopwatch" style="color: var(--primary);"></i> Novo Serviço'; document.getElementById('btn_cancelar_registo').style.display='none'; ['cliente','hora_inicio','hora_fim'].forEach(x=>document.getElementById(x).value=''); }
+            if (!dadosApp.registos || dadosApp.registos.length === 0) {
+                cont.innerHTML = `<div class="empty-state"><i class="fa-regular fa-clock"></i><p>Sem horas registadas</p></div>`;
+                return;
+            }
 
-        function calcularFinancas() {
-            const fM = document.getElementById('filtro_mes').value; let df = despesasRegistadas; if(fM!=='todos') df = df.filter(d=>d.data&&String(d.data).substring(0,7)===fM);
-            const rReal = df.reduce((s,d)=>s+parseFloat(d.valor||0),0); document.getElementById('f_despesas_totais').innerText = rReal.toFixed(2)+' €';
-            const b = parseFloat(document.getElementById('total_ganho').innerText)||0; const txIRS = (parseFloat(document.getElementById('inp_irs').value)||0)/100; const txSS = (parseFloat(document.getElementById('inp_ss').value)||0)/100;
-            const tImp = b * (txIRS+txSS); document.getElementById('f_impostos').innerText = tImp.toFixed(2)+' €'; document.getElementById('f_liquido').innerText = (b-rReal-tImp).toFixed(2)+' €';
-            localStorage.setItem('tx_irs', document.getElementById('inp_irs').value); localStorage.setItem('tx_ss', document.getElementById('inp_ss').value);
+            // Apenas os últimos 20 na lista para não pesar o DOM mobile, filtram-se no dashboard globalmente
+            const recentes = dadosApp.registos.slice(0, 20);
+
+            recentes.forEach(r => {
+                const el = document.createElement('div');
+                el.className = 'list-item';
+                el.innerHTML = `
+                    <div class="list-item-content">
+                        <div class="item-data"><i class="fa-regular fa-calendar"></i> ${formatarDataPT(r.data)} &nbsp; <i class="fa-regular fa-clock"></i> ${r.inicio} - ${r.fim}</div>
+                        <div class="item-titulo">${r.cliente}</div>
+                        <div class="item-detalhes"><span style="background: var(--primary-light); color: var(--primary-dark); padding: 2px 6px; border-radius: 4px; font-weight: 500;">${r.duracaoTexto}</span> à ${r.taxaUsada}€/h</div>
+                    </div>
+                    <div>
+                        <div class="item-valor ganho">+${Number(r.valorGasto).toFixed(2)}€</div>
+                        <div style="text-align: right; margin-top: 5px;">
+                            <button class="btn-apagar" onclick="apagarRegistoGenerico('${r.id}', this.parentElement.parentElement)"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                cont.appendChild(el);
+            });
         }
 
-        // ============================ DESPESAS ============================
+        // ==========================================
+        // 6. DESPESAS
+        // ==========================================
+        async function submeterDespesa() {
+            const dataV = document.getElementById('data-despesa').value;
+            const valor = parseFloat(document.getElementById('valor-despesa').value);
+            const cat = document.getElementById('categoria-despesa').value;
+            const desc = document.getElementById('desc-despesa').value || "-";
+
+            if (!dataV || isNaN(valor) || valor <= 0) {
+                mostrarToast("Insira Data e um Valor válido", "error");
+                return;
+            }
+
+            const payload = {
+                pin: pinAtual,
+                tipo: 'despesa',
+                id: gerarId(),
+                data: dataV,
+                categoria: cat,
+                descricao: desc,
+                valor: valor.toFixed(2)
+            };
+
+            await enviarDados(payload, () => {
+                document.getElementById('valor-despesa').value = "";
+                document.getElementById('desc-despesa').value = "";
+            });
+        }
+
         function renderizarDespesas() {
-            const tb = document.getElementById('tabela_despesas'); tb.innerHTML='';
-            let ods = [...despesasRegistadas].sort((a,b)=>new Date(b.data)-new Date(a.data));
-            if(ods.length===0) tb.innerHTML='<tr><td colspan="5" style="text-align:center; color:var(--gray-500);">Sem despesas.</td></tr>';
-            ods.forEach(d => tb.innerHTML+=`<tr><td data-label="Data"><i class="fa-regular fa-calendar" style="color:var(--gray-400);"></i> ${formatDataBR(d.data)}</td><td data-label="Cat">${d.categoria}</td><td data-label="Desc">${d.descricao}</td><td data-label="Valor" style="color:var(--danger); font-weight:bold;">${parseFloat(d.valor).toFixed(2)}€</td><td class="action-btns"><button class="edit-btn" onclick="editarDespesa('${d.id}')"><i class="fa-solid fa-pen"></i></button><button class="delete-btn" onclick="apagarRegistoAPI('${d.id}', 'esta despesa')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
-        }
-        async function guardarDespesa() {
-            const d=document.getElementById('d_data').value, cat=document.getElementById('d_categoria').value, desc=document.getElementById('d_descricao').value, val=parseFloat(document.getElementById('d_valor').value); 
-            if(!d || isNaN(val)) { showToast("Preencha data e valor!", "error"); return; } 
-            const id = idEmEdicaoDespesa || 'D_'+Date.now(); const nova = { id: id, data: d, categoria: cat, descricao: desc, valor: val };
-            if(idEmEdicaoDespesa) { const idx = despesasRegistadas.findIndex(x=>x.id===idEmEdicaoDespesa); if(idx!==-1) despesasRegistadas[idx]=nova; } else despesasRegistadas.unshift(nova);
-            cancelarEdicaoDespesa(); renderizarDespesas(); calcularFinancas();
-            sincronizarAPI({ pin: pinApp, tipo: 'despesa', ...nova }, "Despesa Guardada!");
-        }
-        function editarDespesa(id) {
-            const d = despesasRegistadas.find(x=>x.id===id); if(!d) return; idEmEdicaoDespesa = id;
-            document.getElementById('titulo_form_despesa').innerHTML = '<i class="fa-solid fa-pen" style="color: var(--warning);"></i> Editar Despesa';
-            document.getElementById('d_data').value=formatDataForm(d.data); document.getElementById('d_categoria').value=d.categoria; document.getElementById('d_descricao').value=d.descricao; document.getElementById('d_valor').value=d.valor;
-            document.getElementById('btn_cancelar_despesa').style.display='block'; 
-            setTimeout(() => document.getElementById('cartao_form_despesa').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-        }
-        function cancelarEdicaoDespesa() { idEmEdicaoDespesa=null; document.getElementById('titulo_form_despesa').innerHTML='<i class="fa-solid fa-file-invoice-dollar" style="color: var(--danger);"></i> Nova Despesa'; document.getElementById('btn_cancelar_despesa').style.display='none'; document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; }
+            const cont = document.getElementById('lista-despesas');
+            cont.innerHTML = "";
+            
+            if (!dadosApp.despesas || dadosApp.despesas.length === 0) {
+                cont.innerHTML = `<div class="empty-state"><i class="fa-solid fa-receipt"></i><p>Sem despesas registadas</p></div>`;
+                return;
+            }
 
-        // ============================ AGENDA ============================
+            const recentes = dadosApp.despesas.slice(0, 20);
+
+            recentes.forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'list-item';
+                
+                // Ícone por categoria
+                let catIcon = "fa-tag";
+                if(d.categoria === 'Materiais') catIcon = "fa-box";
+                if(d.categoria === 'Deslocação') catIcon = "fa-car";
+                if(d.categoria === 'Alimentação') catIcon = "fa-utensils";
+                
+                el.innerHTML = `
+                    <div class="list-item-content">
+                        <div class="item-data"><i class="fa-regular fa-calendar"></i> ${formatarDataPT(d.data)} &nbsp; <i class="fa-solid ${catIcon}"></i> ${d.categoria}</div>
+                        <div class="item-titulo">${d.descricao}</div>
+                    </div>
+                    <div>
+                        <div class="item-valor despesa">-${Number(d.valor).toFixed(2)}€</div>
+                        <div style="text-align: right; margin-top: 5px;">
+                            <button class="btn-apagar" onclick="apagarRegistoGenerico('${d.id}', this.parentElement.parentElement)"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                cont.appendChild(el);
+            });
+        }
+        
+        // ==========================================
+        // 7. AGENDA EVENTOS
+        // ==========================================
+        async function submeterAgenda() {
+            const dataV = document.getElementById('data-agenda').value;
+            const horaV = document.getElementById('hora-agenda').value;
+            const tituloV = document.getElementById('titulo-agenda').value;
+
+            if (!dataV || !tituloV) {
+                mostrarToast("Data e Título são obrigatórios", "error");
+                return;
+            }
+
+            const payload = {
+                pin: pinAtual,
+                tipo: 'agenda',
+                id: gerarId(),
+                data: dataV,
+                hora: horaV,
+                titulo: tituloV
+            };
+
+            await enviarDados(payload, () => {
+                document.getElementById('titulo-agenda').value = "";
+                document.getElementById('hora-agenda').value = "";
+            });
+        }
+        
         function renderizarAgenda() {
-            const tb = document.getElementById('tabela_agenda'); tb.innerHTML='';
-            let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data));
-            if(ods.length===0) tb.innerHTML='<tr><td colspan="4" style="text-align:center; color:var(--gray-500);">Agenda limpa.</td></tr>';
-            ods.forEach(a => tb.innerHTML+=`<tr><td data-label="Data"><i class="fa-regular fa-calendar-check" style="color:var(--gray-400);"></i> ${formatDataBR(a.data)}</td><td data-label="Hora">${formatHora(a.hora)}</td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')"><i class="fa-solid fa-pen"></i></button><button class="delete-btn" onclick="apagarRegistoAPI('${a.id}', 'este evento')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
-        }
-        async function guardarAgenda() {
-            const d=document.getElementById('a_data').value, h=document.getElementById('a_hora').value, t=document.getElementById('a_titulo').value; 
-            if(!d || !t) { showToast("Preencha data e título!", "error"); return; }
-            const id = idEmEdicaoAgenda || 'A_'+Date.now(); const novo = { id: id, data: d, hora: h, titulo: t };
-            if(idEmEdicaoAgenda) { const idx = agendaRegistada.findIndex(x=>x.id===idEmEdicaoAgenda); if(idx!==-1) agendaRegistada[idx]=novo; } else agendaRegistada.push(novo);
-            cancelarEdicaoAgenda(); renderizarAgenda();
-            sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...novo }, "Evento Agendado!");
-        }
-        function editarAgenda(id) {
-            const a = agendaRegistada.find(x=>x.id===id); if(!a) return; idEmEdicaoAgenda = id;
-            document.getElementById('titulo_form_agenda').innerHTML = '<i class="fa-solid fa-pen" style="color: var(--warning);"></i> Editar Evento';
-            document.getElementById('a_data').value=formatDataForm(a.data); document.getElementById('a_hora').value=(formatHora(a.hora)!=='--:--')?formatHora(a.hora):''; document.getElementById('a_titulo').value=a.titulo;
-            document.getElementById('btn_cancelar_agenda').style.display='block'; 
-            setTimeout(() => document.getElementById('cartao_form_agenda').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-        }
-        function cancelarEdicaoAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerHTML='<i class="fa-regular fa-calendar-plus" style="color: var(--warning);"></i> Novo Evento'; document.getElementById('btn_cancelar_agenda').style.display='none'; document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; }
+            const cont = document.getElementById('lista-agenda');
+            cont.innerHTML = "";
+            
+            if (!dadosApp.agenda || dadosApp.agenda.length === 0) {
+                cont.innerHTML = `<div class="empty-state"><i class="fa-regular fa-calendar"></i><p>Nenhum evento agendado</p></div>`;
+                return;
+            }
+            
+            // Focar nos eventos futuros ou de hoje
+            const hojeCortado = new Date();
+            hojeCortado.setHours(0,0,0,0);
+            
+            const eventosRelevantes = dadosApp.agenda.filter(e => {
+                if(!e.data) return false;
+                const eData = new Date(e.data);
+                return eData >= hojeCortado;
+            }).slice(0, 15); // max 15
+            
+            if(eventosRelevantes.length === 0) {
+                cont.innerHTML = `<div class="empty-state"><i class="fa-solid fa-moon"></i><p>Nada planeado para o futuro próximo.</p></div>`;
+                return;
+            }
 
-        // ============================ APAGAR GERAL ============================
-        function apagarRegistoAPI(id, nome) {
-            confirmarAcao("Eliminar Registo", `Deseja apagar ${nome}?`, "var(--danger)", "Apagar", () => {
-                registos = registos.filter(r=>r.id!==id); despesasRegistadas = despesasRegistadas.filter(d=>d.id!==id); agendaRegistada = agendaRegistada.filter(a=>a.id!==id);
-                redefinirPaginaE_Renderizar();
-                fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`).then(r=>r.json()).then(d=>showToast("Eliminado")).catch(()=>showToast("Eliminação pendente", "error"));
+            eventosRelevantes.forEach(ev => {
+                const el = document.createElement('div');
+                el.className = 'list-item';
+                
+                const strHora = ev.hora ? `<i class="fa-regular fa-clock"></i> ${ev.hora}` : `<i class="fa-solid fa-clock-rotate-left"></i> O dia todo`;
+                
+                el.innerHTML = `
+                    <div class="list-item-content">
+                        <div class="item-data"><i class="fa-regular fa-calendar-check" style="color: var(--primary);"></i> ${formatarDataPT(ev.data)} &nbsp; ${strHora}</div>
+                        <div class="item-titulo">${ev.titulo}</div>
+                    </div>
+                    <div>
+                        <button class="btn-apagar" onclick="apagarRegistoGenerico('${ev.id}', this.parentElement.parentElement)"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                cont.appendChild(el);
             });
         }
 
-        // ============================ ESTATÍSTICAS ============================
-        function gerarGraficosGerais() { 
-            if(chartClientesInst) chartClientesInst.destroy(); if(chartMesesInst) chartMesesInst.destroy(); if(chartDespesasInst) chartDespesasInst.destroy(); 
+        // ==========================================
+        // 8. ESTATÍSTICAS E DASHBOARD
+        // ==========================================
+        function calcularEstatisticas() {
+            const mesStr = document.getElementById('filtro-mes').value;
+            const anoStr = document.getElementById('filtro-ano').value;
             
-            const corTexto = document.documentElement.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#1F2937';
-            Chart.defaults.color = corTexto; // Ajusta cor de fonte dos gráficos de acordo com o tema
-            
-            let ptCl="", horas={}, deps={}; 
-            registos.forEach(x => { ptCl = x.cliente||"S/ Nome"; horas[ptCl] = (horas[ptCl]||0)+parseFloat(x.valorGasto||0); let m = x.data?String(x.data).substring(0,7):null; if(m) deps[m] = (deps[m]||0)+(parseInt(x.minutosTotais||0)/60); }); 
-            let grcat={}; despesasRegistadas.forEach(x => grcat[x.categoria||"Outras"] = (grcat[x.categoria||"Outras"]||0)+parseFloat(x.valor||0)); 
-            const colors = ['#4F46E5','#10B981','#F59E0B','#EF4444','#8B5CF6'];
-            
-            chartClientesInst = new Chart(document.getElementById('graficoClientes'), { type:'pie', data:{ labels:Object.keys(horas), datasets:[{data:Object.values(horas), backgroundColor:colors, borderWidth: 0}] }, options:{plugins:{legend:{position:'bottom'}}} }); 
-            chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type:'bar', data:{ labels:Object.keys(deps), datasets:[{label:'Horas Gastas', data:Object.values(deps), backgroundColor:'#4F46E5', borderRadius: 4}] }, options:{scales:{y:{grid:{color:'rgba(128,128,128,0.1)'}}, x:{grid:{display:false}}}} }); 
-            chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type:'doughnut', data:{ labels:Object.keys(grcat), datasets:[{data:Object.values(grcat), backgroundColor:['#EF4444','#F59E0B','#10B981','#8B5CF6','#6B7280'], borderWidth: 0}] }, options:{maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}} }); 
+            let totalG = 0; let totalD = 0;
+            let filtG = 0; let filtD = 0;
+
+            // Filtro helper
+            const checkData = (dataStr) => {
+                if(!dataStr) return false;
+                const d = new Date(dataStr);
+                const mes = d.getMonth().toString();
+                const ano = d.getFullYear().toString();
+                let match = true;
+                if (mesStr !== 'todos' && mes !== mesStr) match = false;
+                if (anoStr !== 'todos' && ano !== anoStr) match = false;
+                return match;
+            };
+
+            // Totais e Filtrados para Registos
+            dadosApp.registos.forEach(r => {
+                let v = Number(r.valorGasto) || 0;
+                totalG += v;
+                if (checkData(r.data)) filtG += v;
+            });
+
+            // Totais e Filtrados para Despesas
+            dadosApp.despesas.forEach(d => {
+                let v = Number(d.valor) || 0;
+                totalD += v;
+                if (checkData(d.data)) filtD += v;
+            });
+
+            // Globais
+            const lucroGlobal = totalG - totalD;
+            document.getElementById('resumo-ganhos').innerText = totalG.toFixed(2) + " €";
+            document.getElementById('resumo-despesas').innerText = totalD.toFixed(2) + " €";
+            document.getElementById('resumo-lucro').innerText = lucroGlobal.toFixed(2) + " €";
+
+            // Filtrados
+            const lucroFilt = filtG - filtD;
+            document.getElementById('filter-ganho').innerText = filtG.toFixed(2) + " €";
+            document.getElementById('filter-gasto').innerText = filtD.toFixed(2) + " €";
+            const lfEl = document.getElementById('filter-lucro');
+            lfEl.innerText = lucroFilt.toFixed(2) + " €";
+            if (lucroFilt < 0) lfEl.style.color = 'var(--danger)';
+            else if (lucroFilt > 0) lfEl.style.color = 'var(--secondary-dark)';
+            else lfEl.style.color = 'var(--gray-900)';
         }
 
-        // ============================ EXPORTAÇÃO ============================
-        function iniciarBackupCSV() { 
-            const f = obterRegistosFiltrados(); if(f.length===0){showToast("Nada para exportar", "error");return;} 
-            confirmarAcao("Exportar CSV", "Transferir para Excel?", "var(--primary)", "Confirmar", () => {
-                let c = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Valor Hora;Valor\n"; 
-                f.forEach(r => c += `${formatDataForm(r.data)};${r.cliente||''};${formatHora(r.inicio)};${formatHora(r.fim)};${r.duracaoTexto};${parseFloat(r.taxaUsada).toFixed(2)};${parseFloat(r.valorGasto).toFixed(2)}\n`); 
-                const a = document.createElement("a"); a.href=URL.createObjectURL(new Blob([c], {type:'text/csv;charset=utf-8;'})); a.download="Registos_Horas.csv"; a.click(); showToast("CSV Guardado."); 
-            });
+        // ==========================================
+        // UTILITÁRIOS
+        // ==========================================
+        function gerarId() {
+            return 'id-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
         }
 
-        function preVisualizarPDF() { 
-            const d = obterRegistosFiltrados(); if(d.length===0){showToast("Tabela vazia.", "error");return;} 
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            doc.setFillColor(79, 70, 229); doc.rect(0, 0, 210, 35, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("RELATÓRIO DE SERVIÇOS", 14, 22);
-            doc.setTextColor(238, 242, 255); doc.setFontSize(10); doc.text(`Emitido em: ${new Date().toLocaleDateString('pt-PT')}`, 14, 48);
-            
-            doc.autoTable({
-                startY: 60,
-                head: [['Data', 'Cliente', 'Início', 'Fim', 'Duração', 'Valor/h', 'Total']],
-                body: d.map(r => [formatDataBR(r.data), r.cliente || '-', formatHora(r.inicio), formatHora(r.fim), r.duracaoTexto, parseFloat(r.taxaUsada).toFixed(2)+'€', parseFloat(r.valorGasto).toFixed(2)+'€']),
-                theme: 'plain', headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55], fontStyle: 'bold' }
-            });
-            
-            doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(31, 41, 55);
-            doc.text(`Total Bruto: ${document.getElementById('total_ganho').innerText}`, 14, (doc.lastAutoTable.finalY || 60) + 15);
-            documentoPDFFinal = doc; nomePDFFinal = "Relatorio_Atividades.pdf"; 
-            document.getElementById('pdf-preview-frame').src = URL.createObjectURL(doc.output('blob')); 
-            document.getElementById('modal-pdf').classList.add('show');
+        function formatarDataPT(dataStr) {
+            if(!dataStr) return "";
+            const d = new Date(dataStr);
+            const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+            return `${dias[d.getDay()]}, ${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
         }
-        function gravarPDFFinal() { if(documentoPDFFinal) { documentoPDFFinal.save(nomePDFFinal); fecharModal('modal-pdf'); showToast("PDF Transferido!"); } }
+
+        async function enviarDados(payload, sucessoCallback) {
+            toggleMenuLoading(true);
+            try {
+                const respon = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                // no-cors não permite ler a resposta, assumimos sucesso se a promise resolver
+                mostrarToast("Registo guardado com sucesso!", "success");
+                
+                if (sucessoCallback) sucessoCallback();
+                
+                // Recarrega os dados logo a seguir
+                setTimeout(() => { atualizarDados(false); }, 1000);
+                
+            } catch (err) {
+                mostrarToast("Erro ao guardar. Verifique a internet e URL.", "error");
+                console.error(err);
+            } finally {
+                setTimeout(() => toggleMenuLoading(false), 800);
+            }
+        }
     </script>
 </body>
 </html>
