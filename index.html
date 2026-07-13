@@ -112,7 +112,7 @@
             position: fixed; top: 0; left: 0; right: 0; z-index: 100; box-shadow: var(--shadow);
         }
         .header-side { flex: 1; display: flex; align-items: center; }
-        .header-side.left { justify-content: flex-start; font-size: 1.4rem; opacity: 0.9; }
+        .header-side.left { justify-content: flex-start; font-size: 1.8rem; opacity: 0.9; }
         .header-side.right { justify-content: flex-end; gap: 15px; }
         
         .header-title { flex: 2; text-align: center; font-size: 1.1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
@@ -120,7 +120,7 @@
         .header-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 5px; opacity: 0.8; transition: var(--transition); }
         .header-btn:hover { opacity: 1; transform: scale(1.1); }
 
-        main { flex: 1; padding: calc(var(--header-height) + 15px) 15px calc(var(--tab-bar-height) + 20px) 15px; overflow-y: auto; }
+        main { flex: 1; padding: calc(var(--header-height) + 15px) 15px calc(var(--tab-bar-height) + 20px) 15px; overflow-y: auto; scroll-behavior: smooth; }
         .section-container { display: none; max-width: 1000px; margin: 0 auto; }
         .section-container.active { display: block; animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -220,8 +220,9 @@
             .summary-item:last-child { grid-column: span 2; border-top: 1px solid var(--gray-200); border-right: none; }
             
             .finance-panel { grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-            .finance-item:nth-child(2) { grid-column: span 2; border-bottom: 1px solid var(--gray-200); padding-bottom: 10px;}
-            .finance-item:nth-child(6) { grid-column: span 2; border-top: 1px solid var(--primary-light); padding-top: 10px; }
+            #fi-ss, #fi-irs { border-bottom: 1px solid var(--gray-200); padding-bottom: 10px;}
+            #fi-impostos, #fi-despesas { padding-top: 5px; }
+            #fi-liquido { grid-column: span 2; border-top: 1px solid var(--primary-light); padding-top: 10px; }
             
             .dashboard-grid { grid-template-columns: 1fr; }
             .filter-panel { flex-direction: column; }
@@ -235,14 +236,14 @@
             .action-btns { border-top: 1px dashed var(--gray-200); padding-top: 12px; margin-top: 6px; }
         }
 
-        /* --- RESPONSIVIDADE DESKTOP (SIDEBAR & EXPORT) --- */
+        /* --- RESPONSIVIDADE DESKTOP (SIDEBAR LARGURA AJUSTADA & EXPORT) --- */
         @media (min-width: 801px) {
             #app-content { flex-direction: row; }
-            nav.tab-bar { position: static; flex-direction: column; width: 90px; height: 100vh; justify-content: flex-start; padding-top: calc(var(--header-height) + 20px); border-top: none; border-right: 1px solid var(--gray-200); }
+            nav.tab-bar { position: static; flex-direction: column; width: 110px; height: 100vh; justify-content: flex-start; padding-top: calc(var(--header-height) + 20px); border-top: none; border-right: 1px solid var(--gray-200); }
             .tab-btn { height: 75px; flex: none; width: 100%; }
-            .tab-btn span { display: block; margin-top: 5px; font-size: 0.7rem; }
-            header { width: calc(100% - 90px); left: 90px; }
-            main { width: calc(100% - 90px); margin-left: 0; padding-bottom: 30px; }
+            .tab-btn span { display: block; margin-top: 5px; font-size: 0.75rem; }
+            header { width: calc(100% - 110px); left: 110px; }
+            main { width: calc(100% - 110px); margin-left: 0; padding-bottom: 30px; }
             
             .desktop-only { display: flex !important; }
             .sidebar-divider.desktop-only { display: block !important; }
@@ -282,7 +283,7 @@
                 <i class="fa-solid fa-clock"></i>
             </div>
             
-            <div class="header-title" id="main-title">GESTÃO HORAS DE TRABALHO</div>
+            <div class="header-title" id="main-title">GESTÃO DE HORAS</div>
             
             <div class="header-side right">
                 <button class="header-btn" onclick="alternarTema()" title="Mudar Tema"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
@@ -326,13 +327,15 @@
         <div class="mobile-drawer" id="gaveta-opcoes">
             <div class="drawer-header">
                 <span style="font-size: 12px; text-transform: uppercase; font-weight: bold; color: var(--gray-500);">Exportações</span>
-                <button onclick="toggleGavetaMais()" style="background:none; border:none; color:var(--gray-500); font-size:1.5rem; cursor:pointer;"><i class="fa-solid fa-circle-chevron-down"></i></button>
+                <button onclick="toggleGavetaMais()" style="background:none; border:none; color:var(--gray-700); font-size:0.9rem; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar
+                </button>
             </div>
             <button class="drawer-btn" onclick="toggleGavetaMais(); iniciarBackupCSV();"><span style="color:var(--primary)"><i class="fa-solid fa-file-csv"></i> Exportar Excel</span><i class="fa-solid fa-chevron-right"></i></button>
             <button class="drawer-btn" onclick="toggleGavetaMais(); preVisualizarPDF();"><span style="color:var(--primary)"><i class="fa-solid fa-file-pdf"></i> Gerar PDF</span><i class="fa-solid fa-chevron-right"></i></button>
         </div>
 
-        <main>
+        <main id="main-scroll-area">
             <!-- 1. REGISTOS DE HORAS E FINANÇAS -->
             <section id="horas" class="section-container active">
                 
@@ -345,15 +348,15 @@
 
                 <div class="finance-panel" id="painel-financas">
                     <div style="grid-column: 1 / -1; text-align: center; font-weight: 800; font-size: 1rem; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Detalhes Financeiros</div>
-                    <div class="finance-item"><span class="lab">Despesas</span><span class="val" id="f_despesas_totais" style="color: var(--danger);">0.00 €</span></div>
-                    <div class="finance-item"><span class="lab">Impostos</span><span class="val" id="f_impostos">0.00 €</span></div>
-                    <div class="finance-item"><span class="lab">SS (%)</span><input type="number" id="inp_ss" value="0" step="1" max="100" min="0" oninput="calcularFinancas()"></div>
-                    <div class="finance-item"><span class="lab">IRS (%)</span><input type="number" id="inp_irs" value="0" step="1" max="100" min="0" oninput="calcularFinancas()"></div>
-                    <div class="finance-item highlight"><span class="lab">Líquido a Receber</span><span class="val" id="f_liquido">0.00 €</span></div>
+                    <div class="finance-item" id="fi-ss"><span class="lab">SS (%)</span><input type="number" id="inp_ss" value="0" step="1" max="100" min="0" oninput="calcularFinancas()"></div>
+                    <div class="finance-item" id="fi-irs"><span class="lab">IRS (%)</span><input type="number" id="inp_irs" value="0" step="1" max="100" min="0" oninput="calcularFinancas()"></div>
+                    <div class="finance-item" id="fi-impostos"><span class="lab">Impostos</span><span class="val" id="f_impostos">0.00 €</span></div>
+                    <div class="finance-item" id="fi-despesas"><span class="lab">Despesas</span><span class="val" id="f_despesas_totais" style="color: var(--danger);">0.00 €</span></div>
+                    <div class="finance-item highlight" id="fi-liquido"><span class="lab">Líquido a Receber</span><span class="val" id="f_liquido">0.00 €</span></div>
                 </div>
 
                 <!-- FORMULÁRIO DE REGISTO -->
-                <div class="card">
+                <div class="card" id="cartao_form_registo">
                     <h3 id="titulo_form_registo"><i class="fa-solid fa-stopwatch" style="color: var(--primary);"></i> Novo Serviço</h3>
                     <div class="form-row">
                         <div class="form-group"><label>Data</label><input type="date" id="data"></div>
@@ -395,7 +398,7 @@
 
             <!-- 2. DESPESAS -->
             <section id="despesas" class="section-container">
-                <div class="card">
+                <div class="card" id="cartao_form_despesa">
                     <h3 id="titulo_form_despesa"><i class="fa-solid fa-file-invoice-dollar" style="color: var(--danger);"></i> Nova Despesa</h3>
                     <div class="form-row">
                         <div class="form-group"><label>Data</label><input type="date" id="d_data"></div>
@@ -424,7 +427,7 @@
 
             <!-- 3. AGENDA -->
             <section id="agenda" class="section-container">
-                <div class="card">
+                <div class="card" id="cartao_form_agenda">
                     <h3 id="titulo_form_agenda"><i class="fa-regular fa-calendar-plus" style="color: var(--warning);"></i> Novo Evento</h3>
                     <div class="form-row">
                         <div class="form-group"><label>Data</label><input type="date" id="a_data"></div>
@@ -539,7 +542,7 @@
             if(btnElement) btnElement.classList.add('active');
             else document.getElementById('menu-'+id).classList.add('active');
             
-            const titles = { 'horas': 'GESTÃO HORAS DE TRABALHO', 'despesas': 'DESPESAS', 'agenda': 'AGENDA', 'estatisticas': 'ESTATÍSTICA' };
+            const titles = { 'horas': 'GESTÃO DE HORAS', 'despesas': 'DESPESAS', 'agenda': 'AGENDA', 'estatisticas': 'ESTATÍSTICA' };
             document.getElementById('main-title').innerText = titles[id];
 
             document.querySelectorAll('.section-container').forEach(sec => sec.classList.remove('active'));
@@ -677,7 +680,8 @@
             const r = registos.find(x => x.id === id); if (!r) return; idEmEdicao = id;
             document.getElementById('titulo_form_registo').innerHTML = '<i class="fa-solid fa-pen" style="color: var(--warning);"></i> Editar Serviço';
             document.getElementById('data').value=formatDataForm(r.data); document.getElementById('cliente').value=r.cliente||''; document.getElementById('hora_inicio').value=formatHora(r.inicio); document.getElementById('hora_fim').value=formatHora(r.fim); document.getElementById('taxa_hora').value=r.taxaUsada; 
-            document.getElementById('btn_cancelar_registo').style.display='block'; window.scrollTo(0,0);
+            document.getElementById('btn_cancelar_registo').style.display='block'; 
+            setTimeout(() => document.getElementById('cartao_form_registo').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
         function cancelarEdicaoRegisto() { idEmEdicao=null; document.getElementById('titulo_form_registo').innerHTML='<i class="fa-solid fa-stopwatch" style="color: var(--primary);"></i> Novo Serviço'; document.getElementById('btn_cancelar_registo').style.display='none'; ['cliente','hora_inicio','hora_fim'].forEach(x=>document.getElementById(x).value=''); }
 
@@ -708,7 +712,8 @@
             const d = despesasRegistadas.find(x=>x.id===id); if(!d) return; idEmEdicaoDespesa = id;
             document.getElementById('titulo_form_despesa').innerHTML = '<i class="fa-solid fa-pen" style="color: var(--warning);"></i> Editar Despesa';
             document.getElementById('d_data').value=formatDataForm(d.data); document.getElementById('d_categoria').value=d.categoria; document.getElementById('d_descricao').value=d.descricao; document.getElementById('d_valor').value=d.valor;
-            document.getElementById('btn_cancelar_despesa').style.display='block'; window.scrollTo(0,0);
+            document.getElementById('btn_cancelar_despesa').style.display='block'; 
+            setTimeout(() => document.getElementById('cartao_form_despesa').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
         function cancelarEdicaoDespesa() { idEmEdicaoDespesa=null; document.getElementById('titulo_form_despesa').innerHTML='<i class="fa-solid fa-file-invoice-dollar" style="color: var(--danger);"></i> Nova Despesa'; document.getElementById('btn_cancelar_despesa').style.display='none'; document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; }
 
@@ -731,7 +736,8 @@
             const a = agendaRegistada.find(x=>x.id===id); if(!a) return; idEmEdicaoAgenda = id;
             document.getElementById('titulo_form_agenda').innerHTML = '<i class="fa-solid fa-pen" style="color: var(--warning);"></i> Editar Evento';
             document.getElementById('a_data').value=formatDataForm(a.data); document.getElementById('a_hora').value=(formatHora(a.hora)!=='--:--')?formatHora(a.hora):''; document.getElementById('a_titulo').value=a.titulo;
-            document.getElementById('btn_cancelar_agenda').style.display='block'; window.scrollTo(0,0);
+            document.getElementById('btn_cancelar_agenda').style.display='block'; 
+            setTimeout(() => document.getElementById('cartao_form_agenda').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
         function cancelarEdicaoAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerHTML='<i class="fa-regular fa-calendar-plus" style="color: var(--warning);"></i> Novo Evento'; document.getElementById('btn_cancelar_agenda').style.display='none'; document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; }
 
