@@ -992,18 +992,16 @@
         }
 
         window.onload = () => {
-            if(localStorage.getItem('tema_final')==='dark') alternarTema();
-            document.getElementById('data').valueAsDate = new Date();
-            const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
-            ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
-            
-            // A carga de dados já foi iniciada pelo script inline no body se o utilizador já tiver sessão
-            if (pinApp) { 
-                // Apenas garante que os selects estão preenchidos se o login foi via cache
-                atualizarDropdownsFiltros(); 
-                redefinirPaginaE_Renderizar();
-            }
-        };
+    if(localStorage.getItem('tema_final')==='dark') alternarTema();
+    document.getElementById('data').valueAsDate = new Date();
+    const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
+    ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
+    
+    // NOVO: Se o utilizador já tem o PIN na sessão (fez refresh), força a ida à nuvem buscar os dados
+    if (pinApp) { 
+        iniciarAppApósLogin();
+    }
+};
     </script>
 </body>
 </html>
