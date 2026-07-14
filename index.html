@@ -547,7 +547,9 @@
 
             document.querySelectorAll('.section-container').forEach(sec => sec.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            window.scrollTo(0, 0);
+            
+            // Força o scroll a voltar para o topo do ecrã
+            document.getElementById('main-scroll-area').scrollTop = 0;
 
             if(id === 'estatisticas') gerarGraficosGerais();
         }
@@ -643,7 +645,7 @@
         }
 
         function redefinirPaginaE_Renderizar() { paginaAtual = 1; renderizarTabelaRegistos(); renderizarDespesas(); renderizarAgenda(); }
-        function mudarPagina(d) { paginaAtual += d; renderizarTabelaRegistos(); window.scrollTo(0, 0); }
+        function mudarPagina(d) { paginaAtual += d; renderizarTabelaRegistos(); document.getElementById('main-scroll-area').scrollTop = 0; }
         function obterRegistosFiltrados() { const fM = document.getElementById('filtro_mes').value, fC = document.getElementById('filtro_cliente').value; return registos.sort((a,b)=>new Date(b.data)-new Date(a.data)).filter(r => (fM==='todos'||(r.data&&String(r.data).substring(0,7)===fM)) && (fC==='todos'||r.cliente===fC)); }
 
         function renderizarTabelaRegistos() {
