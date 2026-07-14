@@ -112,7 +112,7 @@
             position: fixed; top: 0; left: 0; right: 0; z-index: 100; box-shadow: var(--shadow);
         }
         .header-side { flex: 1; display: flex; align-items: center; }
-        .header-side.left { justify-content: flex-start; font-size: 1.8rem; opacity: 0.9; }
+        .header-side.left { justify-content: flex-start; }
         .header-side.right { justify-content: flex-end; gap: 15px; }
         
         .header-title { flex: 2; text-align: center; font-size: 1.1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
@@ -260,7 +260,32 @@
     <!-- ECRÃ DE LOGIN -->
     <div id="login-screen">
         <div class="login-card">
-            <div class="login-icon"><i class="fa-solid fa-lock"></i></div>
+            <!-- Símbolo Antigo de Cadeado Substituído Pelo Logo Novo Para Uniformidade -->
+            <div style="margin-bottom: 20px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+                    <defs>
+                        <linearGradient id="navyGradLogin" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#1a2e4c" />
+                            <stop offset="100%" stop-color="#0B192C" />
+                        </linearGradient>
+                        <linearGradient id="goldGradLogin" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#f2d080" />
+                            <stop offset="100%" stop-color="#E2B659" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="url(#goldGradLogin)" />
+                    <path d="M 50 5 A 45 45 0 0 0 50 95 Z" fill="url(#navyGradLogin)" />
+                    <line x1="50" y1="5" x2="50" y2="95" stroke="#E2B659" stroke-width="2" />
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#E2B659" stroke-width="3" />
+                    <circle cx="50" cy="50" r="4" fill="#E2B659" />
+                    <line x1="50" y1="50" x2="50" y2="22" stroke="#E2B659" stroke-width="4" stroke-linecap="round" />
+                    <line x1="50" y1="50" x2="32" y2="38" stroke="#E2B659" stroke-width="4" stroke-linecap="round" />
+                    <line x1="12" y1="50" x2="20" y2="50" stroke="#E2B659" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="23" y1="23" x2="28" y2="28" stroke="#E2B659" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="23" y1="77" x2="28" y2="72" stroke="#E2B659" stroke-width="3" stroke-linecap="round"/>
+                    <text x="75" y="67" font-family="var(--font-family)" font-size="52" font-weight="900" fill="#0B192C" text-anchor="middle">€</text>
+                </svg>
+            </div>
             <h1 class="login-title">Área Restrita</h1>
             <p style="color: var(--gray-500); font-size: 0.95rem; margin-bottom: 20px;">Introduza o seu PIN</p>
             <div class="pin-display">
@@ -280,7 +305,38 @@
     <div id="app-content">
         <header>
             <div class="header-side left">
-                <i class="fa-solid fa-clock"></i>
+                <!-- SVG Ícone Relógio-Moeda Customizado -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                    <defs>
+                        <linearGradient id="navyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#1a2e4c" />
+                            <stop offset="100%" stop-color="#0B192C" />
+                        </linearGradient>
+                        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#f2d080" />
+                            <stop offset="100%" stop-color="#E2B659" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Fundo Base Dourado (metade direita) -->
+                    <circle cx="50" cy="50" r="45" fill="url(#goldGrad)" />
+                    <!-- Metade Esquerda Azul Marinho -->
+                    <path d="M 50 5 A 45 45 0 0 0 50 95 Z" fill="url(#navyGrad)" />
+                    <!-- Borda Separadora -->
+                    <line x1="50" y1="5" x2="50" y2="95" stroke="#E2B659" stroke-width="2" />
+                    <!-- Contorno Circunferência -->
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#E2B659" stroke-width="3" />
+                    <!-- Centro do Relógio -->
+                    <circle cx="50" cy="50" r="4" fill="#E2B659" />
+                    <!-- Ponteiros do Relógio -->
+                    <line x1="50" y1="50" x2="50" y2="22" stroke="#E2B659" stroke-width="4" stroke-linecap="round" />
+                    <line x1="50" y1="50" x2="32" y2="38" stroke="#E2B659" stroke-width="4" stroke-linecap="round" />
+                    <!-- Marcadores de Tempo (Trços) -->
+                    <line x1="12" y1="50" x2="20" y2="50" stroke="#E2B659" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="23" y1="23" x2="28" y2="28" stroke="#E2B659" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="23" y1="77" x2="28" y2="72" stroke="#E2B659" stroke-width="3" stroke-linecap="round"/>
+                    <!-- Símbolo Euro -->
+                    <text x="75" y="67" font-family="var(--font-family)" font-size="52" font-weight="900" fill="#0B192C" text-anchor="middle">€</text>
+                </svg>
             </div>
             
             <div class="header-title" id="main-title">GESTÃO DE HORAS</div>
