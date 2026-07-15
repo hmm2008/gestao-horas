@@ -192,6 +192,15 @@
         .btn-cancel { background-color: var(--surface); color: var(--text-main); border-color: var(--border-light); box-shadow: var(--shadow-sm); }
         .btn-cancel:active { background-color: var(--border-light); }
         
+        /* --- ESTILOS DO CALENDÁRIO CARROSSEL --- */
+        .calendar-carousel { display: flex; overflow-x: auto; gap: 8px; padding: 10px 0; scrollbar-width: none; -ms-overflow-style: none; margin-bottom: 5px; }
+        .calendar-carousel::-webkit-scrollbar { display: none; }
+        .date-item { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 55px; padding: 10px 8px; border-radius: 16px; background: var(--input-bg); border: 1px solid var(--border-light); cursor: pointer; transition: var(--transition); }
+        .date-item .day-name { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .date-item .day-number { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-top: 2px; }
+        .date-item.active { background: linear-gradient(135deg, var(--primary), #5184ff); border: none; color: white; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); }
+        .date-item.active .day-name, .date-item.active .day-number { color: white; }
+
         /* --- PAINEL RESUMO E FINANÇAS --- */
         .summary-panel { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface); border-radius: var(--border-radius); border: 1px solid var(--border-light); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
         .summary-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-right: 1px solid var(--border-light); padding: 16px 10px; }
@@ -458,13 +467,20 @@
                 <!-- FORMULÁRIO DE REGISTO -->
                 <div class="card" id="cartao_form_registo">
                     <h3 id="titulo_form_registo"><i class="fa-solid fa-stopwatch" style="color: var(--primary); margin-right: 6px;"></i>Novo Serviço</h3>
-                    <div class="form-row">
-                        <div class="form-group"><label>Data</label><input type="date" id="data"></div>
-                        <div class="form-group"><label>Preço/h (€)</label><input type="number" id="taxa_hora" step="0.5"></div>
+                    
+                    <!-- CALENDÁRIO SUBSTITUÍDO AQUI -->
+                    <div class="form-group">
+                        <label>Data</label>
+                        <div id="container-data-horas" class="calendar-carousel"></div>
+                        <input type="hidden" id="data">
                     </div>
+                    
                     <div class="form-row">
                         <div class="form-group"><label>Início</label><input type="time" id="hora_inicio"></div>
                         <div class="form-group"><label>Fim</label><input type="time" id="hora_fim"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Preço/h (€)</label><input type="number" id="taxa_hora" step="0.5"></div>
                     </div>
                     <div class="form-group">
                         <label>Cliente / Projeto</label>
@@ -500,10 +516,16 @@
             <section id="despesas" class="section-container">
                 <div class="card" id="cartao_form_despesa">
                     <h3 id="titulo_form_despesa"><i class="fa-solid fa-receipt" style="color: var(--danger); margin-right: 6px;"></i>Nova Despesa</h3>
-                    <div class="form-row">
-                        <div class="form-group"><label>Data</label><input type="date" id="d_data"></div>
-                        <div class="form-group"><label>Valor (€)</label><input type="number" id="d_valor" step="0.01" placeholder="0.00"></div>
+                    
+                    <!-- CALENDÁRIO SUBSTITUÍDO AQUI -->
+                    <div class="form-group">
+                        <label>Data</label>
+                        <div id="container-data-despesas" class="calendar-carousel"></div>
+                        <input type="hidden" id="d_data">
                     </div>
+                    
+                    <div class="form-group"><label>Valor (€)</label><input type="number" id="d_valor" step="0.01" placeholder="0.00"></div>
+                    
                     <div class="form-group"><label>Categoria</label>
                         <select id="d_categoria">
                             <option value="Combustível">Combustível</option><option value="Portagens">Portagens</option><option value="Alimentação">Alimentação</option><option value="Materiais">Materiais</option><option value="Outros">Outros</option>
@@ -536,10 +558,15 @@
             <section id="agenda" class="section-container">
                 <div class="card" id="cartao_form_agenda">
                     <h3 id="titulo_form_agenda"><i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento</h3>
-                    <div class="form-row">
-                        <div class="form-group"><label>Data</label><input type="date" id="a_data"></div>
-                        <div class="form-group"><label>Hora (Opcional)</label><input type="time" id="a_hora"></div>
+                    
+                    <!-- CALENDÁRIO SUBSTITUÍDO AQUI -->
+                    <div class="form-group">
+                        <label>Data</label>
+                        <div id="container-data-agenda" class="calendar-carousel"></div>
+                        <input type="hidden" id="a_data">
                     </div>
+                    
+                    <div class="form-group"><label>Hora (Opcional)</label><input type="time" id="a_hora"></div>
                     <div class="form-group"><label>Evento / Título</label><input type="text" id="a_titulo" placeholder="Ex: Reunião João Silva"></div>
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 15px;"><i class="fa-solid fa-info-circle"></i> Sincroniza com o Google Calendar Pessoal</p>
                     <div style="display:flex; gap:10px; margin-top: 5px;">
@@ -625,15 +652,83 @@
         let paginaAtual = 1; const ITENS_POR_PAGINA = 15;
         let pinApp = localStorage.getItem('app_pin') || '';
 
+        // ============================ FUNÇÕES DE DATA E CALENDÁRIO ============================
+        
+        // Formatar data local para YYYY-MM-DD com precisão
+        function formatLocalYYYYMMDD(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // Lógica Principal do Calendário Carrossel
+        function iniciarCalendarioPersonalizado(containerId, inputId) {
+            const container = document.getElementById(containerId);
+            const hiddenInput = document.getElementById(inputId);
+            
+            const render = () => {
+                container.innerHTML = '';
+                
+                // Definir a data base para centrar o carrossel (a do input ou a de hoje)
+                let baseDate = new Date();
+                if (hiddenInput.value) {
+                    const parts = hiddenInput.value.split('-');
+                    if(parts.length === 3) {
+                        baseDate = new Date(parts[0], parts[1]-1, parts[2]);
+                    }
+                }
+                
+                // Gerar 15 dias (7 para trás, o dia base, e 7 para a frente)
+                for (let i = -7; i <= 7; i++) { 
+                    const d = new Date(baseDate);
+                    d.setDate(d.getDate() + i);
+                    
+                    const item = document.createElement('div');
+                    item.className = 'date-item';
+                    const dateStr = formatLocalYYYYMMDD(d);
+                    
+                    if (hiddenInput.value === dateStr) item.classList.add('active');
+                    
+                    item.innerHTML = `
+                        <span class="day-name">${d.toLocaleDateString('pt-PT', {weekday: 'short'})}</span>
+                        <span class="day-number">${d.getDate()}</span>
+                    `;
+                    
+                    item.onclick = () => {
+                        hiddenInput.value = dateStr;
+                        render(); // Re-renderizar para centralizar na nova seleção
+                    };
+                    container.appendChild(item);
+                }
+                
+                // Scroll automático para colocar o dia ativo no centro visual
+                setTimeout(() => {
+                    const activeItem = container.querySelector('.date-item.active');
+                    if (activeItem) {
+                        activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    }
+                }, 50);
+            };
+            render();
+        }
+
         // ============================ UI & NAVEGAÇÃO ============================
         window.onload = () => {
             if(localStorage.getItem('tema_final') === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
             }
             
-            document.getElementById('data').valueAsDate = new Date();
-            document.getElementById('d_data').valueAsDate = new Date();
-            document.getElementById('a_data').valueAsDate = new Date();
+            // Iniciar com a data atual formatada
+            const dHojeStr = formatLocalYYYYMMDD(new Date());
+            document.getElementById('data').value = dHojeStr;
+            document.getElementById('d_data').value = dHojeStr;
+            document.getElementById('a_data').value = dHojeStr;
+            
+            // Inicializar os calendários
+            iniciarCalendarioPersonalizado('container-data-horas', 'data');
+            iniciarCalendarioPersonalizado('container-data-despesas', 'd_data');
+            iniciarCalendarioPersonalizado('container-data-agenda', 'a_data');
             
             const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
             ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
@@ -811,11 +906,20 @@
         function editarRegisto(id) { 
             const r = registos.find(x => x.id === id); if (!r) return; idEmEdicao = id;
             document.getElementById('titulo_form_registo').innerHTML = 'A Editar Serviço';
-            document.getElementById('data').value=formatDataForm(r.data); document.getElementById('cliente').value=r.cliente||''; document.getElementById('hora_inicio').value=formatHora(r.inicio); document.getElementById('hora_fim').value=formatHora(r.fim); document.getElementById('taxa_hora').value=r.taxaUsada; 
+            document.getElementById('data').value=formatDataForm(r.data); 
+            iniciarCalendarioPersonalizado('container-data-horas', 'data'); /* Atualiza e centra o carrossel na nova data */
+            document.getElementById('cliente').value=r.cliente||''; document.getElementById('hora_inicio').value=formatHora(r.inicio); document.getElementById('hora_fim').value=formatHora(r.fim); document.getElementById('taxa_hora').value=r.taxaUsada; 
             document.getElementById('btn_cancelar_registo').style.display='block'; 
             setTimeout(() => document.getElementById('cartao_form_registo').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
-        function cancelarEdicaoRegisto() { idEmEdicao=null; document.getElementById('titulo_form_registo').innerHTML='<i class="fa-solid fa-stopwatch" style="color: var(--primary); margin-right: 6px;"></i>Novo Serviço'; document.getElementById('btn_cancelar_registo').style.display='none'; ['cliente','hora_inicio','hora_fim'].forEach(x=>document.getElementById(x).value=''); }
+        function cancelarEdicaoRegisto() { 
+            idEmEdicao=null; 
+            document.getElementById('titulo_form_registo').innerHTML='<i class="fa-solid fa-stopwatch" style="color: var(--primary); margin-right: 6px;"></i>Novo Serviço'; 
+            document.getElementById('btn_cancelar_registo').style.display='none'; 
+            ['cliente','hora_inicio','hora_fim'].forEach(x=>document.getElementById(x).value=''); 
+            document.getElementById('data').value = formatLocalYYYYMMDD(new Date());
+            iniciarCalendarioPersonalizado('container-data-horas', 'data'); /* Repõe o carrossel no dia de hoje */
+        }
 
         function calcularFinancas() {
             const fM = document.getElementById('filtro_mes').value; let df = despesasRegistadas; if(fM!=='todos') df = df.filter(d=>d.data&&String(d.data).substring(0,7)===fM);
@@ -843,11 +947,19 @@
         function editarDespesa(id) {
             const d = despesasRegistadas.find(x=>x.id===id); if(!d) return; idEmEdicaoDespesa = id;
             document.getElementById('titulo_form_despesa').innerHTML = 'A Editar Despesa';
-            document.getElementById('d_data').value=formatDataForm(d.data); document.getElementById('d_categoria').value=d.categoria; document.getElementById('d_descricao').value=d.descricao; document.getElementById('d_valor').value=d.valor;
+            document.getElementById('d_data').value=formatDataForm(d.data); 
+            iniciarCalendarioPersonalizado('container-data-despesas', 'd_data'); /* Atualiza e centra o carrossel */
+            document.getElementById('d_categoria').value=d.categoria; document.getElementById('d_descricao').value=d.descricao; document.getElementById('d_valor').value=d.valor;
             document.getElementById('btn_cancelar_despesa').style.display='block'; 
             setTimeout(() => document.getElementById('cartao_form_despesa').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
-        function cancelarEdicaoDespesa() { idEmEdicaoDespesa=null; document.getElementById('titulo_form_despesa').innerHTML='<i class="fa-solid fa-receipt" style="color: var(--danger); margin-right: 6px;"></i>Nova Despesa'; document.getElementById('btn_cancelar_despesa').style.display='none'; document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; }
+        function cancelarEdicaoDespesa() { 
+            idEmEdicaoDespesa=null; 
+            document.getElementById('titulo_form_despesa').innerHTML='<i class="fa-solid fa-receipt" style="color: var(--danger); margin-right: 6px;"></i>Nova Despesa'; 
+            document.getElementById('btn_cancelar_despesa').style.display='none'; document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; 
+            document.getElementById('d_data').value = formatLocalYYYYMMDD(new Date());
+            iniciarCalendarioPersonalizado('container-data-despesas', 'd_data');
+        }
 
         // ============================ AGENDA ============================
         function renderizarAgenda() {
@@ -867,11 +979,19 @@
         function editarAgenda(id) {
             const a = agendaRegistada.find(x=>x.id===id); if(!a) return; idEmEdicaoAgenda = id;
             document.getElementById('titulo_form_agenda').innerHTML = 'A Editar Evento';
-            document.getElementById('a_data').value=formatDataForm(a.data); document.getElementById('a_hora').value=(formatHora(a.hora)!=='--:--')?formatHora(a.hora):''; document.getElementById('a_titulo').value=a.titulo;
+            document.getElementById('a_data').value=formatDataForm(a.data); 
+            iniciarCalendarioPersonalizado('container-data-agenda', 'a_data'); /* Atualiza e centra o carrossel */
+            document.getElementById('a_hora').value=(formatHora(a.hora)!=='--:--')?formatHora(a.hora):''; document.getElementById('a_titulo').value=a.titulo;
             document.getElementById('btn_cancelar_agenda').style.display='block'; 
             setTimeout(() => document.getElementById('cartao_form_agenda').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
-        function cancelarEdicaoAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerHTML='<i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento'; document.getElementById('btn_cancelar_agenda').style.display='none'; document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; }
+        function cancelarEdicaoAgenda() { 
+            idEmEdicaoAgenda=null; 
+            document.getElementById('titulo_form_agenda').innerHTML='<i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento'; 
+            document.getElementById('btn_cancelar_agenda').style.display='none'; document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; 
+            document.getElementById('a_data').value = formatLocalYYYYMMDD(new Date());
+            iniciarCalendarioPersonalizado('container-data-agenda', 'a_data');
+        }
 
         // ============================ APAGAR GERAL ============================
         function apagarRegistoAPI(id, nome) {
