@@ -192,7 +192,15 @@
         .btn-cancel { background-color: var(--surface); color: var(--text-main); border-color: var(--border-light); box-shadow: var(--shadow-sm); }
         .btn-cancel:active { background-color: var(--border-light); }
         
-        /* --- ESTILOS DO CALENDÁRIO CARROSSEL --- */
+        /* --- ESTILOS DO CALENDÁRIO CARROSSEL E NAVEGAÇÃO --- */
+        .calendar-header-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; margin-top: 4px; }
+        .month-nav { display: flex; align-items: center; gap: 6px; }
+        .nav-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 4px 8px; border-radius: var(--border-radius-sm); transition: var(--transition); }
+        .nav-btn:hover { color: var(--primary); background: var(--primary-light); }
+        .current-month-label { font-weight: 600; font-size: 0.9rem; color: var(--text-main); text-transform: capitalize; min-width: 105px; text-align: center; }
+        .btn-hoje { background-color: var(--primary-light); color: var(--primary); border: none; padding: 6px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        .btn-hoje:active { transform: scale(0.95); }
+
         .calendar-carousel { display: flex; overflow-x: auto; gap: 8px; padding: 10px 0; scrollbar-width: none; -ms-overflow-style: none; margin-bottom: 5px; }
         .calendar-carousel::-webkit-scrollbar { display: none; }
         .date-item { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 55px; padding: 10px 8px; border-radius: 16px; background: var(--input-bg); border: 1px solid var(--border-light); cursor: pointer; transition: var(--transition); }
@@ -468,9 +476,16 @@
                 <div class="card" id="cartao_form_registo">
                     <h3 id="titulo_form_registo"><i class="fa-solid fa-stopwatch" style="color: var(--primary); margin-right: 6px;"></i>Novo Serviço</h3>
                     
-                    <!-- CALENDÁRIO SUBSTITUÍDO AQUI -->
+                    <!-- CALENDÁRIO COM NAVEGAÇÃO -->
                     <div class="form-group">
-                        <label>Data</label>
+                        <div class="calendar-header-wrapper">
+                            <div class="month-nav">
+                                <button type="button" class="nav-btn" onclick="mudarMesCalendario(-1, 'container-data-horas', 'data')"><i class="fa-solid fa-chevron-left"></i></button>
+                                <span class="current-month-label" id="month-label-horas"></span>
+                                <button type="button" class="nav-btn" onclick="mudarMesCalendario(1, 'container-data-horas', 'data')"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                            <button type="button" class="btn-hoje" onclick="irParaHoje('container-data-horas', 'data')">Hoje</button>
+                        </div>
                         <div id="container-data-horas" class="calendar-carousel"></div>
                         <input type="hidden" id="data">
                     </div>
@@ -517,9 +532,16 @@
                 <div class="card" id="cartao_form_despesa">
                     <h3 id="titulo_form_despesa"><i class="fa-solid fa-receipt" style="color: var(--danger); margin-right: 6px;"></i>Nova Despesa</h3>
                     
-                    <!-- CALENDÁRIO SUBSTITUÍDO AQUI -->
+                    <!-- CALENDÁRIO COM NAVEGAÇÃO -->
                     <div class="form-group">
-                        <label>Data</label>
+                        <div class="calendar-header-wrapper">
+                            <div class="month-nav">
+                                <button type="button" class="nav-btn" onclick="mudarMesCalendario(-1, 'container-data-despesas', 'd_data')"><i class="fa-solid fa-chevron-left"></i></button>
+                                <span class="current-month-label" id="month-label-despesas"></span>
+                                <button type="button" class="nav-btn" onclick="mudarMesCalendario(1, 'container-data-despesas', 'd_data')"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                            <button type="button" class="btn-hoje" onclick="irParaHoje('container-data-despesas', 'd_data')">Hoje</button>
+                        </div>
                         <div id="container-data-despesas" class="calendar-carousel"></div>
                         <input type="hidden" id="d_data">
                     </div>
@@ -559,9 +581,16 @@
                 <div class="card" id="cartao_form_agenda">
                     <h3 id="titulo_form_agenda"><i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento</h3>
                     
-                    <!-- CALENDÁRIO SUBSTITUÍDO AQUI -->
+                    <!-- CALENDÁRIO COM NAVEGAÇÃO -->
                     <div class="form-group">
-                        <label>Data</label>
+                        <div class="calendar-header-wrapper">
+                            <div class="month-nav">
+                                <button type="button" class="nav-btn" onclick="mudarMesCalendario(-1, 'container-data-agenda', 'a_data')"><i class="fa-solid fa-chevron-left"></i></button>
+                                <span class="current-month-label" id="month-label-agenda"></span>
+                                <button type="button" class="nav-btn" onclick="mudarMesCalendario(1, 'container-data-agenda', 'a_data')"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                            <button type="button" class="btn-hoje" onclick="irParaHoje('container-data-agenda', 'a_data')">Hoje</button>
+                        </div>
                         <div id="container-data-agenda" class="calendar-carousel"></div>
                         <input type="hidden" id="a_data">
                     </div>
@@ -654,7 +683,6 @@
 
         // ============================ FUNÇÕES DE DATA E CALENDÁRIO ============================
         
-        // Formatar data local para YYYY-MM-DD com precisão
         function formatLocalYYYYMMDD(date) {
             const yyyy = date.getFullYear();
             const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -662,55 +690,77 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
-        // Lógica Principal do Calendário Carrossel
-        function iniciarCalendarioPersonalizado(containerId, inputId) {
+        function formatMesAno(date) {
+            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            return `${meses[date.getMonth()]} ${date.getFullYear()}`;
+        }
+
+        // Lógica do Calendário por Mês com Navegação
+        function renderizarCarrosselMes(containerId, inputId, forceViewDate = null) {
             const container = document.getElementById(containerId);
             const hiddenInput = document.getElementById(inputId);
+            const labelId = containerId.replace('container-data-', 'month-label-');
+            const monthLabel = document.getElementById(labelId);
             
-            const render = () => {
-                container.innerHTML = '';
+            // Qual é a data que está selecionada no input?
+            let activeDate = new Date(); 
+            if (hiddenInput.value) {
+                const parts = hiddenInput.value.split('-');
+                if(parts.length === 3) activeDate = new Date(parts[0], parts[1]-1, parts[2]);
+            }
+            
+            // Qual o mês que devemos desenhar no ecrã?
+            let viewDate = forceViewDate || container.viewDate || new Date(activeDate);
+            container.viewDate = new Date(viewDate); // Guarda o mês atual no container
+            
+            if (monthLabel) monthLabel.innerText = formatMesAno(viewDate);
+            container.innerHTML = '';
+            
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const d = new Date(year, month, i);
+                const dateStr = formatLocalYYYYMMDD(d);
                 
-                // Definir a data base para centrar o carrossel (a do input ou a de hoje)
-                let baseDate = new Date();
-                if (hiddenInput.value) {
-                    const parts = hiddenInput.value.split('-');
-                    if(parts.length === 3) {
-                        baseDate = new Date(parts[0], parts[1]-1, parts[2]);
-                    }
+                const item = document.createElement('div');
+                item.className = 'date-item';
+                
+                if (hiddenInput.value === dateStr) item.classList.add('active');
+                
+                item.innerHTML = `
+                    <span class="day-name">${d.toLocaleDateString('pt-PT', {weekday: 'short'}).substring(0,3)}</span>
+                    <span class="day-number">${d.getDate()}</span>
+                `;
+                
+                item.onclick = () => {
+                    hiddenInput.value = dateStr;
+                    renderizarCarrosselMes(containerId, inputId); // Atualiza visualização ativa
+                };
+                container.appendChild(item);
+            }
+            
+            // Centra o dia ativo (se existir no mês que estamos a ver)
+            setTimeout(() => {
+                const activeItem = container.querySelector('.date-item.active');
+                if (activeItem) {
+                    activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 }
-                
-                // Gerar 15 dias (7 para trás, o dia base, e 7 para a frente)
-                for (let i = -7; i <= 7; i++) { 
-                    const d = new Date(baseDate);
-                    d.setDate(d.getDate() + i);
-                    
-                    const item = document.createElement('div');
-                    item.className = 'date-item';
-                    const dateStr = formatLocalYYYYMMDD(d);
-                    
-                    if (hiddenInput.value === dateStr) item.classList.add('active');
-                    
-                    item.innerHTML = `
-                        <span class="day-name">${d.toLocaleDateString('pt-PT', {weekday: 'short'})}</span>
-                        <span class="day-number">${d.getDate()}</span>
-                    `;
-                    
-                    item.onclick = () => {
-                        hiddenInput.value = dateStr;
-                        render(); // Re-renderizar para centralizar na nova seleção
-                    };
-                    container.appendChild(item);
-                }
-                
-                // Scroll automático para colocar o dia ativo no centro visual
-                setTimeout(() => {
-                    const activeItem = container.querySelector('.date-item.active');
-                    if (activeItem) {
-                        activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                    }
-                }, 50);
-            };
-            render();
+            }, 50);
+        }
+
+        function mudarMesCalendario(delta, containerId, inputId) {
+            const container = document.getElementById(containerId);
+            let viewDate = container.viewDate ? new Date(container.viewDate) : new Date();
+            viewDate.setMonth(viewDate.getMonth() + delta);
+            renderizarCarrosselMes(containerId, inputId, viewDate);
+        }
+
+        function irParaHoje(containerId, inputId) {
+            const hoje = new Date();
+            document.getElementById(inputId).value = formatLocalYYYYMMDD(hoje);
+            renderizarCarrosselMes(containerId, inputId, hoje);
         }
 
         // ============================ UI & NAVEGAÇÃO ============================
@@ -726,9 +776,9 @@
             document.getElementById('a_data').value = dHojeStr;
             
             // Inicializar os calendários
-            iniciarCalendarioPersonalizado('container-data-horas', 'data');
-            iniciarCalendarioPersonalizado('container-data-despesas', 'd_data');
-            iniciarCalendarioPersonalizado('container-data-agenda', 'a_data');
+            renderizarCarrosselMes('container-data-horas', 'data');
+            renderizarCarrosselMes('container-data-despesas', 'd_data');
+            renderizarCarrosselMes('container-data-agenda', 'a_data');
             
             const t = localStorage.getItem('taxa_hora_guardada'); if(t) document.getElementById('taxa_hora').value = t;
             ['tx_irs','tx_ss'].forEach((k,i)=>{ let v=localStorage.getItem(k); if(v) document.getElementById(['inp_irs','inp_ss'][i]).value=v; });
@@ -906,8 +956,13 @@
         function editarRegisto(id) { 
             const r = registos.find(x => x.id === id); if (!r) return; idEmEdicao = id;
             document.getElementById('titulo_form_registo').innerHTML = 'A Editar Serviço';
-            document.getElementById('data').value=formatDataForm(r.data); 
-            iniciarCalendarioPersonalizado('container-data-horas', 'data'); /* Atualiza e centra o carrossel na nova data */
+            
+            const dataF = formatDataForm(r.data);
+            document.getElementById('data').value = dataF; 
+            const parts = dataF.split('-');
+            const dateObj = new Date(parts[0], parts[1]-1, parts[2]);
+            renderizarCarrosselMes('container-data-horas', 'data', dateObj); /* Centra o carrossel no mês certo */
+            
             document.getElementById('cliente').value=r.cliente||''; document.getElementById('hora_inicio').value=formatHora(r.inicio); document.getElementById('hora_fim').value=formatHora(r.fim); document.getElementById('taxa_hora').value=r.taxaUsada; 
             document.getElementById('btn_cancelar_registo').style.display='block'; 
             setTimeout(() => document.getElementById('cartao_form_registo').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
@@ -917,8 +972,7 @@
             document.getElementById('titulo_form_registo').innerHTML='<i class="fa-solid fa-stopwatch" style="color: var(--primary); margin-right: 6px;"></i>Novo Serviço'; 
             document.getElementById('btn_cancelar_registo').style.display='none'; 
             ['cliente','hora_inicio','hora_fim'].forEach(x=>document.getElementById(x).value=''); 
-            document.getElementById('data').value = formatLocalYYYYMMDD(new Date());
-            iniciarCalendarioPersonalizado('container-data-horas', 'data'); /* Repõe o carrossel no dia de hoje */
+            irParaHoje('container-data-horas', 'data'); /* Volta a colocar a data no dia de hoje */
         }
 
         function calcularFinancas() {
@@ -947,8 +1001,13 @@
         function editarDespesa(id) {
             const d = despesasRegistadas.find(x=>x.id===id); if(!d) return; idEmEdicaoDespesa = id;
             document.getElementById('titulo_form_despesa').innerHTML = 'A Editar Despesa';
-            document.getElementById('d_data').value=formatDataForm(d.data); 
-            iniciarCalendarioPersonalizado('container-data-despesas', 'd_data'); /* Atualiza e centra o carrossel */
+            
+            const dataF = formatDataForm(d.data);
+            document.getElementById('d_data').value = dataF; 
+            const parts = dataF.split('-');
+            const dateObj = new Date(parts[0], parts[1]-1, parts[2]);
+            renderizarCarrosselMes('container-data-despesas', 'd_data', dateObj); 
+            
             document.getElementById('d_categoria').value=d.categoria; document.getElementById('d_descricao').value=d.descricao; document.getElementById('d_valor').value=d.valor;
             document.getElementById('btn_cancelar_despesa').style.display='block'; 
             setTimeout(() => document.getElementById('cartao_form_despesa').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
@@ -957,8 +1016,7 @@
             idEmEdicaoDespesa=null; 
             document.getElementById('titulo_form_despesa').innerHTML='<i class="fa-solid fa-receipt" style="color: var(--danger); margin-right: 6px;"></i>Nova Despesa'; 
             document.getElementById('btn_cancelar_despesa').style.display='none'; document.getElementById('d_valor').value=''; document.getElementById('d_descricao').value=''; 
-            document.getElementById('d_data').value = formatLocalYYYYMMDD(new Date());
-            iniciarCalendarioPersonalizado('container-data-despesas', 'd_data');
+            irParaHoje('container-data-despesas', 'd_data');
         }
 
         // ============================ AGENDA ============================
@@ -979,8 +1037,13 @@
         function editarAgenda(id) {
             const a = agendaRegistada.find(x=>x.id===id); if(!a) return; idEmEdicaoAgenda = id;
             document.getElementById('titulo_form_agenda').innerHTML = 'A Editar Evento';
-            document.getElementById('a_data').value=formatDataForm(a.data); 
-            iniciarCalendarioPersonalizado('container-data-agenda', 'a_data'); /* Atualiza e centra o carrossel */
+            
+            const dataF = formatDataForm(a.data);
+            document.getElementById('a_data').value = dataF; 
+            const parts = dataF.split('-');
+            const dateObj = new Date(parts[0], parts[1]-1, parts[2]);
+            renderizarCarrosselMes('container-data-agenda', 'a_data', dateObj);
+            
             document.getElementById('a_hora').value=(formatHora(a.hora)!=='--:--')?formatHora(a.hora):''; document.getElementById('a_titulo').value=a.titulo;
             document.getElementById('btn_cancelar_agenda').style.display='block'; 
             setTimeout(() => document.getElementById('cartao_form_agenda').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
@@ -989,8 +1052,7 @@
             idEmEdicaoAgenda=null; 
             document.getElementById('titulo_form_agenda').innerHTML='<i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento'; 
             document.getElementById('btn_cancelar_agenda').style.display='none'; document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; 
-            document.getElementById('a_data').value = formatLocalYYYYMMDD(new Date());
-            iniciarCalendarioPersonalizado('container-data-agenda', 'a_data');
+            irParaHoje('container-data-agenda', 'a_data');
         }
 
         // ============================ APAGAR GERAL ============================
