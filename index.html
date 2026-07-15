@@ -201,7 +201,7 @@
         .btn-hoje { background-color: var(--primary-light); color: var(--primary); border: none; padding: 6px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: var(--transition); }
         .btn-hoje:active { transform: scale(0.95); }
 
-        .calendar-carousel { display: flex; overflow-x: auto; gap: 8px; padding: 10px 0; scrollbar-width: none; -ms-overflow-style: none; margin-bottom: 5px; }
+        .calendar-carousel { display: flex; overflow-x: auto; gap: 8px; padding: 10px 0; scrollbar-width: none; -ms-overflow-style: none; margin-bottom: 5px; scroll-behavior: smooth; }
         .calendar-carousel::-webkit-scrollbar { display: none; }
         .date-item { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 55px; padding: 10px 8px; border-radius: 16px; background: var(--input-bg); border: 1px solid var(--border-light); cursor: pointer; transition: var(--transition); }
         .date-item .day-name { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
@@ -333,32 +333,21 @@
             <!-- SÍMBOLO RELÓGIO (Novo Design) -->
             <div style="margin-bottom: 15px;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="70" height="70" style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.08));">
-                    <!-- Fundo branco do relógio -->
                     <circle cx="50" cy="50" r="46" fill="#FFFFFF" />
-                    <!-- Aro exterior elegante -->
                     <circle cx="50" cy="50" r="46" fill="none" stroke="#D1D1D6" stroke-width="3" />
-                    <!-- Sombra interna subtil -->
                     <circle cx="50" cy="50" r="44.5" fill="none" stroke="#E5E5EA" stroke-width="1" opacity="0.8" />
-                    
-                    <!-- Marcadores de horas (Minimalistas) -->
                     <line x1="50" y1="12" x2="50" y2="18" stroke="#8E8E93" stroke-width="2.5" stroke-linecap="round"/>
                     <line x1="50" y1="88" x2="50" y2="82" stroke="#8E8E93" stroke-width="2.5" stroke-linecap="round"/>
                     <line x1="12" y1="50" x2="18" y2="50" stroke="#8E8E93" stroke-width="2.5" stroke-linecap="round"/>
                     <line x1="88" y1="50" x2="82" y2="50" stroke="#8E8E93" stroke-width="2.5" stroke-linecap="round"/>
-                    
-                    <!-- Ponteiro das Horas (Preto) -->
                     <line x1="50" y1="50" x2="50" y2="28" stroke="#1C1C1E" stroke-width="4.5" stroke-linecap="round" />
-                    <!-- Ponteiro dos Minutos (Preto) -->
                     <line x1="50" y1="50" x2="65" y2="40" stroke="#1C1C1E" stroke-width="3.5" stroke-linecap="round" />
-                    
-                    <!-- Ponto central (Azul primário para um toque moderno) -->
                     <circle cx="50" cy="50" r="3.5" fill="#007AFF" />
-                    <!-- Detalhe do eixo central -->
                     <circle cx="50" cy="50" r="1.5" fill="#FFFFFF" />
                 </svg>
             </div>
             
-            <h1 class="login-title">PIN</h1>
+            <h1 class="login-title">Área Restrita</h1>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 25px;">Introduza o seu código de acesso</p>
             <div class="pin-display">
                 <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
@@ -369,7 +358,7 @@
                 <div class="tecla" onclick="teclarPIN('7')">7</div><div class="tecla" onclick="teclarPIN('8')">8</div><div class="tecla" onclick="teclarPIN('9')">9</div>
                 <div class="tecla tecla-acao" onclick="limparPIN()"><i class="fa-solid fa-xmark"></i></div><div class="tecla" onclick="teclarPIN('0')">0</div><div class="tecla tecla-acao" onclick="apagarUltimoPIN()"><i class="fa-solid fa-delete-left"></i></div>
             </div>
-            <button class="btn-entrar" id="btn-login" onclick="verificarPinLogin()" disabled>Entrar</button>
+            <button class="btn-entrar" id="btn-login" onclick="verificarPinLogin()" disabled>Aceder</button>
         </div>
     </div>
 
@@ -688,6 +677,20 @@
             return `${meses[date.getMonth()]} ${date.getFullYear()}`;
         }
 
+        function centrarCalendario(containerId) {
+            setTimeout(() => {
+                const container = document.getElementById(containerId);
+                if (container && container.offsetParent !== null) { 
+                    const activeItem = container.querySelector('.date-item.active');
+                    if (activeItem) {
+                        activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    } else {
+                        container.scrollTo({ left: 0, behavior: 'smooth' });
+                    }
+                }
+            }, 50); 
+        }
+
         // Lógica do Calendário por Mês com Navegação
         function renderizarCarrosselMes(containerId, inputId, forceViewDate = null) {
             const container = document.getElementById(containerId);
@@ -695,16 +698,14 @@
             const labelId = containerId.replace('container-data-', 'month-label-');
             const monthLabel = document.getElementById(labelId);
             
-            // Qual é a data que está selecionada no input?
             let activeDate = new Date(); 
             if (hiddenInput.value) {
                 const parts = hiddenInput.value.split('-');
                 if(parts.length === 3) activeDate = new Date(parts[0], parts[1]-1, parts[2]);
             }
             
-            // Qual o mês que devemos desenhar no ecrã?
             let viewDate = forceViewDate || container.viewDate || new Date(activeDate);
-            container.viewDate = new Date(viewDate); // Guarda o mês atual no container
+            container.viewDate = new Date(viewDate); 
             
             if (monthLabel) monthLabel.innerText = formatMesAno(viewDate);
             container.innerHTML = '';
@@ -729,24 +730,26 @@
                 
                 item.onclick = () => {
                     hiddenInput.value = dateStr;
-                    renderizarCarrosselMes(containerId, inputId); // Atualiza visualização ativa
+                    renderizarCarrosselMes(containerId, inputId); 
                 };
                 container.appendChild(item);
             }
             
-            // Centra o dia ativo (se existir no mês que estamos a ver)
-            setTimeout(() => {
-                const activeItem = container.querySelector('.date-item.active');
-                if (activeItem) {
-                    activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                }
-            }, 50);
+            centrarCalendario(containerId);
         }
 
+        // FIX: Quando se muda o mês, salta logo para o dia 1
         function mudarMesCalendario(delta, containerId, inputId) {
             const container = document.getElementById(containerId);
             let viewDate = container.viewDate ? new Date(container.viewDate) : new Date();
+            
+            // Trava de segurança para não saltar dias se o mês tiver menos dias
+            viewDate.setDate(1); 
             viewDate.setMonth(viewDate.getMonth() + delta);
+            
+            // Atualiza o input automaticamente para o dia 1 do novo mês para focar no início
+            document.getElementById(inputId).value = formatLocalYYYYMMDD(viewDate);
+            
             renderizarCarrosselMes(containerId, inputId, viewDate);
         }
 
@@ -758,17 +761,20 @@
 
         // ============================ UI & NAVEGAÇÃO ============================
         window.onload = () => {
-            if(localStorage.getItem('tema_final') === 'dark') {
+            // FIX: Deteção de Tema do Sistema Automático
+            if(!localStorage.getItem('tema_final')) {
+               if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                   document.documentElement.setAttribute('data-theme', 'dark');
+               }
+            } else if (localStorage.getItem('tema_final') === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
             }
             
-            // Iniciar com a data atual formatada
             const dHojeStr = formatLocalYYYYMMDD(new Date());
             document.getElementById('data').value = dHojeStr;
             document.getElementById('d_data').value = dHojeStr;
             document.getElementById('a_data').value = dHojeStr;
             
-            // Inicializar os calendários
             renderizarCarrosselMes('container-data-horas', 'data');
             renderizarCarrosselMes('container-data-despesas', 'd_data');
             renderizarCarrosselMes('container-data-agenda', 'a_data');
@@ -813,6 +819,7 @@
             document.getElementById(id).classList.add('active');
             
             document.getElementById('main-scroll-area').scrollTop = 0;
+            centrarCalendario('container-data-' + id);
 
             if(id === 'estatisticas') gerarGraficosGerais();
         }
@@ -849,7 +856,12 @@
             setCarregando(false);
             if (sucesso) {
                 document.getElementById('login-screen').style.opacity = '0';
-                setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-content').style.display = 'flex'; redefinirPaginaE_Renderizar(); }, 500);
+                setTimeout(() => { 
+                    document.getElementById('login-screen').style.display = 'none'; 
+                    document.getElementById('app-content').style.display = 'flex'; 
+                    redefinirPaginaE_Renderizar(); 
+                    centrarCalendario('container-data-horas');
+                }, 500);
             } else {
                 atualizarBolinhas(true); setTimeout(() => limparPIN(), 600);
                 pinApp = ''; localStorage.removeItem('app_pin'); showToast("PIN Incorreto", "error");
@@ -954,7 +966,7 @@
             document.getElementById('data').value = dataF; 
             const parts = dataF.split('-');
             const dateObj = new Date(parts[0], parts[1]-1, parts[2]);
-            renderizarCarrosselMes('container-data-horas', 'data', dateObj); /* Centra o carrossel no mês certo */
+            renderizarCarrosselMes('container-data-horas', 'data', dateObj);
             
             document.getElementById('cliente').value=r.cliente||''; document.getElementById('hora_inicio').value=formatHora(r.inicio); document.getElementById('hora_fim').value=formatHora(r.fim); document.getElementById('taxa_hora').value=r.taxaUsada; 
             document.getElementById('btn_cancelar_registo').style.display='block'; 
@@ -965,7 +977,7 @@
             document.getElementById('titulo_form_registo').innerHTML='<i class="fa-solid fa-stopwatch" style="color: var(--primary); margin-right: 6px;"></i>Novo Serviço'; 
             document.getElementById('btn_cancelar_registo').style.display='none'; 
             ['cliente','hora_inicio','hora_fim'].forEach(x=>document.getElementById(x).value=''); 
-            irParaHoje('container-data-horas', 'data'); /* Volta a colocar a data no dia de hoje */
+            irParaHoje('container-data-horas', 'data'); 
         }
 
         function calcularFinancas() {
@@ -1076,9 +1088,9 @@
             
             const palette = [corBlue, '#34C759', '#FF9500', '#FF3B30', '#AF52DE', '#FF2D55'];
             
-            chartClientesInst = new Chart(document.getElementById('graficoClientes'), { type:'pie', data:{ labels:Object.keys(horas), datasets:[{data:Object.values(horas), backgroundColor:palette, borderWidth: 0}] }, options:{plugins:{legend:{position:'bottom', labels: {padding: 15}}}} }); 
-            chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type:'bar', data:{ labels:Object.keys(deps), datasets:[{label:'Horas Gastas', data:Object.values(deps), backgroundColor:corBlue, borderRadius: 6}] }, options:{scales:{y:{grid:{color:corGrid}}, x:{grid:{display:false}}}} }); 
-            chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type:'doughnut', data:{ labels:Object.keys(grcat), datasets:[{data:Object.values(grcat), backgroundColor:palette, borderWidth: 0}] }, options:{maintainAspectRatio:false, cutout: '70%', plugins:{legend:{position:'bottom', labels: {padding: 15}}}} }); 
+            chartClientesInst = new Chart(document.getElementById('graficoClientes'), { type:'pie', data:{ labels:Object.keys(horas).length ? Object.keys(horas) : ['Sem Dados'], datasets:[{data:Object.values(horas).length ? Object.values(horas) : [1], backgroundColor:palette, borderWidth: 0}] }, options:{plugins:{legend:{position:'bottom', labels: {padding: 15}}}} }); 
+            chartMesesInst = new Chart(document.getElementById('graficoMeses'), { type:'bar', data:{ labels:Object.keys(deps).length ? Object.keys(deps) : ['Sem Dados'], datasets:[{label:'Horas Gastas', data:Object.values(deps), backgroundColor:corBlue, borderRadius: 6}] }, options:{scales:{y:{grid:{color:corGrid}}, x:{grid:{display:false}}}} }); 
+            chartDespesasInst = new Chart(document.getElementById('graficoDespesas'), { type:'doughnut', data:{ labels:Object.keys(grcat).length ? Object.keys(grcat) : ['Sem Dados'], datasets:[{data:Object.values(grcat).length ? Object.values(grcat) : [1], backgroundColor:palette, borderWidth: 0}] }, options:{maintainAspectRatio:false, cutout: '70%', plugins:{legend:{position:'bottom', labels: {padding: 15}}}} }); 
         }
 
         // ============================ EXPORTAÇÃO ============================
