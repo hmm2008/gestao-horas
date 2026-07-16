@@ -264,7 +264,7 @@
                     <circle cx="50" cy="50" r="3.5" fill="#1C1C1E" />
                 </svg>
             </div>
-            <h1 class="login-title">Código</h1>
+            <h1 class="login-title">Área Restrita</h1>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 25px;">Introduza o seu código</p>
             <div class="pin-display">
                 <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
@@ -275,7 +275,7 @@
                 <div class="tecla" onclick="teclarPIN('7')">7</div><div class="tecla" onclick="teclarPIN('8')">8</div><div class="tecla" onclick="teclarPIN('9')">9</div>
                 <div class="tecla tecla-acao" onclick="limparPIN()"><i class="fa-solid fa-xmark"></i></div><div class="tecla" onclick="teclarPIN('0')">0</div><div class="tecla tecla-acao" onclick="apagarUltimoPIN()"><i class="fa-solid fa-delete-left"></i></div>
             </div>
-            <button class="btn-entrar" id="btn-login" onclick="verificarPinLogin()" disabled>Entrar</button>
+            <button class="btn-entrar" id="btn-login" onclick="verificarPinLogin()" disabled>Aceder</button>
         </div>
     </div>
 
@@ -613,6 +613,10 @@
         // COLOQUE AQUI O SEU LINK DO WEB APP DO GOOGLE APPS SCRIPT
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxho42KWk5RkKUpOqySKuLlSQ0RKgy3IIE2iGSn8WSaECpbGAZTDY4gKWXWx-jSzgzkbw/exec";
         
+        // Listas explícitas em português para garantir formatação perfeita em qualquer telemóvel/computador
+        const NOME_MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        const NOME_DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
         let registos = [], despesasRegistadas = [], agendaRegistada = []; 
         let idEmEdicao = null, idEmEdicaoDespesa = null, idEmEdicaoAgenda = null;
         let documentoPDFFinal = null, nomePDFFinal = ""; 
@@ -771,7 +775,7 @@
 
         // ======================= CALENDÁRIO COM SETAS =======================
         function formatLocalYYYYMMDD(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
-        function formatMesAno(date) { const m = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']; return `${m[date.getMonth()]} ${date.getFullYear()}`; }
+        function formatMesAno(date) { return `${NOME_MESES[date.getMonth()]} ${date.getFullYear()}`; }
 
         function centrarCalendario(containerId) {
             setTimeout(() => {
@@ -805,7 +809,10 @@
                 const dateStr = formatLocalYYYYMMDD(d);
                 const item = document.createElement('div');
                 item.className = 'date-item' + (hiddenInput.value === dateStr ? ' active' : '');
-                item.innerHTML = `<span class="day-name">${d.toLocaleDateString('pt-PT', {weekday: 'short'}).substring(0,3)}</span><span class="day-number">${d.getDate()}</span>`;
+                
+                // Agora usa diretamente as listas definidas acima para não haver formatações indesejadas
+                item.innerHTML = `<span class="day-name">${NOME_DIAS[d.getDay()]}</span><span class="day-number">${d.getDate()}</span>`;
+                
                 item.onclick = () => { hiddenInput.value = dateStr; renderizarCarrosselMes(containerId, inputId); };
                 container.appendChild(item);
             }
@@ -922,7 +929,7 @@
             document.getElementById('lista_clientes').innerHTML = cls.map(c=>`<option value="${c}">`).join('');
             const sC = document.getElementById('filtro_cliente'); const valC = sC.value; sC.innerHTML = '<option value="todos">Cliente: Todos</option>' + cls.map(c=>`<option value="${c}">${c}</option>`).join(''); if(cls.includes(valC)) sC.value = valC;
             const mss = [...new Set(registos.map(r=>r.data?String(r.data).substring(0,7):''))].filter(m=>m).sort().reverse();
-            const sM = document.getElementById('filtro_mes'); const valM = sM.value; sM.innerHTML = '<option value="todos">Mês: Todos</option>' + mss.map(m=>{ const [a, ms]=m.split('-'); return `<option value="${m}">${new Date(a, ms-1).toLocaleString('pt-PT', {month:'long'})} ${a}</option>`; }).join(''); if(mss.includes(valM)) sM.value = valM;
+            const sM = document.getElementById('filtro_mes'); const valM = sM.value; sM.innerHTML = '<option value="todos">Mês: Todos</option>' + mss.map(m=>{ const [a, ms]=m.split('-'); return `<option value="${m}">${NOME_MESES[parseInt(ms)-1]} ${a}</option>`; }).join(''); if(mss.includes(valM)) sM.value = valM;
         }
 
         function redefinirPagina() { paginaAtual=1; renderizarTabelaRegistos(); renderizarDespesas(); renderizarAgenda(); }
