@@ -649,6 +649,38 @@
 
     <!-- SCRIPT CENTRAL -->
     <script>
+        // Carregar configurações
+        function carregarConfigs() {
+            const cfg = JSON.parse(localStorage.getItem('user_configs')) || {
+                nomeApp: 'Gestão de Horas Cloud',
+                tema: 'tema-macos',
+                cor: '#007AFF'
+            };
+            document.getElementById('cfg_nome').value = cfg.nomeApp;
+            document.getElementById('cfg_tema').value = cfg.tema;
+            document.getElementById('cfg_cor').value = cfg.cor;
+            aplicarConfigs(cfg);
+        }
+
+        function salvarConfigs() {
+            const cfg = {
+                nomeApp: document.getElementById('cfg_nome').value,
+                tema: document.getElementById('cfg_tema').value,
+                cor: document.getElementById('cfg_cor').value
+            };
+            localStorage.setItem('user_configs', JSON.stringify(cfg));
+            aplicarConfigs(cfg);
+        }
+
+        function aplicarConfigs(cfg) {
+            document.getElementById('app-title').innerText = cfg.nomeApp;
+            document.getElementById('main-title').innerText = cfg.nomeApp;
+            document.body.className = cfg.tema;
+            document.documentElement.style.setProperty('--primary', cfg.cor);
+            document.documentElement.style.setProperty('--primary-light', cfg.cor + '1A');
+        }
+
+        // Chamar no onload
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkLqbxqQdoM3Taf-gwVmpJENPRuyTXzVBgJPRXn26qaazhut0MFWfzH4d4Q4jZbCNmxA/exec";
         
         let registos = []; let despesasRegistadas = []; let agendaRegistada = []; 
