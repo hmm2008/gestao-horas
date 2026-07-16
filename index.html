@@ -78,8 +78,63 @@
             --shadow: none;
         }
 
+        /* Premium Minimalist */
+        body.tema-premium {
+            --bg-color: #ffffff;
+            --surface: #ffffff;
+            --border-light: #000000;
+            --input-border: #000000;
+            --border-radius: 0px;
+            --border-radius-sm: 0px;
+            --border-radius-lg: 0px;
+            --border-radius-xl: 0px;
+            --shadow-sm: 4px 4px 0px 0px rgba(0,0,0,1);
+            --shadow: 6px 6px 0px 0px rgba(0,0,0,1);
+            --shadow-lg: 8px 8px 0px 0px rgba(0,0,0,1);
+        }
+        body.tema-premium .card, body.tema-premium .modal-content, body.tema-premium .btn, body.tema-premium input, body.tema-premium select {
+            border: 2px solid #000000;
+        }
+        body.tema-premium .btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: none !important;
+        }
+
+        /* Glassmorphism */
+        body.tema-glass {
+            --bg-color: transparent;
+            --surface: rgba(255, 255, 255, 0.4);
+            --surface-glass: rgba(255, 255, 255, 0.5);
+            --border-light: rgba(255, 255, 255, 0.5);
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+        body.tema-glass::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); z-index: -1;
+        }
+        body.tema-glass .card, body.tema-glass header, body.tema-glass nav.tab-bar, body.tema-glass .modal-content, body.tema-glass .summary-panel, body.tema-glass .table-container {
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        }
+
+        /* Bento Grid */
+        body.tema-bento {
+            --bg-color: #f1f5f9;
+            --surface: #ffffff;
+            --border-light: transparent;
+            --border-radius: 24px;
+            --border-radius-sm: 16px;
+            --border-radius-lg: 28px;
+            --border-radius-xl: 32px;
+            --shadow-sm: 0 10px 30px -5px rgba(0, 0, 0, 0.06);
+            --shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        }
+        body.tema-bento .card, body.tema-bento .summary-panel, body.tema-bento .table-container {
+            box-shadow: var(--shadow-sm); border: none;
+        }
+
         /* Paleta macOS Dark Mode */
-        [data-theme="dark"]:not(.tema-rustico):not(.tema-minimal) {
+        [data-theme="dark"]:not(.tema-rustico):not(.tema-minimal):not(.tema-premium):not(.tema-glass):not(.tema-bento) {
             --primary: #0A84FF;
             --primary-light: rgba(10, 132, 255, 0.15);
             --bg-color: #000000;
@@ -122,7 +177,6 @@
         .header-side.left { justify-content: flex-start; gap: 12px;}
         .header-side.right { justify-content: flex-end; gap: 15px; }
         
-        /* Titulo ajustado para sobressair */
         .header-title { flex: 2; text-align: center; font-size: 1.35rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.5px; }
         .header-btn { background: none; border: none; color: var(--primary); font-size: 1.2rem; cursor: pointer; padding: 5px; opacity: 0.9; transition: var(--transition); }
         
@@ -140,7 +194,6 @@
         .desktop-only { display: none !important; }
 
         /* --- CARTÕES E FORMULÁRIOS --- */
-        /* scroll-margin-top garante que ao focar num form (editar) não fica debaixo do header */
         .card { background-color: var(--surface); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); margin-bottom: 20px; scroll-margin-top: 85px; }
         .form-group { margin-bottom: 14px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -214,7 +267,6 @@
         .toast { background-color: var(--surface-glass); backdrop-filter: blur(10px); color: var(--text-main); padding: 12px 20px; border-radius: 30px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow); border: 1px solid var(--border-light); animation: toastIn 0.3s forwards; }
         @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Animação para a mensagem centrada no ecrã (Configurações) */
         @keyframes centerFadeInOut {
             0% { opacity: 0; transform: translate(-50%, -40%) scale(0.95); }
             15% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
@@ -241,11 +293,10 @@
             .action-btns { border-top: 1px dashed var(--border-light); padding-top: 12px; margin-top: 4px; }
         }
         
-        /* RESPONSIVIDADE DESKTOP (Menu Lateral e Botões Juntos no Topo) */
+        /* RESPONSIVIDADE DESKTOP */
         @media (min-width: 801px) {
             #app-content { flex-direction: row; }
             nav.tab-bar { position: static; flex-direction: column; width: 100px; height: 100vh; justify-content: flex-start; padding-top: calc(var(--header-height) + 20px); border-top: none; border-right: 1px solid var(--border-light); }
-            /* Os botões ficam encostados a cima e não expandem na vertical */
             .tab-btn { height: 75px; flex: none; width: 100%; }
             .tab-btn span { display: block; margin-top: 6px; font-size: 0.7rem; }
             header { width: calc(100% - 100px); left: 100px; }
@@ -296,7 +347,6 @@
     <div id="app-content">
         <header>
             <div class="header-side left" style="gap: 15px;">
-                <!-- RELÓGIO CLÁSSICO BRANCO/PRETO LIGEIRAMENTE MAIOR -->
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
                     <circle cx="50" cy="50" r="46" fill="#FFFFFF" />
                     <circle cx="50" cy="50" r="46" fill="none" stroke="#D1D1D6" stroke-width="3" />
@@ -321,20 +371,14 @@
         </header>
 
         <nav class="tab-bar">
-            <!-- Botões agrupados sem expandir (desktop) -->
+            <!-- Menus Laterais (Atualizados com a nova ordem) -->
             <button class="tab-btn active" id="menu-horas" onclick="mudarSeparador('horas')"><i class="fa-solid fa-stopwatch"></i><span>Registos</span></button>
             <button class="tab-btn" id="menu-despesas" onclick="mudarSeparador('despesas')"><i class="fa-solid fa-receipt"></i><span>Despesas</span></button>
             <button class="tab-btn" id="menu-agenda" onclick="mudarSeparador('agenda')"><i class="fa-solid fa-calendar-alt"></i><span>Agenda</span></button>
             <button class="tab-btn" id="menu-estatisticas" onclick="mudarSeparador('estatisticas')"><i class="fa-solid fa-chart-pie"></i><span>Estatística</span></button>
             <button class="tab-btn" id="menu-configuracoes" onclick="mudarSeparador('configuracoes')"><i class="fa-solid fa-gear"></i><span>Config</span></button>
-            
-            <!-- Empurra os botões de exportação para o fundo -->
+            <button class="tab-btn" id="menu-exportacoes" onclick="mudarSeparador('exportacoes')"><i class="fa-solid fa-download"></i><span>Exportar</span></button>
             <div style="flex-grow: 1;" class="desktop-only"></div>
-            
-            <!-- Exportações isoladas -->
-            <div class="desktop-only" style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; width: 100%; text-align: center; margin-bottom: 5px; letter-spacing: 0.5px; margin-top: auto;">Exportar</div>
-            <button class="tab-btn desktop-only" onclick="iniciarBackupCSV()"><i class="fa-solid fa-file-csv" style="color: var(--secondary);"></i><span>Excel</span></button>
-            <button class="tab-btn desktop-only" onclick="preVisualizarPDF()"><i class="fa-solid fa-file-pdf" style="color: var(--danger);"></i><span>PDF</span></button>
         </nav>
 
         <main id="main-scroll-area">
@@ -356,7 +400,6 @@
                     <div class="finance-item highlight"><span class="lab">Líquido</span><span class="val" id="f_liquido">0 €</span></div>
                 </div>
 
-                <!-- Adicionei ID e margin-top ao cartão de form -->
                 <div class="card" id="cartao_form_registo">
                     <h3 id="titulo_form_registo"><i class="fa-solid fa-stopwatch" style="color: var(--primary); margin-right: 6px;"></i>Novo Serviço</h3>
                     
@@ -387,7 +430,7 @@
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 5px;">
                         <button class="btn btn-cancel" id="btn_cancelar_registo" style="display:none; flex:1;" onclick="cancelarEdicaoRegisto()">Cancelar</button>
-                        <button class="btn btn-primary" style="flex:2;" onclick="adicionarRegisto()">Guardar Registo</button>
+                        <button class="btn btn-primary btn-save-custom" style="flex:2;" onclick="adicionarRegisto()">Guardar Registo</button>
                     </div>
                 </div>
 
@@ -406,12 +449,6 @@
                         <span id="paginacao_info">Pág 1/1</span>
                         <button class="btn-acao" id="btn_pag_prox" onclick="mudarPagina(1)"><i class="fa-solid fa-chevron-right"></i></button>
                     </div>
-                </div>
-                
-                <!-- Botões Export Mobile -->
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;" class="mobile-only">
-                    <button class="btn btn-cancel" style="flex:1;" onclick="iniciarBackupCSV()"><i class="fa-solid fa-file-csv" style="color:var(--secondary);"></i> CSV</button>
-                    <button class="btn btn-cancel" style="flex:1;" onclick="preVisualizarPDF()"><i class="fa-solid fa-file-pdf" style="color:var(--danger);"></i> PDF</button>
                 </div>
             </section>
 
@@ -440,7 +477,7 @@
                     <div class="form-group"><label>Descrição (Opcional)</label><input type="text" id="d_descricao"></div>
                     <div style="display:flex; gap:10px; margin-top: 5px;">
                         <button class="btn btn-cancel" id="btn_cancelar_despesa" style="display:none; flex:1;" onclick="cancelarEdicaoDespesa()">Cancelar</button>
-                        <button class="btn btn-primary" style="flex:2;" onclick="guardarDespesa()">Guardar</button>
+                        <button class="btn btn-primary btn-save-custom" style="flex:2;" onclick="guardarDespesa()">Guardar Registo</button>
                     </div>
                 </div>
                 
@@ -470,13 +507,7 @@
                         <div id="container-data-agenda" class="calendar-carousel"></div>
                         <input type="hidden" id="a_data">
                     </div>
-                    
-                    <!-- Alteração: Campos de Início e Fim -->
-                    <div class="form-row">
-                        <div class="form-group"><label>Início</label><input type="time" id="a_hora_inicio"></div>
-                        <div class="form-group"><label>Fim</label><input type="time" id="a_hora_fim"></div>
-                    </div>
-                    
+                    <div class="form-group"><label>Hora (Opcional)</label><input type="time" id="a_hora"></div>
                     <div class="form-group"><label>Evento</label><input type="text" id="a_titulo"></div>
                     <div class="form-group" id="a_recorrencia_group">
                         <label>Recorrência</label>
@@ -488,19 +519,9 @@
                     </div>
                     <div style="display:flex; gap:10px; margin-top: 5px;">
                         <button class="btn btn-cancel" id="btn_cancelar_agenda" style="display:none; flex:1;" onclick="cancelarEdicaoAgenda()">Cancelar</button>
-                        <button class="btn btn-primary" style="flex:2;" onclick="guardarAgenda()">Agendar</button>
+                        <button class="btn btn-primary btn-save-custom" style="flex:2;" onclick="guardarAgenda()">Guardar Registo</button>
                     </div>
                 </div>
-                
-                <h3>Próximos Eventos</h3>
-                <div class="table-container">
-                    <table>
-                        <!-- Alteração: Cabeçalhos -->
-                        <thead><tr><th>Data</th><th>Início</th><th>Fim</th><th>Evento</th><th style="text-align:right">Ações</th></tr></thead>
-                        <tbody id="tabela_agenda"></tbody>
-                    </table>
-                </div>
-                <button class="btn-voltar-fundo" onclick="mudarSeparador('horas')"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
 
                 <h3>Próximos Eventos</h3>
                 <div class="table-container">
@@ -525,31 +546,72 @@
             <!-- SEPARADOR 5: CONFIGURAÇÕES -->
             <section id="configuracoes" class="section-container">
                 <div class="card">
-                    <h3><i class="fa-solid fa-gear" style="color: var(--primary); margin-right: 6px;"></i>Preferências</h3>
+                    <h3><i class="fa-solid fa-gear" style="color: var(--primary); margin-right: 6px;"></i>Preferências Visuais</h3>
                     
                     <div class="form-group">
-                        <label>Nome da Aplicação</label>
+                        <label>Título da Aplicação</label>
                         <input type="text" id="cfg_nome">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Estilo Visual</label>
-                        <select id="cfg_tema">
-                            <option value="tema-macos">macOS System</option>
-                            <option value="tema-rustico">Rural Chic (Madeiras e Serifa)</option>
-                            <option value="tema-minimal">Minimal (Alto Contraste)</option>
-                        </select>
                     </div>
 
                     <div class="form-group">
-                        <label>Cor Principal (Destaques)</label>
-                        <input type="color" id="cfg_cor" style="height: 45px; padding: 2px;">
+                        <label>Nome do Botão Guardar</label>
+                        <input type="text" id="cfg_btn_guardar" placeholder="Ex: Guardar Registo">
                     </div>
                     
-                    <!-- Substituí o oninput pela caixa de confirmação -->
+                    <div class="form-group">
+                        <label>Estilo Visual (Tema)</label>
+                        <select id="cfg_tema">
+                            <option value="tema-macos">macOS System</option>
+                            <option value="tema-premium">Premium Minimalist</option>
+                            <option value="tema-glass">Glassmorphism</option>
+                            <option value="tema-bento">Bento Grid</option>
+                            <option value="tema-rustico">Rural Chic (Madeiras e Serifa)</option>
+                            <option value="tema-minimal">Minimal Clássico</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cor Principal</label>
+                            <input type="color" id="cfg_cor" style="height: 45px; padding: 2px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Tamanho Letra</label>
+                            <select id="cfg_tamanho">
+                                <option value="14px">Pequeno (14px)</option>
+                                <option value="16px">Médio (16px)</option>
+                                <option value="18px">Grande (18px)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tipo de Letra</label>
+                        <select id="cfg_fonte">
+                            <option value="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">Original (Sistema / Apple)</option>
+                            <option value="'Inter', sans-serif">Inter (Moderno e Limpo)</option>
+                            <option value="'Georgia', serif">Georgia (Clássico)</option>
+                            <option value="'Courier New', monospace">Monospace (Tecnológico)</option>
+                        </select>
+                    </div>
+                    
                     <div style="display:flex; gap:10px; margin-top: 25px;">
                         <button class="btn btn-cancel" style="flex:1;" onclick="carregarConfigs()">Cancelar</button>
-                        <button class="btn btn-primary" style="flex:1;" onclick="pedirConfirmacaoConfigs()">Guardar Alterações</button>
+                        <button class="btn btn-primary" style="flex:1;" onclick="pedirConfirmacaoConfigs()">Aplicar Alterações</button>
+                    </div>
+                </div>
+                <button class="btn-voltar-fundo" onclick="mudarSeparador('horas')"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+            </section>
+
+            <!-- SEPARADOR 6: EXPORTAÇÕES -->
+            <section id="exportacoes" class="section-container">
+                <div class="card">
+                    <h3><i class="fa-solid fa-download" style="color: var(--secondary); margin-right: 6px;"></i>Exportar Dados</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;">Faça o download dos seus registos num formato à sua escolha para análise externa.</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <button class="btn btn-cancel" onclick="pedirConfirmacaoCSV()"><i class="fa-solid fa-file-csv" style="color:var(--secondary); font-size:1.2rem;"></i> Exportar para Excel (CSV)</button>
+                        <button class="btn btn-cancel" onclick="preVisualizarPDF()"><i class="fa-solid fa-file-pdf" style="color:var(--danger); font-size:1.2rem;"></i> Visualizar e Gerar PDF</button>
                     </div>
                 </div>
                 <button class="btn-voltar-fundo" onclick="mudarSeparador('horas')"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
@@ -573,7 +635,7 @@
         </div>
     </div>
 
-    <!-- MODAL CONFIRMAR -->
+    <!-- MODAL CONFIRMAR GENÉRICO (AGORA TAMBÉM USADO PELO CSV) -->
     <div id="modal-confirm" class="modal-overlay" style="z-index: 3000;">
         <div class="modal-content">
             <div class="modal-header"><h2 id="modal-title">Atenção</h2></div>
@@ -598,21 +660,32 @@
         let pinApp = localStorage.getItem('app_pin') || '';
         let filaSync = JSON.parse(localStorage.getItem('fila_sync_dados')) || [];
 
-        // ======================= CONFIGURAÇÕES DINÂMICAS E ALERTA CENTRAL =======================
+        // ======================= CONFIGURAÇÕES E PERSONALIZAÇÃO =======================
         function carregarConfigs() {
-            const defaultConfigs = { nomeApp: 'Gestão de Horas', tema: 'tema-macos', cor: '#007AFF' };
+            const defaultConfigs = { 
+                nomeApp: 'Gestão de Horas', 
+                tema: 'tema-macos', 
+                cor: '#007AFF',
+                tamanho: '16px',
+                fonte: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                btnGuardar: 'Guardar Registo'
+            };
             const cfg = JSON.parse(localStorage.getItem('user_configs')) || defaultConfigs;
             
-            document.getElementById('cfg_nome').value = cfg.nomeApp;
-            document.getElementById('cfg_tema').value = cfg.tema;
-            document.getElementById('cfg_cor').value = cfg.cor;
+            document.getElementById('cfg_nome').value = cfg.nomeApp || defaultConfigs.nomeApp;
+            document.getElementById('cfg_tema').value = cfg.tema || defaultConfigs.tema;
+            document.getElementById('cfg_cor').value = cfg.cor || defaultConfigs.cor;
+            document.getElementById('cfg_tamanho').value = cfg.tamanho || defaultConfigs.tamanho;
+            document.getElementById('cfg_fonte').value = cfg.fonte || defaultConfigs.fonte;
+            document.getElementById('cfg_btn_guardar').value = cfg.btnGuardar || defaultConfigs.btnGuardar;
+            
             aplicarConfigs(cfg);
         }
 
         function pedirConfirmacaoConfigs() {
-            confirmarAcao("Configurações", "Pretende aplicar estas alterações no visual da aplicação?", false, "Confirmar", () => {
+            confirmarAcao("Personalização", "Pretende aplicar e guardar estas alterações visuais na aplicação?", false, "Aplicar Tema", () => {
                 salvarConfigs();
-                mostrarMensagemCentral("Alterações efetuadas com sucesso!");
+                mostrarMensagemCentral("Aparência Atualizada!");
             });
         }
 
@@ -620,7 +693,10 @@
             const cfg = {
                 nomeApp: document.getElementById('cfg_nome').value,
                 tema: document.getElementById('cfg_tema').value,
-                cor: document.getElementById('cfg_cor').value
+                cor: document.getElementById('cfg_cor').value,
+                tamanho: document.getElementById('cfg_tamanho').value,
+                fonte: document.getElementById('cfg_fonte').value,
+                btnGuardar: document.getElementById('cfg_btn_guardar').value
             };
             localStorage.setItem('user_configs', JSON.stringify(cfg));
             aplicarConfigs(cfg);
@@ -628,17 +704,28 @@
         }
 
         function aplicarConfigs(cfg) {
+            // Títulos
             document.getElementById('app-title').innerText = cfg.nomeApp;
             document.getElementById('main-title').innerText = cfg.nomeApp;
             
+            // Tema Visual
             document.body.className = cfg.tema;
             
-            const hex = cfg.cor;
+            // Cor Principal
+            const hex = cfg.cor || '#007AFF';
             let r = 0, g = 0, b = 0;
             if (hex.length === 7) { r = parseInt(hex.slice(1,3),16); g = parseInt(hex.slice(3,5),16); b = parseInt(hex.slice(5,7),16); }
-            
-            document.documentElement.style.setProperty('--primary', cfg.cor);
+            document.documentElement.style.setProperty('--primary', hex);
             document.documentElement.style.setProperty('--primary-light', `rgba(${r}, ${g}, ${b}, 0.1)`);
+            
+            // Tipografia e Tamanho
+            document.documentElement.style.setProperty('--font-family', cfg.fonte);
+            document.documentElement.style.fontSize = cfg.tamanho;
+
+            // Textos dos Botões
+            document.querySelectorAll('.btn-save-custom').forEach(btn => {
+                btn.innerText = cfg.btnGuardar;
+            });
         }
 
         function mostrarMensagemCentral(msg) {
@@ -706,15 +793,15 @@
             scrollArea.scrollTop = 0;
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            centrarCalendario('container-data-' + id);
+            if(id !== 'exportacoes' && id !== 'estatisticas' && id !== 'configuracoes') centrarCalendario('container-data-' + id);
             if(id === 'estatisticas') gerarGraficosGerais();
         }
 
         function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
 
-        // SWIPE
+        // SWIPE ATUALIZADO (Inclui o separador exportacoes)
         let touchstartX = 0, touchendX = 0;
-        const tabsOrder = ['horas', 'despesas', 'agenda', 'estatisticas', 'configuracoes'];
+        const tabsOrder = ['horas', 'despesas', 'agenda', 'estatisticas', 'configuracoes', 'exportacoes'];
         document.getElementById('main-scroll-area').addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, {passive: true});
         document.getElementById('main-scroll-area').addEventListener('touchend', e => {
             touchendX = e.changedTouches[0].screenX;
@@ -923,7 +1010,6 @@
             document.getElementById('cliente').value=r.cliente||''; document.getElementById('hora_inicio').value=formatHora(r.inicio); document.getElementById('hora_fim').value=formatHora(r.fim); document.getElementById('taxa_hora').value=r.taxaUsada; 
             document.getElementById('btn_cancelar_registo').style.display='block'; 
             
-            // Garantir que a área e o scroll visam o início do cartão
             setTimeout(() => {
                 document.getElementById('cartao_form_registo').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 50);
@@ -971,76 +1057,42 @@
 
         // ======================= AGENDA =======================
         function renderizarAgenda() {
-    const tb = document.getElementById('tabela_agenda'); tb.innerHTML='';
-    let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data));
-    if(ods.length===0) tb.innerHTML='<tr><td colspan="5" style="text-align:center; padding: 20px; color:var(--text-muted);">Agenda vazia.</td></tr>';
-    ods.forEach(a => { 
-        const dBr = a.data ? String(a.data).split('-').reverse().join('/') : '--';
-        tb.innerHTML+=`<tr>
-            <td data-label="Data">${dBr}</td>
-            <td data-label="Início">${formatHora(a.horaInicio)}</td>
-            <td data-label="Fim">${formatHora(a.horaFim)}</td>
-            <td data-label="Evento"><strong>${a.titulo}</strong></td>
-            <td class="action-btns">
-                <button class="edit-btn" onclick="editarAgenda('${a.id}')"><i class="fa-solid fa-pen"></i></button>
-                <button class="delete-btn" onclick="apagarAPI('${a.id}')"><i class="fa-solid fa-trash"></i></button>
-            </td>
-        </tr>`; 
-    });
-}
-
-function guardarAgenda() {
-    const d=document.getElementById('a_data').value, hi=document.getElementById('a_hora_inicio').value, hf=document.getElementById('a_hora_fim').value, t=document.getElementById('a_titulo').value, rec=document.getElementById('a_recorrencia').value;
-    if(!d || !t) { showToast("Preencha data e título", "error"); return; }
-    
-    const id = idEmEdicaoAgenda || 'A_'+Date.now(); 
-    const novo = { id: id, data: d, horaInicio: hi, horaFim: hf, titulo: t };
-    
-    if(idEmEdicaoAgenda){ 
-        const ix=agendaRegistada.findIndex(x=>x.id===idEmEdicaoAgenda); 
-        if(ix!==-1) agendaRegistada[ix]=novo; 
-    } else agendaRegistada.push(novo);
-    
-    sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...novo }, "Agendado!");
-    
-    // Repetições mantêm lógica original
-    if(!idEmEdicaoAgenda && rec!=='nenhuma') {
-        const b = new Date(d); const isS = rec==='semanal'; const l = isS ? 9 : 11; 
-        for (let j=1; j<=l; j++) {
-            let nD = new Date(b); if(isS) nD.setDate(nD.getDate()+(j*7)); else nD.setMonth(nD.getMonth()+j);
-            const nEv = { id: 'A_'+Date.now()+j, data: formatLocalYYYYMMDD(nD), horaInicio: hi, horaFim: hf, titulo: t };
-            agendaRegistada.push(nEv); sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...nEv }, null);
+            const tb = document.getElementById('tabela_agenda'); tb.innerHTML='';
+            let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data));
+            if(ods.length===0) tb.innerHTML='<tr><td colspan="4" style="text-align:center; padding: 20px; color:var(--text-muted);">Agenda vazia.</td></tr>';
+            ods.forEach(a => { const dBr = a.data?String(a.data).split('-').reverse().join('/'):'--'; tb.innerHTML+=`<tr><td data-label="Data">${dBr}</td><td data-label="Hora">${formatHora(a.hora)}</td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')"><i class="fa-solid fa-pen"></i></button><button class="delete-btn" onclick="apagarAPI('${a.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
         }
-    }
-    cancelarEdicaoAgenda(); renderizarAgenda();
-}
+        function guardarAgenda() {
+            const d=document.getElementById('a_data').value, h=document.getElementById('a_hora').value, t=document.getElementById('a_titulo').value, rec=document.getElementById('a_recorrencia').value;
+            if(!d || !t) { showToast("Preencha data e título", "error"); return; }
+            const id = idEmEdicaoAgenda || 'A_'+Date.now(); const novo = { id: id, data: d, hora: h, titulo: t };
+            if(idEmEdicaoAgenda){ const ix=agendaRegistada.findIndex(x=>x.id===idEmEdicaoAgenda); if(ix!==-1)agendaRegistada[ix]=novo; } else agendaRegistada.push(novo);
+            sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...novo }, "Agendado!");
+            
+            if(!idEmEdicaoAgenda && rec!=='nenhuma') {
+                const b = new Date(d); const isS = rec==='semanal'; const l = isS ? 9 : 11; 
+                for (let j=1; j<=l; j++) {
+                    let nD = new Date(b); if(isS) nD.setDate(nD.getDate()+(j*7)); else nD.setMonth(nD.getMonth()+j);
+                    const nEv = { id: 'A_'+Date.now()+j, data: formatLocalYYYYMMDD(nD), hora: h, titulo: t };
+                    agendaRegistada.push(nEv); sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...nEv }, null);
+                }
+                showToast(`Repetições criadas!`, "info");
+            }
+            cancelarEdicaoAgenda(); renderizarAgenda();
+        }
+        function editarAgenda(id) {
+            const a = agendaRegistada.find(x=>x.id===id); if(!a) return; idEmEdicaoAgenda = id;
+            document.getElementById('titulo_form_agenda').innerHTML = 'A Editar Evento'; document.getElementById('a_data').value = a.data; 
+            const p = a.data.split('-'); renderizarCarrosselMes('container-data-agenda', 'a_data', new Date(p[0], p[1]-1, p[2]));
+            document.getElementById('a_hora').value=(formatHora(a.hora)!=='--:--')?formatHora(a.hora):''; document.getElementById('a_titulo').value=a.titulo;
+            document.getElementById('btn_cancelar_agenda').style.display='block'; document.getElementById('a_recorrencia_group').style.display='none';
+            
+            setTimeout(() => {
+                document.getElementById('cartao_form_agenda').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+        }
+        function cancelarEdicaoAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerHTML='<i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento'; document.getElementById('btn_cancelar_agenda').style.display='none'; document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; document.getElementById('a_recorrencia_group').style.display='block'; document.getElementById('a_recorrencia').value='nenhuma'; irParaHoje('container-data-agenda', 'a_data'); }
 
-function editarAgenda(id) {
-    const a = agendaRegistada.find(x=>x.id===id); if(!a) return; 
-    idEmEdicaoAgenda = id;
-    document.getElementById('titulo_form_agenda').innerHTML = 'A Editar Evento'; 
-    document.getElementById('a_data').value = a.data; 
-    const p = a.data.split('-'); renderizarCarrosselMes('container-data-agenda', 'a_data', new Date(p[0], p[1]-1, p[2]));
-    document.getElementById('a_hora_inicio').value = a.horaInicio || '';
-    document.getElementById('a_hora_fim').value = a.horaFim || '';
-    document.getElementById('a_titulo').value = a.titulo;
-    document.getElementById('btn_cancelar_agenda').style.display='block'; 
-    document.getElementById('a_recorrencia_group').style.display='none';
-    
-    setTimeout(() => document.getElementById('cartao_form_agenda').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-}
-
-function cancelarEdicaoAgenda() { 
-    idEmEdicaoAgenda=null; 
-    document.getElementById('titulo_form_agenda').innerHTML='<i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento'; 
-    document.getElementById('btn_cancelar_agenda').style.display='none'; 
-    document.getElementById('a_hora_inicio').value=''; 
-    document.getElementById('a_hora_fim').value=''; 
-    document.getElementById('a_titulo').value=''; 
-    document.getElementById('a_recorrencia_group').style.display='block'; 
-    document.getElementById('a_recorrencia').value='nenhuma'; 
-    irParaHoje('container-data-agenda', 'a_data'); 
-}
         // ======================= APAGAR GERAL =======================
         function apagarAPI(id) {
             confirmarAcao("Eliminar", `Pretende apagar permanentemente?`, true, "Apagar", () => {
@@ -1070,6 +1122,12 @@ function cancelarEdicaoAgenda() {
         }
 
         // ======================= EXPORTAÇÃO =======================
+        function pedirConfirmacaoCSV() {
+            confirmarAcao("Exportar Excel (CSV)", "Tem a certeza que deseja gerar um ficheiro CSV com todos os seus dados?", false, "Exportar Agora", () => {
+                iniciarBackupCSV();
+            });
+        }
+
         function iniciarBackupCSV() { 
             const f = registos; if(f.length===0){showToast("Vazio", "error");return;} 
             let c = "\uFEFFData;Cliente;Inicio;Fim;Duracao;Valor Hora;Valor\n"; 
