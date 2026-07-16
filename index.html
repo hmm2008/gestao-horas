@@ -328,7 +328,7 @@
                     <circle cx="50" cy="50" r="3.5" fill="#1C1C1E" />
                 </svg>
             </div>
-            <h1 class="login-title">Área Restrita</h1>
+            <h1 class="login-title">Código</h1>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 25px;">Introduza o seu código</p>
             <div class="pin-display">
                 <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
@@ -339,7 +339,7 @@
                 <div class="tecla" onclick="teclarPIN('7')">7</div><div class="tecla" onclick="teclarPIN('8')">8</div><div class="tecla" onclick="teclarPIN('9')">9</div>
                 <div class="tecla tecla-acao" onclick="limparPIN()"><i class="fa-solid fa-xmark"></i></div><div class="tecla" onclick="teclarPIN('0')">0</div><div class="tecla tecla-acao" onclick="apagarUltimoPIN()"><i class="fa-solid fa-delete-left"></i></div>
             </div>
-            <button class="btn-entrar" id="btn-login" onclick="verificarPinLogin()" disabled>Aceder</button>
+            <button class="btn-entrar" id="btn-login" onclick="verificarPinLogin()" disabled>Entrar</button>
         </div>
     </div>
 
@@ -507,7 +507,13 @@
                         <div id="container-data-agenda" class="calendar-carousel"></div>
                         <input type="hidden" id="a_data">
                     </div>
-                    <div class="form-group"><label>Hora (Opcional)</label><input type="time" id="a_hora"></div>
+                    
+                    <!-- Alteração: Campos de Início e Fim -->
+                    <div class="form-row">
+                        <div class="form-group"><label>Início</label><input type="time" id="a_hora_inicio"></div>
+                        <div class="form-group"><label>Fim</label><input type="time" id="a_hora_fim"></div>
+                    </div>
+                    
                     <div class="form-group"><label>Evento</label><input type="text" id="a_titulo"></div>
                     <div class="form-group" id="a_recorrencia_group">
                         <label>Recorrência</label>
@@ -519,14 +525,15 @@
                     </div>
                     <div style="display:flex; gap:10px; margin-top: 5px;">
                         <button class="btn btn-cancel" id="btn_cancelar_agenda" style="display:none; flex:1;" onclick="cancelarEdicaoAgenda()">Cancelar</button>
-                        <button class="btn btn-primary btn-save-custom" style="flex:2;" onclick="guardarAgenda()">Guardar Registo</button>
+                        <button class="btn btn-primary" style="flex:2;" onclick="guardarAgenda()">Agendar</button>
                     </div>
                 </div>
-
+                
                 <h3>Próximos Eventos</h3>
                 <div class="table-container">
                     <table>
-                        <thead><tr><th>Data</th><th>Hora</th><th>Evento</th><th style="text-align:right">Ações</th></tr></thead>
+                        <!-- Alteração: Cabeçalhos -->
+                        <thead><tr><th>Data</th><th>Início</th><th>Fim</th><th>Evento</th><th style="text-align:right">Ações</th></tr></thead>
                         <tbody id="tabela_agenda"></tbody>
                     </table>
                 </div>
@@ -1057,42 +1064,76 @@
 
         // ======================= AGENDA =======================
         function renderizarAgenda() {
-            const tb = document.getElementById('tabela_agenda'); tb.innerHTML='';
-            let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data));
-            if(ods.length===0) tb.innerHTML='<tr><td colspan="4" style="text-align:center; padding: 20px; color:var(--text-muted);">Agenda vazia.</td></tr>';
-            ods.forEach(a => { const dBr = a.data?String(a.data).split('-').reverse().join('/'):'--'; tb.innerHTML+=`<tr><td data-label="Data">${dBr}</td><td data-label="Hora">${formatHora(a.hora)}</td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')"><i class="fa-solid fa-pen"></i></button><button class="delete-btn" onclick="apagarAPI('${a.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
-        }
-        function guardarAgenda() {
-            const d=document.getElementById('a_data').value, h=document.getElementById('a_hora').value, t=document.getElementById('a_titulo').value, rec=document.getElementById('a_recorrencia').value;
-            if(!d || !t) { showToast("Preencha data e título", "error"); return; }
-            const id = idEmEdicaoAgenda || 'A_'+Date.now(); const novo = { id: id, data: d, hora: h, titulo: t };
-            if(idEmEdicaoAgenda){ const ix=agendaRegistada.findIndex(x=>x.id===idEmEdicaoAgenda); if(ix!==-1)agendaRegistada[ix]=novo; } else agendaRegistada.push(novo);
-            sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...novo }, "Agendado!");
-            
-            if(!idEmEdicaoAgenda && rec!=='nenhuma') {
-                const b = new Date(d); const isS = rec==='semanal'; const l = isS ? 9 : 11; 
-                for (let j=1; j<=l; j++) {
-                    let nD = new Date(b); if(isS) nD.setDate(nD.getDate()+(j*7)); else nD.setMonth(nD.getMonth()+j);
-                    const nEv = { id: 'A_'+Date.now()+j, data: formatLocalYYYYMMDD(nD), hora: h, titulo: t };
-                    agendaRegistada.push(nEv); sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...nEv }, null);
-                }
-                showToast(`Repetições criadas!`, "info");
-            }
-            cancelarEdicaoAgenda(); renderizarAgenda();
-        }
-        function editarAgenda(id) {
-            const a = agendaRegistada.find(x=>x.id===id); if(!a) return; idEmEdicaoAgenda = id;
-            document.getElementById('titulo_form_agenda').innerHTML = 'A Editar Evento'; document.getElementById('a_data').value = a.data; 
-            const p = a.data.split('-'); renderizarCarrosselMes('container-data-agenda', 'a_data', new Date(p[0], p[1]-1, p[2]));
-            document.getElementById('a_hora').value=(formatHora(a.hora)!=='--:--')?formatHora(a.hora):''; document.getElementById('a_titulo').value=a.titulo;
-            document.getElementById('btn_cancelar_agenda').style.display='block'; document.getElementById('a_recorrencia_group').style.display='none';
-            
-            setTimeout(() => {
-                document.getElementById('cartao_form_agenda').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 50);
-        }
-        function cancelarEdicaoAgenda() { idEmEdicaoAgenda=null; document.getElementById('titulo_form_agenda').innerHTML='<i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento'; document.getElementById('btn_cancelar_agenda').style.display='none'; document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; document.getElementById('a_recorrencia_group').style.display='block'; document.getElementById('a_recorrencia').value='nenhuma'; irParaHoje('container-data-agenda', 'a_data'); }
+    const tb = document.getElementById('tabela_agenda'); tb.innerHTML='';
+    let ods = [...agendaRegistada].sort((a,b)=>new Date(a.data)-new Date(b.data));
+    if(ods.length===0) tb.innerHTML='<tr><td colspan="5" style="text-align:center; padding: 20px; color:var(--text-muted);">Agenda vazia.</td></tr>';
+    ods.forEach(a => { 
+        const dBr = a.data ? String(a.data).split('-').reverse().join('/') : '--';
+        tb.innerHTML+=`<tr>
+            <td data-label="Data">${dBr}</td>
+            <td data-label="Início">${formatHora(a.horaInicio)}</td>
+            <td data-label="Fim">${formatHora(a.horaFim)}</td>
+            <td data-label="Evento"><strong>${a.titulo}</strong></td>
+            <td class="action-btns">
+                <button class="edit-btn" onclick="editarAgenda('${a.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="delete-btn" onclick="apagarAPI('${a.id}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        </tr>`; 
+    });
+}
 
+function guardarAgenda() {
+    const d=document.getElementById('a_data').value, hi=document.getElementById('a_hora_inicio').value, hf=document.getElementById('a_hora_fim').value, t=document.getElementById('a_titulo').value, rec=document.getElementById('a_recorrencia').value;
+    if(!d || !t) { showToast("Preencha data e título", "error"); return; }
+    
+    const id = idEmEdicaoAgenda || 'A_'+Date.now(); 
+    const novo = { id: id, data: d, horaInicio: hi, horaFim: hf, titulo: t };
+    
+    if(idEmEdicaoAgenda){ 
+        const ix=agendaRegistada.findIndex(x=>x.id===idEmEdicaoAgenda); 
+        if(ix!==-1) agendaRegistada[ix]=novo; 
+    } else agendaRegistada.push(novo);
+    
+    sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...novo }, "Agendado!");
+    
+    // Repetições mantêm lógica original
+    if(!idEmEdicaoAgenda && rec!=='nenhuma') {
+        const b = new Date(d); const isS = rec==='semanal'; const l = isS ? 9 : 11; 
+        for (let j=1; j<=l; j++) {
+            let nD = new Date(b); if(isS) nD.setDate(nD.getDate()+(j*7)); else nD.setMonth(nD.getMonth()+j);
+            const nEv = { id: 'A_'+Date.now()+j, data: formatLocalYYYYMMDD(nD), horaInicio: hi, horaFim: hf, titulo: t };
+            agendaRegistada.push(nEv); sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...nEv }, null);
+        }
+    }
+    cancelarEdicaoAgenda(); renderizarAgenda();
+}
+
+function editarAgenda(id) {
+    const a = agendaRegistada.find(x=>x.id===id); if(!a) return; 
+    idEmEdicaoAgenda = id;
+    document.getElementById('titulo_form_agenda').innerHTML = 'A Editar Evento'; 
+    document.getElementById('a_data').value = a.data; 
+    const p = a.data.split('-'); renderizarCarrosselMes('container-data-agenda', 'a_data', new Date(p[0], p[1]-1, p[2]));
+    document.getElementById('a_hora_inicio').value = a.horaInicio || '';
+    document.getElementById('a_hora_fim').value = a.horaFim || '';
+    document.getElementById('a_titulo').value = a.titulo;
+    document.getElementById('btn_cancelar_agenda').style.display='block'; 
+    document.getElementById('a_recorrencia_group').style.display='none';
+    
+    setTimeout(() => document.getElementById('cartao_form_agenda').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function cancelarEdicaoAgenda() { 
+    idEmEdicaoAgenda=null; 
+    document.getElementById('titulo_form_agenda').innerHTML='<i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento'; 
+    document.getElementById('btn_cancelar_agenda').style.display='none'; 
+    document.getElementById('a_hora_inicio').value=''; 
+    document.getElementById('a_hora_fim').value=''; 
+    document.getElementById('a_titulo').value=''; 
+    document.getElementById('a_recorrencia_group').style.display='block'; 
+    document.getElementById('a_recorrencia').value='nenhuma'; 
+    irParaHoje('container-data-agenda', 'a_data'); 
+}
         // ======================= APAGAR GERAL =======================
         function apagarAPI(id) {
             confirmarAcao("Eliminar", `Pretende apagar permanentemente?`, true, "Apagar", () => {
