@@ -21,9 +21,9 @@
             --danger: #FF3B30;        
             --warning: #FF9500;       
             
-            --bg-color: #F2F2F7; /* Fundo principal do sistema macOS */
-            --surface: #FFFFFF;  /* Cor dos cartões/janelas */
-            --surface-glass: rgba(255, 255, 255, 0.75); /* Efeito vidro */
+            --bg-color: #F2F2F7; 
+            --surface: #FFFFFF;  
+            --surface-glass: rgba(255, 255, 255, 0.75); 
             
             --border: #C6C6C8;
             --border-light: #E5E5EA;
@@ -44,7 +44,6 @@
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.12);
             
-            /* Tipografia nativa Apple */
             --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             --transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
             
@@ -183,7 +182,6 @@
         }
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         
-        /* Estilo Select nativo Apple-like */
         select { background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%238E8E93%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 12px top 50%; background-size: 10px auto; padding-right: 30px; }
 
         .btn { display: inline-flex; justify-content: center; align-items: center; gap: 8px; width: 100%; padding: 12px; border-radius: var(--border-radius-sm); font-size: 0.95rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: var(--transition); }
@@ -257,7 +255,6 @@
         .modal-body { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
         .modal-body p { font-size: 0.85rem; color: var(--text-main); }
         
-        /* Botões do Modal estilo nativo */
         .modal-actions-mac { display: flex; border-top: 1px solid var(--border-light); }
         .modal-actions-mac button { flex: 1; padding: 12px; background: transparent; border: none; font-size: 1rem; cursor: pointer; color: var(--primary); transition: background 0.2s; }
         .modal-actions-mac button:active { background: var(--border-light); }
@@ -329,8 +326,6 @@
     <!-- ECRÃ DE LOGIN -->
     <div id="login-screen">
         <div class="login-card">
-            
-            <!-- SÍMBOLO RELÓGIO (Novo Design) -->
             <div style="margin-bottom: 15px;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="70" height="70" style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.08));">
                     <circle cx="50" cy="50" r="46" fill="#FFFFFF" />
@@ -366,7 +361,6 @@
     <div id="app-content">
         <header>
             <div class="header-side left">
-                <!-- SÍMBOLO RELÓGIO (Header) -->
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="34" height="34" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
                     <circle cx="50" cy="50" r="46" fill="#FFFFFF" />
                     <circle cx="50" cy="50" r="46" fill="none" stroke="#D1D1D6" stroke-width="3" />
@@ -406,12 +400,10 @@
                 <i class="fa-solid fa-chart-pie"></i><span>Estatística</span>
             </button>
             
-            <!-- Apenas Mobile: Botão MAIS -->
             <button class="tab-btn mobile-only" onclick="toggleGavetaMais()">
                 <i class="fa-solid fa-ellipsis"></i><span>Mais</span>
             </button>
 
-            <!-- Apenas Desktop: Botões de Exportação na lateral -->
             <div class="sidebar-divider desktop-only">Exportação</div>
             <button class="tab-btn desktop-only" onclick="iniciarBackupCSV()">
                 <i class="fa-solid fa-file-csv" style="color: var(--secondary);"></i><span>Excel</span>
@@ -421,7 +413,6 @@
             </button>
         </nav>
 
-        <!-- GAVETA MAIS OPÇÕES (MOBILE) -->
         <div class="drawer-overlay" id="gaveta-fundo" onclick="toggleGavetaMais()"></div>
         <div class="mobile-drawer" id="gaveta-opcoes">
             <div class="drawer-header">
@@ -435,10 +426,9 @@
         </div>
 
         <main id="main-scroll-area">
-            <!-- 1. REGISTOS DE HORAS E FINANÇAS -->
+            <!-- 1. REGISTOS DE HORAS -->
             <section id="horas" class="section-container active">
                 
-                <!-- PAINÉIS DE RESUMO FINANCEIRO -->
                 <div class="summary-panel">
                     <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias Trabalhados</span></div>
                     <div class="summary-item"><span class="val" id="total_horas">0h 00m</span><span class="lab">Total Horas</span></div>
@@ -454,11 +444,9 @@
                     <div class="finance-item highlight" id="fi-liquido"><span class="lab">Líquido a Receber</span><span class="val" id="f_liquido">0.00 €</span></div>
                 </div>
 
-                <!-- FORMULÁRIO DE REGISTO -->
                 <div class="card" id="cartao_form_registo">
                     <h3 id="titulo_form_registo"><i class="fa-solid fa-stopwatch" style="color: var(--primary); margin-right: 6px;"></i>Novo Serviço</h3>
                     
-                    <!-- CALENDÁRIO COM NAVEGAÇÃO -->
                     <div class="form-group">
                         <div class="calendar-header-wrapper">
                             <div class="month-nav">
@@ -490,7 +478,6 @@
                     </div>
                 </div>
 
-                <!-- FILTROS E TABELA -->
                 <div class="filter-panel">
                     <select id="filtro_mes" onchange="redefinirPaginaE_Renderizar()"><option value="todos">Mês: Todos</option></select>
                     <select id="filtro_cliente" onchange="redefinirPaginaE_Renderizar()"><option value="todos">Cliente: Todos</option></select>
@@ -514,7 +501,6 @@
                 <div class="card" id="cartao_form_despesa">
                     <h3 id="titulo_form_despesa"><i class="fa-solid fa-receipt" style="color: var(--danger); margin-right: 6px;"></i>Nova Despesa</h3>
                     
-                    <!-- CALENDÁRIO COM NAVEGAÇÃO -->
                     <div class="form-group">
                         <div class="calendar-header-wrapper">
                             <div class="month-nav">
@@ -549,13 +535,6 @@
                         <tbody id="tabela_despesas"></tbody>
                     </table>
                 </div>
-
-                <!-- BOTÃO FECHAR -->
-                <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-                    <button class="btn btn-cancel" style="width: auto; padding: 10px 20px; font-weight: 500;" onclick="mudarSeparador('horas')">
-                        Fechar
-                    </button>
-                </div>
             </section>
 
             <!-- 3. AGENDA -->
@@ -563,7 +542,6 @@
                 <div class="card" id="cartao_form_agenda">
                     <h3 id="titulo_form_agenda"><i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento</h3>
                     
-                    <!-- CALENDÁRIO COM NAVEGAÇÃO -->
                     <div class="form-group">
                         <div class="calendar-header-wrapper">
                             <div class="month-nav">
@@ -579,6 +557,17 @@
                     
                     <div class="form-group"><label>Hora (Opcional)</label><input type="time" id="a_hora"></div>
                     <div class="form-group"><label>Evento / Título</label><input type="text" id="a_titulo" placeholder="Ex: Reunião João Silva"></div>
+                    
+                    <!-- RECORRÊNCIA -->
+                    <div class="form-group" id="a_recorrencia_group">
+                        <label>Recorrência</label>
+                        <select id="a_recorrencia">
+                            <option value="nenhuma">Apenas uma vez</option>
+                            <option value="semanal">Todas as semanas (próximas 10)</option>
+                            <option value="mensal">Todos os meses (próximos 12)</option>
+                        </select>
+                    </div>
+
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 15px;"><i class="fa-solid fa-info-circle"></i> Sincroniza com o Google Calendar Pessoal</p>
                     <div style="display:flex; gap:10px; margin-top: 5px;">
                         <button class="btn btn-cancel" id="btn_cancelar_agenda" style="display:none; flex:1;" onclick="cancelarEdicaoAgenda()">Cancelar</button>
@@ -593,13 +582,6 @@
                         <tbody id="tabela_agenda"></tbody>
                     </table>
                 </div>
-
-                <!-- BOTÃO FECHAR -->
-                <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-                    <button class="btn btn-cancel" style="width: auto; padding: 10px 20px; font-weight: 500;" onclick="mudarSeparador('horas')">
-                        Fechar
-                    </button>
-                </div>
             </section>
 
             <!-- 4. ESTATÍSTICAS -->
@@ -608,13 +590,6 @@
                     <div class="chart-container"><div class="chart-title">Volume por Cliente</div><div class="chart-wrapper"><canvas id="graficoClientes"></canvas></div></div>
                     <div class="chart-container"><div class="chart-title">Horas Lançadas (Mês)</div><div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div></div>
                     <div class="chart-container" style="grid-column: 1 / -1;"><div class="chart-title">Distribuição de Despesas</div><div class="chart-wrapper" style="height: 300px;"><canvas id="graficoDespesas"></canvas></div></div>
-                </div>
-                
-                <!-- BOTÃO FECHAR -->
-                <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-                    <button class="btn btn-cancel" style="width: auto; padding: 10px 20px; font-weight: 500;" onclick="mudarSeparador('horas')">
-                        Fechar
-                    </button>
                 </div>
             </section>
         </main>
@@ -662,6 +637,9 @@
         
         let paginaAtual = 1; const ITENS_POR_PAGINA = 15;
         let pinApp = localStorage.getItem('app_pin') || '';
+        
+        // Fila de Sincronização Offline
+        let filaSync = JSON.parse(localStorage.getItem('fila_sync_dados')) || [];
 
         // ============================ FUNÇÕES DE DATA E CALENDÁRIO ============================
         
@@ -691,7 +669,6 @@
             }, 50); 
         }
 
-        // Lógica do Calendário por Mês com Navegação
         function renderizarCarrosselMes(containerId, inputId, forceViewDate = null) {
             const container = document.getElementById(containerId);
             const hiddenInput = document.getElementById(inputId);
@@ -734,23 +711,25 @@
                 };
                 container.appendChild(item);
             }
-            
             centrarCalendario(containerId);
         }
 
-        // FIX: Quando se muda o mês, salta logo para o dia 1
         function mudarMesCalendario(delta, containerId, inputId) {
             const container = document.getElementById(containerId);
             let viewDate = container.viewDate ? new Date(container.viewDate) : new Date();
             
-            // Trava de segurança para não saltar dias se o mês tiver menos dias
             viewDate.setDate(1); 
             viewDate.setMonth(viewDate.getMonth() + delta);
             
-            // Atualiza o input automaticamente para o dia 1 do novo mês para focar no início
-            document.getElementById(inputId).value = formatLocalYYYYMMDD(viewDate);
-            
-            renderizarCarrosselMes(containerId, inputId, viewDate);
+            const hoje = new Date();
+            // Foco inteligente: Se voltarmos ao mês atual real, foca o dia de hoje
+            if (viewDate.getMonth() === hoje.getMonth() && viewDate.getFullYear() === hoje.getFullYear()) {
+                document.getElementById(inputId).value = formatLocalYYYYMMDD(hoje);
+                renderizarCarrosselMes(containerId, inputId, hoje);
+            } else {
+                document.getElementById(inputId).value = formatLocalYYYYMMDD(viewDate);
+                renderizarCarrosselMes(containerId, inputId, viewDate);
+            }
         }
 
         function irParaHoje(containerId, inputId) {
@@ -759,9 +738,37 @@
             renderizarCarrosselMes(containerId, inputId, hoje);
         }
 
+        // ============================ GESTOS SWIPE (DESLIZAR) ============================
+        let touchstartX = 0;
+        let touchendX = 0;
+        const tabsOrder = ['horas', 'despesas', 'agenda', 'estatisticas'];
+        
+        function handleSwipe() {
+            const deltaX = touchendX - touchstartX;
+            if (Math.abs(deltaX) > 70) { 
+                const currentTab = document.querySelector('.section-container.active').id;
+                let idx = tabsOrder.indexOf(currentTab);
+                
+                if (deltaX < 0 && idx < tabsOrder.length - 1) {
+                    mudarSeparador(tabsOrder[idx + 1]); 
+                } else if (deltaX > 0 && idx > 0) {
+                    mudarSeparador(tabsOrder[idx - 1]); 
+                }
+            }
+        }
+        
+        document.getElementById('main-scroll-area').addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+        
+        document.getElementById('main-scroll-area').addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, {passive: true});
+
+
         // ============================ UI & NAVEGAÇÃO ============================
         window.onload = () => {
-            // FIX: Deteção de Tema do Sistema Automático
             if(!localStorage.getItem('tema_final')) {
                if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                    document.documentElement.setAttribute('data-theme', 'dark');
@@ -800,17 +807,23 @@
 
         function showToast(msg, tipo="success") {
             const t = document.createElement('div'); t.className = 'toast'; 
-            const icon = tipo==='success'?'fa-check-circle':'fa-circle-exclamation';
-            const cor = tipo==='success'?'var(--secondary)':'var(--danger)';
+            let icon = 'fa-check-circle', cor = 'var(--secondary)';
+            if(tipo === 'error') { icon = 'fa-circle-exclamation'; cor = 'var(--danger)'; }
+            if(tipo === 'warning') { icon = 'fa-triangle-exclamation'; cor = 'var(--warning)'; }
+            if(tipo === 'info') { icon = 'fa-info-circle'; cor = 'var(--primary)'; }
+            
             t.innerHTML = `<i class="fa-solid ${icon}" style="color:${cor}; font-size:1.2rem;"></i> <span>${msg}</span>`;
             document.getElementById('toast-container').appendChild(t);
             setTimeout(() => { t.style.animation = 'toastIn 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) reverse forwards'; setTimeout(()=>t.remove(),300); }, 3000);
         }
 
-        function mudarSeparador(id, btnElement) {
+        function mudarSeparador(id, btnElement = null) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             if(btnElement) btnElement.classList.add('active');
-            else document.getElementById('menu-'+id).classList.add('active');
+            else {
+                const btn = document.getElementById('menu-'+id);
+                if(btn) btn.classList.add('active');
+            }
             
             const titles = { 'horas': 'Gestão de Horas', 'despesas': 'Despesas', 'agenda': 'Agenda', 'estatisticas': 'Estatísticas' };
             document.getElementById('main-title').innerText = titles[id];
@@ -818,7 +831,8 @@
             document.querySelectorAll('.section-container').forEach(sec => sec.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             
-            document.getElementById('main-scroll-area').scrollTop = 0;
+            // Scroll suave para o topo ao mudar de separador
+            document.getElementById('main-scroll-area').scrollTo({top: 0, behavior: 'smooth'});
             centrarCalendario('container-data-' + id);
 
             if(id === 'estatisticas') gerarGraficosGerais();
@@ -881,7 +895,7 @@
                 if(json.despesas) { json.despesas.forEach(fix); despesasRegistadas = json.despesas; } 
                 if(json.agenda) { json.agenda.forEach(fix); agendaRegistada = json.agenda; } 
                 atualizarDropdownsFiltros(); return true;
-            } catch (e) { showToast("Modo Offline Ativo", "error"); return false; }
+            } catch (e) { showToast("Modo Offline: Usando dados em cache", "warning"); return false; }
         }
         async function atualizarDados(mostrar=false) { if(mostrar) setCarregando(true); await carregarDadosDoGoogle(); if(mostrar) { setCarregando(false); redefinirPaginaE_Renderizar(); showToast("Dados Atualizados");} }
 
@@ -907,15 +921,56 @@
             document.getElementById('modal-confirm').classList.add('show');
         }
 
+        // ============================ SINCRONIZAÇÃO OFFLINE ============================
         async function sincronizarAPI(payload, sucessoMsg) {
+            if (!navigator.onLine) {
+                filaSync.push({ payload, sucessoMsg });
+                localStorage.setItem('fila_sync_dados', JSON.stringify(filaSync));
+                if(sucessoMsg) showToast("Offline: Guardado localmente", "warning");
+                return;
+            }
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const data = await res.json();
-                if(data.sucesso) showToast(sucessoMsg); else showToast("Erro na nuvem", "error");
-            } catch(e) { showToast("Sincronização pendente", "error"); }
+                if(data.sucesso) {
+                    if(sucessoMsg) showToast(sucessoMsg); 
+                } else {
+                    if(sucessoMsg) showToast("Erro na nuvem", "error");
+                }
+            } catch(e) { 
+                filaSync.push({ payload, sucessoMsg });
+                localStorage.setItem('fila_sync_dados', JSON.stringify(filaSync));
+                if(sucessoMsg) showToast("Sem rede. Guardado para depois.", "warning"); 
+            }
         }
 
+        window.addEventListener('online', async () => {
+            if (filaSync.length > 0) {
+                showToast("A sincronizar dados pendentes...", "info");
+                const pendentes = [...filaSync];
+                filaSync = []; // Limpa a fila
+                localStorage.setItem('fila_sync_dados', JSON.stringify(filaSync));
+                
+                for (let item of pendentes) {
+                    await sincronizarAPI(item.payload, item.sucessoMsg ? "Sincronizado!" : null);
+                }
+            }
+        });
+
         // ============================ REGISTOS (HORAS) ============================
+        
+        // Verifica se há conflito de horários no mesmo dia
+        function verificarSobreposicaoHoras(d, i, f, editId) {
+            for (let r of registos) {
+                if (r.data === d && r.id !== editId) {
+                    if (i < formatHora(r.fim) && f > formatHora(r.inicio)) {
+                        return true; 
+                    }
+                }
+            }
+            return false;
+        }
+
         function atualizarDropdownsFiltros() {
             const cls = [...new Set(registos.map(r => r.cliente).filter(c => c))].sort();
             document.getElementById('lista_clientes').innerHTML = cls.map(c => `<option value="${c}">`).join('');
@@ -950,6 +1005,12 @@
         async function adicionarRegisto() {
             const d=document.getElementById('data').value, cli=document.getElementById('cliente').value, i=document.getElementById('hora_inicio').value, f=document.getElementById('hora_fim').value, t=parseFloat(document.getElementById('taxa_hora').value); 
             if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos", "error"); return; } 
+            
+            // Aviso de Sobreposição
+            if(verificarSobreposicaoHoras(d, i, f, idEmEdicao)) {
+                showToast("Aviso: Sobreposição de horários detetada!", "warning");
+            }
+
             const c = calcDiferenca(i,f); const id = idEmEdicao || 'R_'+Date.now();
             const novo = { id: id, data: d, cliente: cli, inicio: i, fim: f, duracaoTexto: c.texto, minutosTotais: c.mins, taxaUsada: t, valorGasto: c.dec*t };
             
@@ -970,7 +1031,9 @@
             
             document.getElementById('cliente').value=r.cliente||''; document.getElementById('hora_inicio').value=formatHora(r.inicio); document.getElementById('hora_fim').value=formatHora(r.fim); document.getElementById('taxa_hora').value=r.taxaUsada; 
             document.getElementById('btn_cancelar_registo').style.display='block'; 
-            setTimeout(() => document.getElementById('cartao_form_registo').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            
+            // Scroll suave para o topo ao editar
+            document.getElementById('main-scroll-area').scrollTo({top: 0, behavior: 'smooth'});
         }
         function cancelarEdicaoRegisto() { 
             idEmEdicao=null; 
@@ -1015,7 +1078,9 @@
             
             document.getElementById('d_categoria').value=d.categoria; document.getElementById('d_descricao').value=d.descricao; document.getElementById('d_valor').value=d.valor;
             document.getElementById('btn_cancelar_despesa').style.display='block'; 
-            setTimeout(() => document.getElementById('cartao_form_despesa').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            
+            // Scroll suave para o topo
+            document.getElementById('main-scroll-area').scrollTo({top: 0, behavior: 'smooth'});
         }
         function cancelarEdicaoDespesa() { 
             idEmEdicaoDespesa=null; 
@@ -1031,13 +1096,46 @@
             if(ods.length===0) tb.innerHTML='<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 30px;">Agenda limpa.</td></tr>';
             ods.forEach(a => tb.innerHTML+=`<tr><td data-label="Data">${formatDataBR(a.data)}</td><td data-label="Hora">${formatHora(a.hora)}</td><td data-label="Evento"><strong>${a.titulo}</strong></td><td class="action-btns"><button class="edit-btn" onclick="editarAgenda('${a.id}')"><i class="fa-solid fa-pen"></i></button><button class="delete-btn" onclick="apagarRegistoAPI('${a.id}', 'este evento')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
         }
+        
         async function guardarAgenda() {
             const d=document.getElementById('a_data').value, h=document.getElementById('a_hora').value, t=document.getElementById('a_titulo').value; 
+            const rec=document.getElementById('a_recorrencia').value;
             if(!d || !t) { showToast("Preencha data e título!", "error"); return; }
-            const id = idEmEdicaoAgenda || 'A_'+Date.now(); const novo = { id: id, data: d, hora: h, titulo: t };
-            if(idEmEdicaoAgenda) { const idx = agendaRegistada.findIndex(x=>x.id===idEmEdicaoAgenda); if(idx!==-1) agendaRegistada[idx]=novo; } else agendaRegistada.push(novo);
-            cancelarEdicaoAgenda(); renderizarAgenda();
+            
+            // Grava o evento base original
+            const id = idEmEdicaoAgenda || 'A_'+Date.now(); 
+            const novo = { id: id, data: d, hora: h, titulo: t };
+            
+            if(idEmEdicaoAgenda) { 
+                const idx = agendaRegistada.findIndex(x=>x.id===idEmEdicaoAgenda); 
+                if(idx!==-1) agendaRegistada[idx]=novo; 
+            } else {
+                agendaRegistada.push(novo);
+            }
             sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...novo }, "Evento Agendado!");
+            
+            // Processar a recorrência APENAS para novos eventos
+            if (!idEmEdicaoAgenda && rec !== 'nenhuma') {
+                const baseDate = new Date(d);
+                const isSemanal = rec === 'semanal';
+                const loops = isSemanal ? 9 : 11; // Adiciona +9 semanas ou +11 meses
+                
+                for (let j = 1; j <= loops; j++) {
+                    let nextDate = new Date(baseDate);
+                    if (isSemanal) nextDate.setDate(nextDate.getDate() + (j * 7));
+                    if (!isSemanal) nextDate.setMonth(nextDate.getMonth() + j);
+                    
+                    const strDate = formatLocalYYYYMMDD(nextDate);
+                    const nId = 'A_' + Date.now() + j;
+                    const nEv = { id: nId, data: strDate, hora: h, titulo: t };
+                    
+                    agendaRegistada.push(nEv);
+                    sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...nEv }, null);
+                }
+                showToast(`Repetições ${isSemanal ? 'semanais' : 'mensais'} criadas!`, "info");
+            }
+            
+            cancelarEdicaoAgenda(); renderizarAgenda();
         }
         function editarAgenda(id) {
             const a = agendaRegistada.find(x=>x.id===id); if(!a) return; idEmEdicaoAgenda = id;
@@ -1051,12 +1149,23 @@
             
             document.getElementById('a_hora').value=(formatHora(a.hora)!=='--:--')?formatHora(a.hora):''; document.getElementById('a_titulo').value=a.titulo;
             document.getElementById('btn_cancelar_agenda').style.display='block'; 
-            setTimeout(() => document.getElementById('cartao_form_agenda').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            
+            // Esconder o menu de repetição durante edições únicas
+            document.getElementById('a_recorrencia_group').style.display='none';
+            
+            // Scroll suave para o topo
+            document.getElementById('main-scroll-area').scrollTo({top: 0, behavior: 'smooth'});
         }
         function cancelarEdicaoAgenda() { 
             idEmEdicaoAgenda=null; 
             document.getElementById('titulo_form_agenda').innerHTML='<i class="fa-regular fa-calendar-alt" style="color: var(--warning); margin-right: 6px;"></i>Novo Evento'; 
-            document.getElementById('btn_cancelar_agenda').style.display='none'; document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; 
+            document.getElementById('btn_cancelar_agenda').style.display='none'; 
+            document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; 
+            
+            // Voltar a exibir menu de recorrência
+            document.getElementById('a_recorrencia_group').style.display='block';
+            document.getElementById('a_recorrencia').value='nenhuma';
+            
             irParaHoje('container-data-agenda', 'a_data');
         }
 
@@ -1065,7 +1174,13 @@
             confirmarAcao("Eliminar Registo", `Pretende eliminar permanentemente ${nome}?`, true, "Apagar", () => {
                 registos = registos.filter(r=>r.id!==id); despesasRegistadas = despesasRegistadas.filter(d=>d.id!==id); agendaRegistada = agendaRegistada.filter(a=>a.id!==id);
                 redefinirPaginaE_Renderizar();
-                fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`).then(r=>r.json()).then(d=>showToast("Eliminado")).catch(()=>showToast("Eliminação pendente", "error"));
+                
+                if(!navigator.onLine) {
+                    showToast("Apagado localmente (Offline)", "warning");
+                    fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`).catch(()=>{});
+                } else {
+                    fetch(`${GOOGLE_SCRIPT_URL}?apagar=${id}&pin=${pinApp}&nocache=${Date.now()}`).then(r=>r.json()).then(d=>showToast("Eliminado")).catch(()=>showToast("Eliminação pendente", "error"));
+                }
             });
         }
 
