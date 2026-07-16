@@ -304,6 +304,23 @@
             .desktop-only { display: flex !important; }
             .mobile-only { display: none !important; }
         }
+        /* Estilo melhorado para as setas de navegação */
+.nav-arrow-btn {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.nav-arrow-btn:active {
+    transform: scale(0.9);
+    background-color: var(--primary-light);
+}
     </style>
 </head>
 <body class="tema-macos">
@@ -405,11 +422,14 @@
                     
                     <div class="form-group">
                         <div class="calendar-header-wrapper">
-                            <div class="month-nav">
-                                <button type="button" class="nav-btn" onclick="mudarMesCalendario(-1, 'container-data-horas', 'data')"><i class="fa-solid fa-chevron-left"></i></button>
-                                <span class="current-month-label" id="month-label-horas"></span>
-                                <button type="button" class="nav-btn" onclick="mudarMesCalendario(1, 'container-data-horas', 'data')"><i class="fa-solid fa-chevron-right"></i></button>
-                            </div>
+                            <button type="button" class="nav-arrow-btn" onclick="mudarMesCalendario(-1, 'container-data-horas', 'data')">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <span class="current-month-label" id="month-label-horas"></span>
+                            <button type="button" class="nav-arrow-btn" onclick="mudarMesCalendario(1, 'container-data-horas', 'data')">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
                             <button type="button" class="btn-hoje" onclick="irParaHoje('container-data-horas', 'data')">Hoje</button>
                         </div>
                         <div id="container-data-horas" class="calendar-carousel"></div>
