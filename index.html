@@ -304,22 +304,23 @@
             .desktop-only { display: flex !important; }
             .mobile-only { display: none !important; }
         }
-        /* Estilo melhorado para as setas de navegação */
-.nav-arrow-btn {
+        /* Container para alinhar as setas e o carrossel */
+.carousel-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+}
+/* Estilo das setas do carrossel de dias */
+.day-nav-btn {
     background: var(--surface);
     border: 1px solid var(--border-light);
     color: var(--primary);
+    padding: 10px 8px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 1.2rem;
-    padding: 8px 16px;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
-}
-
-.nav-arrow-btn:active {
-    transform: scale(0.9);
-    background-color: var(--primary-light);
+    font-size: 1rem;
+    flex-shrink: 0;
 }
     </style>
 </head>
@@ -402,11 +403,18 @@
             
             <!-- SEPARADOR 1: HORAS -->
             <section id="horas" class="section-container active">
-                <div class="summary-panel">
-                    <div class="summary-item"><span class="val" id="total_dias">0</span><span class="lab">Dias</span></div>
-                    <div class="summary-item"><span class="val" id="total_horas">0h</span><span class="lab">Horas</span></div>
-                    <div class="summary-item"><span class="val" id="total_ganho">0 €</span><span class="lab">Faturação</span></div>
-                </div>
+                <!-- Substitua o bloco do calendar-carousel atual por este: -->
+<div class="carousel-wrapper">
+    <button type="button" class="day-nav-btn" onclick="mudarDia(-1, 'container-data-horas', 'data')">
+        <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    
+    <div id="container-data-horas" class="calendar-carousel"></div>
+    
+    <button type="button" class="day-nav-btn" onclick="mudarDia(1, 'container-data-horas', 'data')">
+        <i class="fa-solid fa-chevron-right"></i>
+    </button>
+</div>
 
                 <div class="finance-panel" id="painel-financas">
                     <div style="grid-column: 1 / -1; font-weight: 600; font-size: 0.85rem; margin-bottom: 5px;">DETALHES FINANCEIROS</div>
@@ -422,14 +430,11 @@
                     
                     <div class="form-group">
                         <div class="calendar-header-wrapper">
-                            <button type="button" class="nav-arrow-btn" onclick="mudarMesCalendario(-1, 'container-data-horas', 'data')">
-                                <i class="fa-solid fa-chevron-left"></i>
-                            </button>
-                            <span class="current-month-label" id="month-label-horas"></span>
-                            <button type="button" class="nav-arrow-btn" onclick="mudarMesCalendario(1, 'container-data-horas', 'data')">
-                                <i class="fa-solid fa-chevron-right"></i>
-                            </button>
-                        </div>
+                            <div class="month-nav">
+                                <button type="button" class="nav-btn" onclick="mudarMesCalendario(-1, 'container-data-horas', 'data')"><i class="fa-solid fa-chevron-left"></i></button>
+                                <span class="current-month-label" id="month-label-horas"></span>
+                                <button type="button" class="nav-btn" onclick="mudarMesCalendario(1, 'container-data-horas', 'data')"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
                             <button type="button" class="btn-hoje" onclick="irParaHoje('container-data-horas', 'data')">Hoje</button>
                         </div>
                         <div id="container-data-horas" class="calendar-carousel"></div>
