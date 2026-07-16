@@ -122,7 +122,13 @@
         /* --- CARTÕES E FORMULÁRIOS --- */
         .card { background-color: var(--surface); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); margin-bottom: 20px; scroll-margin-top: 85px; }
         .form-group { margin-bottom: 14px; }
+        
+        /* Grelhas Personalizadas (Layouts Solicitados) */
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .grid-registos { grid-template-columns: 1fr 1fr 1.2fr; }
+        .grid-despesas { grid-template-columns: 1fr 2.5fr; }
+        .grid-agenda { grid-template-columns: 1fr 1fr 2.5fr; }
+
         label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-muted); font-size: 0.75rem; letter-spacing: 0.3px;}
         input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--input-border); border-radius: var(--border-radius-sm); font-family: inherit; font-size: 0.95rem; background-color: var(--input-bg); color: var(--text-main); -webkit-appearance: none; appearance: none; }
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
@@ -350,18 +356,18 @@
                         <input type="hidden" id="data">
                     </div>
                     
-                    <div class="form-row">
+                    <div class="form-row grid-registos">
                         <div class="form-group"><label>Início</label><input type="time" id="hora_inicio"></div>
                         <div class="form-group"><label>Fim</label><input type="time" id="hora_fim"></div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group"><label>Preço/h (€)</label><input type="number" id="taxa_hora" step="0.5"></div>
                     </div>
+
                     <div class="form-group">
                         <label>Cliente / Projeto</label>
                         <input type="text" id="cliente" list="lista_clientes" autocomplete="off">
                         <datalist id="lista_clientes"></datalist>
                     </div>
+
                     <div style="display: flex; gap: 10px; margin-top: 5px;">
                         <button class="btn btn-cancel" id="btn_cancelar_registo" style="display:none; flex:1;" onclick="cancelarEdicaoRegisto()">Cancelar</button>
                         <button class="btn btn-primary btn-save-custom" style="flex:2;" onclick="adicionarRegisto()">Guardar Registo</button>
@@ -408,13 +414,17 @@
                         <input type="hidden" id="d_data">
                     </div>
 
-                    <div class="form-group"><label>Valor (€)</label><input type="number" id="d_valor" step="0.01"></div>
-                    <div class="form-group"><label>Categoria</label>
-                        <select id="d_categoria">
-                            <option value="Combustível">Combustível</option><option value="Portagens">Portagens</option><option value="Alimentação">Alimentação</option><option value="Materiais">Materiais</option><option value="Outros">Outros</option>
-                        </select>
+                    <div class="form-row grid-despesas">
+                        <div class="form-group"><label>Valor (€)</label><input type="number" id="d_valor" step="0.01"></div>
+                        <div class="form-group"><label>Categoria</label>
+                            <select id="d_categoria">
+                                <option value="Combustível">Combustível</option><option value="Portagens">Portagens</option><option value="Alimentação">Alimentação</option><option value="Materiais">Materiais</option><option value="Outros">Outros</option>
+                            </select>
+                        </div>
                     </div>
+                    
                     <div class="form-group"><label>Descrição (Opcional)</label><input type="text" id="d_descricao"></div>
+                    
                     <div style="display:flex; gap:10px; margin-top: 5px;">
                         <button class="btn btn-cancel" id="btn_cancelar_despesa" style="display:none; flex:1;" onclick="cancelarEdicaoDespesa()">Cancelar</button>
                         <button class="btn btn-primary btn-save-custom" style="flex:2;" onclick="guardarDespesa()">Guardar Registo</button>
@@ -453,11 +463,12 @@
                         <input type="hidden" id="a_data">
                     </div>
 
-                    <div class="form-row">
+                    <div class="form-row grid-agenda">
                         <div class="form-group"><label>Início</label><input type="time" id="a_hora_inicio"></div>
                         <div class="form-group"><label>Fim</label><input type="time" id="a_hora_fim"></div>
+                        <div class="form-group"><label>Evento</label><input type="text" id="a_titulo"></div>
                     </div>
-                    <div class="form-group"><label>Evento</label><input type="text" id="a_titulo"></div>
+                    
                     <div class="form-group" id="a_recorrencia_group">
                         <label>Recorrência</label>
                         <select id="a_recorrencia">
@@ -466,6 +477,7 @@
                             <option value="mensal">Mensalmente (12 meses)</option>
                         </select>
                     </div>
+                    
                     <div style="display:flex; gap:10px; margin-top: 5px;">
                         <button class="btn btn-cancel" id="btn_cancelar_agenda" style="display:none; flex:1;" onclick="cancelarEdicaoAgenda()">Cancelar</button>
                         <button class="btn btn-primary btn-save-custom" style="flex:2;" onclick="guardarAgenda()">Guardar Registo</button>
