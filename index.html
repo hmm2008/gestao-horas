@@ -535,6 +535,13 @@
                         <tbody id="tabela_despesas"></tbody>
                     </table>
                 </div>
+
+                <!-- BOTÃO VOLTAR -->
+                <div style="display: flex; justify-content: flex-start; margin-top: 20px;">
+                    <button class="btn btn-cancel" style="width: auto; padding: 10px 20px; font-weight: 500;" onclick="mudarSeparador('horas')">
+                        <i class="fa-solid fa-arrow-left" style="margin-right: 8px;"></i>Voltar
+                    </button>
+                </div>
             </section>
 
             <!-- 3. AGENDA -->
@@ -582,6 +589,13 @@
                         <tbody id="tabela_agenda"></tbody>
                     </table>
                 </div>
+
+                <!-- BOTÃO VOLTAR -->
+                <div style="display: flex; justify-content: flex-start; margin-top: 20px;">
+                    <button class="btn btn-cancel" style="width: auto; padding: 10px 20px; font-weight: 500;" onclick="mudarSeparador('horas')">
+                        <i class="fa-solid fa-arrow-left" style="margin-right: 8px;"></i>Voltar
+                    </button>
+                </div>
             </section>
 
             <!-- 4. ESTATÍSTICAS -->
@@ -590,6 +604,13 @@
                     <div class="chart-container"><div class="chart-title">Volume por Cliente</div><div class="chart-wrapper"><canvas id="graficoClientes"></canvas></div></div>
                     <div class="chart-container"><div class="chart-title">Horas Lançadas (Mês)</div><div class="chart-wrapper"><canvas id="graficoMeses"></canvas></div></div>
                     <div class="chart-container" style="grid-column: 1 / -1;"><div class="chart-title">Distribuição de Despesas</div><div class="chart-wrapper" style="height: 300px;"><canvas id="graficoDespesas"></canvas></div></div>
+                </div>
+                
+                <!-- BOTÃO VOLTAR -->
+                <div style="display: flex; justify-content: flex-start; margin-top: 20px;">
+                    <button class="btn btn-cancel" style="width: auto; padding: 10px 20px; font-weight: 500;" onclick="mudarSeparador('horas')">
+                        <i class="fa-solid fa-arrow-left" style="margin-right: 8px;"></i>Voltar
+                    </button>
                 </div>
             </section>
         </main>
@@ -722,7 +743,6 @@
             viewDate.setMonth(viewDate.getMonth() + delta);
             
             const hoje = new Date();
-            // Foco inteligente: Se voltarmos ao mês atual real, foca o dia de hoje
             if (viewDate.getMonth() === hoje.getMonth() && viewDate.getFullYear() === hoje.getFullYear()) {
                 document.getElementById(inputId).value = formatLocalYYYYMMDD(hoje);
                 renderizarCarrosselMes(containerId, inputId, hoje);
@@ -831,8 +851,7 @@
             document.querySelectorAll('.section-container').forEach(sec => sec.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             
-            // Scroll suave para o topo ao mudar de separador
-            document.getElementById('main-scroll-area').scrollTo({top: 0, behavior: 'smooth'});
+            document.getElementById('main-scroll-area').scrollTop = 0;
             centrarCalendario('container-data-' + id);
 
             if(id === 'estatisticas') gerarGraficosGerais();
@@ -948,7 +967,7 @@
             if (filaSync.length > 0) {
                 showToast("A sincronizar dados pendentes...", "info");
                 const pendentes = [...filaSync];
-                filaSync = []; // Limpa a fila
+                filaSync = []; 
                 localStorage.setItem('fila_sync_dados', JSON.stringify(filaSync));
                 
                 for (let item of pendentes) {
@@ -958,8 +977,6 @@
         });
 
         // ============================ REGISTOS (HORAS) ============================
-        
-        // Verifica se há conflito de horários no mesmo dia
         function verificarSobreposicaoHoras(d, i, f, editId) {
             for (let r of registos) {
                 if (r.data === d && r.id !== editId) {
@@ -1006,7 +1023,6 @@
             const d=document.getElementById('data').value, cli=document.getElementById('cliente').value, i=document.getElementById('hora_inicio').value, f=document.getElementById('hora_fim').value, t=parseFloat(document.getElementById('taxa_hora').value); 
             if(!d || !i || !f || isNaN(t)) { showToast("Preencha todos os campos", "error"); return; } 
             
-            // Aviso de Sobreposição
             if(verificarSobreposicaoHoras(d, i, f, idEmEdicao)) {
                 showToast("Aviso: Sobreposição de horários detetada!", "warning");
             }
@@ -1032,8 +1048,9 @@
             document.getElementById('cliente').value=r.cliente||''; document.getElementById('hora_inicio').value=formatHora(r.inicio); document.getElementById('hora_fim').value=formatHora(r.fim); document.getElementById('taxa_hora').value=r.taxaUsada; 
             document.getElementById('btn_cancelar_registo').style.display='block'; 
             
-            // Scroll suave para o topo ao editar
-            document.getElementById('main-scroll-area').scrollTo({top: 0, behavior: 'smooth'});
+            // Força a área principal a subir e, caso o browser intercepte, sobe também a window
+            document.getElementById('main-scroll-area').scrollTop = 0;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function cancelarEdicaoRegisto() { 
             idEmEdicao=null; 
@@ -1079,8 +1096,8 @@
             document.getElementById('d_categoria').value=d.categoria; document.getElementById('d_descricao').value=d.descricao; document.getElementById('d_valor').value=d.valor;
             document.getElementById('btn_cancelar_despesa').style.display='block'; 
             
-            // Scroll suave para o topo
-            document.getElementById('main-scroll-area').scrollTo({top: 0, behavior: 'smooth'});
+            document.getElementById('main-scroll-area').scrollTop = 0;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function cancelarEdicaoDespesa() { 
             idEmEdicaoDespesa=null; 
@@ -1102,7 +1119,6 @@
             const rec=document.getElementById('a_recorrencia').value;
             if(!d || !t) { showToast("Preencha data e título!", "error"); return; }
             
-            // Grava o evento base original
             const id = idEmEdicaoAgenda || 'A_'+Date.now(); 
             const novo = { id: id, data: d, hora: h, titulo: t };
             
@@ -1114,11 +1130,10 @@
             }
             sincronizarAPI({ pin: pinApp, tipo: 'agenda', ...novo }, "Evento Agendado!");
             
-            // Processar a recorrência APENAS para novos eventos
             if (!idEmEdicaoAgenda && rec !== 'nenhuma') {
                 const baseDate = new Date(d);
                 const isSemanal = rec === 'semanal';
-                const loops = isSemanal ? 9 : 11; // Adiciona +9 semanas ou +11 meses
+                const loops = isSemanal ? 9 : 11; 
                 
                 for (let j = 1; j <= loops; j++) {
                     let nextDate = new Date(baseDate);
@@ -1150,11 +1165,10 @@
             document.getElementById('a_hora').value=(formatHora(a.hora)!=='--:--')?formatHora(a.hora):''; document.getElementById('a_titulo').value=a.titulo;
             document.getElementById('btn_cancelar_agenda').style.display='block'; 
             
-            // Esconder o menu de repetição durante edições únicas
             document.getElementById('a_recorrencia_group').style.display='none';
             
-            // Scroll suave para o topo
-            document.getElementById('main-scroll-area').scrollTo({top: 0, behavior: 'smooth'});
+            document.getElementById('main-scroll-area').scrollTop = 0;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function cancelarEdicaoAgenda() { 
             idEmEdicaoAgenda=null; 
@@ -1162,7 +1176,6 @@
             document.getElementById('btn_cancelar_agenda').style.display='none'; 
             document.getElementById('a_hora').value=''; document.getElementById('a_titulo').value=''; 
             
-            // Voltar a exibir menu de recorrência
             document.getElementById('a_recorrencia_group').style.display='block';
             document.getElementById('a_recorrencia').value='nenhuma';
             
