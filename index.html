@@ -123,13 +123,10 @@
         .card { background-color: var(--surface); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); margin-bottom: 20px; scroll-margin-top: 85px; }
         .form-group { margin-bottom: 14px; }
         
-        /* Grelhas Personalizadas Atualizadas (Tudo na mesma linha) */
+        /* Grelhas Personalizadas Desktop (Tudo na mesma linha) */
         .form-row { display: grid; gap: 8px; align-items: start; }
-        /* Início, Fim, Preço/h, Cliente/Projeto */
         .grid-registos { grid-template-columns: minmax(75px, 95px) minmax(75px, 95px) minmax(70px, 80px) 1fr; }
-        /* Valor, Categoria, Descrição */
         .grid-despesas { grid-template-columns: minmax(80px, 95px) 1.2fr 2fr; }
-        /* Início, Fim, Evento */
         .grid-agenda { grid-template-columns: minmax(75px, 95px) minmax(75px, 95px) 1fr; }
 
         label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-muted); font-size: 0.72rem; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
@@ -214,7 +211,7 @@
             100% { opacity: 0; transform: translate(-50%, -60%) scale(0.95); }
         }
 
-        /* RESPONSIVIDADE */
+        /* RESPONSIVIDADE (MOBILE OVERRIDES) */
         @media (max-width: 800px) {
             .summary-panel { grid-template-columns: 1fr 1fr; }
             .summary-item:last-child { grid-column: span 2; border-top: 1px solid var(--border-light); border-right: none; }
@@ -224,6 +221,17 @@
             #fi-liquido { grid-column: span 2; border-top: 1px solid var(--border-light); padding-top: 15px; margin-top: 5px; }
             .dashboard-grid { grid-template-columns: 1fr; }
             .filter-panel { flex-direction: column; gap: 0;}
+            
+            /* Ajustes de Grelha Exclusivos para Mobile */
+            .grid-registos { grid-template-columns: 1fr 1fr 0.85fr; }
+            .item-cliente { grid-column: 1 / -1; }
+            
+            .grid-despesas { grid-template-columns: 0.8fr 1.2fr; }
+            .item-descricao { grid-column: 1 / -1; }
+            
+            .grid-agenda { grid-template-columns: 1fr 1fr; }
+            .item-evento { grid-column: 1 / -1; }
+
             table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
             thead tr { display: none; } 
             .table-container { background: transparent; border: none; box-shadow: none; }
@@ -234,9 +242,7 @@
         }
         
         @media (max-width: 400px) {
-            /* Ajuste extra para ecrãs muito pequenos para as novas grelhas não rebentarem */
             input, select { padding: 10px 4px; font-size: 0.85rem; }
-            .grid-registos { grid-template-columns: minmax(70px, 1fr) minmax(70px, 1fr) minmax(65px, 0.8fr) 1.5fr; }
         }
 
         @media (min-width: 801px) {
@@ -316,7 +322,6 @@
         </header>
 
         <nav class="tab-bar">
-            <!-- Menus Laterais -->
             <button class="tab-btn active" id="menu-horas" onclick="mudarSeparador('horas')"><i class="fa-solid fa-stopwatch"></i><span>Registos</span></button>
             <button class="tab-btn" id="menu-despesas" onclick="mudarSeparador('despesas')"><i class="fa-solid fa-receipt"></i><span>Despesas</span></button>
             <button class="tab-btn" id="menu-agenda" onclick="mudarSeparador('agenda')"><i class="fa-solid fa-calendar-alt"></i><span>Agenda</span></button>
@@ -365,12 +370,12 @@
                         <input type="hidden" id="data">
                     </div>
                     
-                    <!-- Nova Disposição Numa Só Linha -->
+                    <!-- Aplicação de item-cliente para forçar linha separada no Mobile -->
                     <div class="form-row grid-registos">
                         <div class="form-group"><label>Início</label><input type="time" id="hora_inicio"></div>
                         <div class="form-group"><label>Fim</label><input type="time" id="hora_fim"></div>
                         <div class="form-group"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
-                        <div class="form-group">
+                        <div class="form-group item-cliente">
                             <label>Cliente / Projeto</label>
                             <input type="text" id="cliente" list="lista_clientes" autocomplete="off">
                             <datalist id="lista_clientes"></datalist>
@@ -423,7 +428,7 @@
                         <input type="hidden" id="d_data">
                     </div>
 
-                    <!-- Nova Disposição Numa Só Linha -->
+                    <!-- Aplicação de item-descricao para forçar linha separada no Mobile -->
                     <div class="form-row grid-despesas">
                         <div class="form-group"><label>Valor (€)</label><input type="number" id="d_valor" step="0.01"></div>
                         <div class="form-group"><label>Categoria</label>
@@ -435,7 +440,7 @@
                                 <option value="Outros">Outros</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>Descrição</label><input type="text" id="d_descricao"></div>
+                        <div class="form-group item-descricao"><label>Descrição</label><input type="text" id="d_descricao"></div>
                     </div>
                     
                     <div style="display:flex; gap:10px; margin-top: 5px;">
@@ -476,11 +481,11 @@
                         <input type="hidden" id="a_data">
                     </div>
 
-                    <!-- Nova Disposição Numa Só Linha -->
+                    <!-- Aplicação de item-evento para forçar linha separada no Mobile -->
                     <div class="form-row grid-agenda">
                         <div class="form-group"><label>Início</label><input type="time" id="a_hora_inicio"></div>
                         <div class="form-group"><label>Fim</label><input type="time" id="a_hora_fim"></div>
-                        <div class="form-group"><label>Evento</label><input type="text" id="a_titulo"></div>
+                        <div class="form-group item-evento"><label>Evento</label><input type="text" id="a_titulo"></div>
                     </div>
                     
                     <div class="form-group" id="a_recorrencia_group">
@@ -839,7 +844,6 @@
             renderizarCarrosselMes(containerId, inputId, date);
         }
 
-        // Função para mudar o mês (setas superiores)
         function mudarMesCalendario(delta, containerId, inputId) {
             const container = document.getElementById(containerId);
             let viewDate = container.viewDate ? new Date(container.viewDate) : new Date();
