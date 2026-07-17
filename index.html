@@ -123,14 +123,17 @@
         .card { background-color: var(--surface); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); margin-bottom: 20px; scroll-margin-top: 85px; }
         .form-group { margin-bottom: 14px; }
         
-        /* Grelhas Personalizadas (Layouts Solicitados) */
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .grid-registos { grid-template-columns: 1fr 1fr 1.2fr; }
-        .grid-despesas { grid-template-columns: 1fr 2.5fr; }
-        .grid-agenda { grid-template-columns: 1fr 1fr 2.5fr; }
+        /* Grelhas Personalizadas Atualizadas (Tudo na mesma linha) */
+        .form-row { display: grid; gap: 8px; align-items: start; }
+        /* Início, Fim, Preço/h, Cliente/Projeto */
+        .grid-registos { grid-template-columns: minmax(75px, 95px) minmax(75px, 95px) minmax(70px, 80px) 1fr; }
+        /* Valor, Categoria, Descrição */
+        .grid-despesas { grid-template-columns: minmax(80px, 95px) 1.2fr 2fr; }
+        /* Início, Fim, Evento */
+        .grid-agenda { grid-template-columns: minmax(75px, 95px) minmax(75px, 95px) 1fr; }
 
-        label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-muted); font-size: 0.75rem; letter-spacing: 0.3px;}
-        input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--input-border); border-radius: var(--border-radius-sm); font-family: inherit; font-size: 0.95rem; background-color: var(--input-bg); color: var(--text-main); -webkit-appearance: none; appearance: none; }
+        label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-muted); font-size: 0.72rem; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        input, select { width: 100%; padding: 10px 8px; border: 1px solid var(--input-border); border-radius: var(--border-radius-sm); font-family: inherit; font-size: 0.95rem; background-color: var(--input-bg); color: var(--text-main); -webkit-appearance: none; appearance: none; }
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         
         .btn { display: inline-flex; justify-content: center; align-items: center; gap: 8px; width: 100%; padding: 12px; border-radius: var(--border-radius-sm); font-size: 0.95rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: var(--transition); }
@@ -138,7 +141,7 @@
         .btn-cancel { background-color: var(--surface); color: var(--text-main); border-color: var(--border-light); box-shadow: var(--shadow-sm); }
         .btn-voltar-fundo { position: absolute; bottom: 0; left: 0; width: auto; padding: 10px 20px; background-color: var(--surface); color: var(--text-main); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); border-radius: var(--border-radius-sm); font-weight: 500; font-size: 0.9rem; }
 
-        /* --- CALENDÁRIO COM SETAS --- */
+        /* --- CALENDÁRIO --- */
         .calendar-header-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .month-nav { display: flex; align-items: center; gap: 6px; }
         .nav-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 4px 8px; border-radius: var(--border-radius-sm); transition: var(--transition); }
@@ -230,6 +233,12 @@
             .action-btns { border-top: 1px dashed var(--border-light); padding-top: 12px; margin-top: 4px; }
         }
         
+        @media (max-width: 400px) {
+            /* Ajuste extra para ecrãs muito pequenos para as novas grelhas não rebentarem */
+            input, select { padding: 10px 4px; font-size: 0.85rem; }
+            .grid-registos { grid-template-columns: minmax(70px, 1fr) minmax(70px, 1fr) minmax(65px, 0.8fr) 1.5fr; }
+        }
+
         @media (min-width: 801px) {
             #app-content { flex-direction: row; }
             nav.tab-bar { position: static; flex-direction: column; width: 100px; height: 100vh; justify-content: flex-start; padding-top: calc(var(--header-height) + 20px); border-top: none; border-right: 1px solid var(--border-light); }
@@ -356,16 +365,16 @@
                         <input type="hidden" id="data">
                     </div>
                     
+                    <!-- Nova Disposição Numa Só Linha -->
                     <div class="form-row grid-registos">
                         <div class="form-group"><label>Início</label><input type="time" id="hora_inicio"></div>
                         <div class="form-group"><label>Fim</label><input type="time" id="hora_fim"></div>
-                        <div class="form-group"><label>Preço/h (€)</label><input type="number" id="taxa_hora" step="0.5"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Cliente / Projeto</label>
-                        <input type="text" id="cliente" list="lista_clientes" autocomplete="off">
-                        <datalist id="lista_clientes"></datalist>
+                        <div class="form-group"><label>Preço/h</label><input type="number" id="taxa_hora" step="0.5"></div>
+                        <div class="form-group">
+                            <label>Cliente / Projeto</label>
+                            <input type="text" id="cliente" list="lista_clientes" autocomplete="off">
+                            <datalist id="lista_clientes"></datalist>
+                        </div>
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-top: 5px;">
@@ -414,16 +423,20 @@
                         <input type="hidden" id="d_data">
                     </div>
 
+                    <!-- Nova Disposição Numa Só Linha -->
                     <div class="form-row grid-despesas">
                         <div class="form-group"><label>Valor (€)</label><input type="number" id="d_valor" step="0.01"></div>
                         <div class="form-group"><label>Categoria</label>
                             <select id="d_categoria">
-                                <option value="Combustível">Combustível</option><option value="Portagens">Portagens</option><option value="Alimentação">Alimentação</option><option value="Materiais">Materiais</option><option value="Outros">Outros</option>
+                                <option value="Combustível">Combustível</option>
+                                <option value="Portagens">Portagens</option>
+                                <option value="Alimentação">Alimentação</option>
+                                <option value="Materiais">Materiais</option>
+                                <option value="Outros">Outros</option>
                             </select>
                         </div>
+                        <div class="form-group"><label>Descrição</label><input type="text" id="d_descricao"></div>
                     </div>
-                    
-                    <div class="form-group"><label>Descrição (Opcional)</label><input type="text" id="d_descricao"></div>
                     
                     <div style="display:flex; gap:10px; margin-top: 5px;">
                         <button class="btn btn-cancel" id="btn_cancelar_despesa" style="display:none; flex:1;" onclick="cancelarEdicaoDespesa()">Cancelar</button>
@@ -463,6 +476,7 @@
                         <input type="hidden" id="a_data">
                     </div>
 
+                    <!-- Nova Disposição Numa Só Linha -->
                     <div class="form-row grid-agenda">
                         <div class="form-group"><label>Início</label><input type="time" id="a_hora_inicio"></div>
                         <div class="form-group"><label>Fim</label><input type="time" id="a_hora_fim"></div>
@@ -611,7 +625,7 @@
     <!-- SCRIPTS -->
     <script>
         // COLOQUE AQUI O SEU LINK DO WEB APP DO GOOGLE APPS SCRIPT
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxho42KWk5RkKUpOqySKuLlSQ0RKgy3IIE2iGSn8WSaECpbGAZTDY4gKWXWx-jSzgzkbw/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxho42KWk5RkKUpOqySKuLlSQ0RKgy3IIE2iGSn8WSaECpbGAZTDY4gKWXWx-jSzgzkbw/execP";
         
         // Listas explícitas em português para garantir formatação perfeita em qualquer telemóvel/computador
         const NOME_MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
@@ -809,17 +823,13 @@
                 const dateStr = formatLocalYYYYMMDD(d);
                 const item = document.createElement('div');
                 item.className = 'date-item' + (hiddenInput.value === dateStr ? ' active' : '');
-                
-                // Agora usa diretamente as listas definidas acima para não haver formatações indesejadas
                 item.innerHTML = `<span class="day-name">${NOME_DIAS[d.getDay()]}</span><span class="day-number">${d.getDate()}</span>`;
-                
                 item.onclick = () => { hiddenInput.value = dateStr; renderizarCarrosselMes(containerId, inputId); };
                 container.appendChild(item);
             }
             centrarCalendario(containerId);
         }
 
-        // Função de navegação por setas laterais (Dia a Dia)
         function mudarDia(delta, containerId, inputId) {
             const hiddenInput = document.getElementById(inputId);
             let p = hiddenInput.value.split('-');
@@ -829,7 +839,7 @@
             renderizarCarrosselMes(containerId, inputId, date);
         }
 
-        // Função de navegação por setas (Mês a Mês)
+        // Função para mudar o mês (setas superiores)
         function mudarMesCalendario(delta, containerId, inputId) {
             const container = document.getElementById(containerId);
             let viewDate = container.viewDate ? new Date(container.viewDate) : new Date();
