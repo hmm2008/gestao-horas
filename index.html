@@ -215,10 +215,13 @@
         @media (max-width: 800px) {
             .summary-panel { grid-template-columns: 1fr 1fr; }
             .summary-item:last-child { grid-column: span 2; border-top: 1px solid var(--border-light); border-right: none; }
+            
+            /* Ajustes Financeiros Mobile */
             .finance-panel { grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-            #fi-ss, #fi-irs { border-bottom: 1px solid var(--border-light); padding-bottom: 10px;}
-            #fi-impostos, #fi-despesas { padding-top: 5px; }
-            #fi-liquido { grid-column: span 2; border-top: 1px solid var(--border-light); padding-top: 15px; margin-top: 5px; }
+            .finance-item:nth-child(2), .finance-item:nth-child(3) { border-bottom: 1px solid var(--border-light); padding-bottom: 10px;}
+            .finance-item:nth-child(4), .finance-item:nth-child(5) { padding-top: 5px; }
+            .finance-item.highlight { grid-column: 1 / -1; border-top: 1px solid var(--border-light); padding-top: 15px; margin-top: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+            
             .dashboard-grid { grid-template-columns: 1fr; }
             .filter-panel { flex-direction: column; gap: 0;}
             
@@ -279,8 +282,8 @@
                     <circle cx="50" cy="50" r="3.5" fill="#1C1C1E" />
                 </svg>
             </div>
-            <h1 class="login-title">Insira o seu código</h1>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 25px;">Introduza o seu código</p>
+            <h1 class="login-title">Introduza o seu código</h1>
+            <!--p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 25px;">Introduza o seu código</p-->
             <div class="pin-display">
                 <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
             </div>
@@ -370,7 +373,6 @@
                         <input type="hidden" id="data">
                     </div>
                     
-                    <!-- Aplicação de item-cliente para forçar linha separada no Mobile -->
                     <div class="form-row grid-registos">
                         <div class="form-group"><label>Início</label><input type="time" id="hora_inicio"></div>
                         <div class="form-group"><label>Fim</label><input type="time" id="hora_fim"></div>
@@ -428,7 +430,6 @@
                         <input type="hidden" id="d_data">
                     </div>
 
-                    <!-- Aplicação de item-descricao para forçar linha separada no Mobile -->
                     <div class="form-row grid-despesas">
                         <div class="form-group"><label>Valor (€)</label><input type="number" id="d_valor" step="0.01"></div>
                         <div class="form-group"><label>Categoria</label>
@@ -481,7 +482,6 @@
                         <input type="hidden" id="a_data">
                     </div>
 
-                    <!-- Aplicação de item-evento para forçar linha separada no Mobile -->
                     <div class="form-row grid-agenda">
                         <div class="form-group"><label>Início</label><input type="time" id="a_hora_inicio"></div>
                         <div class="form-group"><label>Fim</label><input type="time" id="a_hora_fim"></div>
